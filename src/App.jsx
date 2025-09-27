@@ -330,26 +330,30 @@ const App = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!isInitialized) {
-      const { initializeAuth } = useAuthStore.getState();
-      initializeAuth();
-    }
-    const timeout = setTimeout(() => {
+   
+    const initializeAuth = async () => {
       if (!isInitialized) {
-        checkAuth();
+        console.log('🚀 Initializing authentication...');
+        await checkAuth();
       }
-    }, 100);
-    return () => clearTimeout(timeout);
-  }, [checkAuth, isInitialized]);
+    };
 
-  if (loading && !isInitialized) {
+    initializeAuth();
+  }, []); 
+
+
+  if (!isInitialized) {
     return (
-      <div className="flex items-center justify-center h-screen text-xl">
-        Checking authentication...
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
+        </div>
       </div>
     );
   }
 
+  // बाकी आपका existing code same रखें...
   // Paths where Navigation should be hidden
   const hideNavPaths = [
     "/dashboard",

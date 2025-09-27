@@ -31,33 +31,64 @@ export const useAuthStore = create((set, get) => ({
     return !user?.gymDetails?.isOnboardingComplete;
   },
 
-  // Initialize method
-  initializeAuth: () => {
-    const userData = cookieUtils.getJSON(AUTH_COOKIE_NAME);
-    const isAuthenticated = cookieUtils.get(IS_AUTHENTICATED_COOKIE) === 'true';
-    const subscriptionData = cookieUtils.getJSON(SUBSCRIPTION_COOKIE_NAME);
+  // // Initialize method
+  // initializeAuth: () => {
+  //   const userData = cookieUtils.getJSON(AUTH_COOKIE_NAME);
+  //   const isAuthenticated = cookieUtils.get(IS_AUTHENTICATED_COOKIE) === 'true';
+  //   const subscriptionData = cookieUtils.getJSON(SUBSCRIPTION_COOKIE_NAME);
     
-    if (userData && isAuthenticated) {
-      set({ 
-        user: userData, 
-        subscription: subscriptionData,
-        subscriptionLastUpdated: subscriptionData ? Date.now() : null,
-        isInitialized: true,
-        loading: false 
-      });
-    } else {
-      cookieUtils.remove(AUTH_COOKIE_NAME);
-      cookieUtils.remove(IS_AUTHENTICATED_COOKIE);
-      cookieUtils.remove(SUBSCRIPTION_COOKIE_NAME);
+  //   if (userData && isAuthenticated) {
+  //     set({ 
+  //       user: userData, 
+  //       subscription: subscriptionData,
+  //       subscriptionLastUpdated: subscriptionData ? Date.now() : null,
+  //       isInitialized: true,
+  //       loading: false 
+  //     });
+  //   } else {
+  //     cookieUtils.remove(AUTH_COOKIE_NAME);
+  //     cookieUtils.remove(IS_AUTHENTICATED_COOKIE);
+  //     cookieUtils.remove(SUBSCRIPTION_COOKIE_NAME);
       
-      set({ 
-        user: null, 
-        subscription: null,
-        isInitialized: true,
-        loading: false 
-      });
-    }
-  },
+  //     set({ 
+  //       user: null, 
+  //       subscription: null,
+  //       isInitialized: true,
+  //       loading: false 
+  //     });
+  //   }
+  // },
+  // AuthStore में initializeAuth को भी update करें:
+initializeAuth: () => {
+  console.log('🔄 Initializing auth from cookies...');
+  
+  const userData = cookieUtils.getJSON(AUTH_COOKIE_NAME);
+  const isAuthenticated = cookieUtils.get(IS_AUTHENTICATED_COOKIE) === 'true';
+  const subscriptionData = cookieUtils.getJSON(SUBSCRIPTION_COOKIE_NAME);
+  
+  if (userData && isAuthenticated) {
+    console.log('📱 Found user data in cookies, but will verify with server');
+    set({ 
+      user: userData, 
+      subscription: subscriptionData,
+      subscriptionLastUpdated: subscriptionData ? Date.now() : null,
+      isInitialized: false, // Server verification के लिए false रखें
+      loading: false 
+    });
+  } else {
+    console.log('❌ No valid cookies found');
+    cookieUtils.remove(AUTH_COOKIE_NAME);
+    cookieUtils.remove(IS_AUTHENTICATED_COOKIE);
+    cookieUtils.remove(SUBSCRIPTION_COOKIE_NAME);
+    
+    set({ 
+      user: null, 
+      subscription: null,
+      isInitialized: true, // No cookies मिले तो initialized mark करें
+      loading: false 
+    });
+  }
+},
 
   // Subscription fetch method
   fetchSubscriptionStatus: async (force = false) => {
@@ -226,86 +257,156 @@ export const useAuthStore = create((set, get) => ({
     set({ user, isInitialized: true });
   },
 
-  // Check auth method - UPDATED to ensure gym details
-  checkAuth: async () => {
-    const currentState = get();
+  // // Check auth method - UPDATED to ensure gym details
+  // checkAuth: async () => {
+  //   const currentState = get();
     
-    if (currentState.user && currentState.isInitialized) {
-      return;
-    }
+  //   if (currentState.user && currentState.isInitialized) {
+  //     return;
+  //   }
 
-    const isAuthenticated = cookieUtils.get(IS_AUTHENTICATED_COOKIE) === 'true';
-    if (!isAuthenticated) {
-      set({ 
-        user: null,
-        subscription: null,
-        loading: false,
-        isInitialized: true 
-      });
-      return;
-    }
+  //   const isAuthenticated = cookieUtils.get(IS_AUTHENTICATED_COOKIE) === 'true';
+  //   if (!isAuthenticated) {
+  //     set({ 
+  //       user: null,
+  //       subscription: null,
+  //       loading: false,
+  //       isInitialized: true 
+  //     });
+  //     return;
+  //   }
 
-    set({ loading: true });
-    try {
-      const data = await fetchCurrentUser();
-      const user = data.user || null;
+  //   set({ loading: true });
+  //   try {
+  //     const data = await fetchCurrentUser();
+  //     const user = data.user || null;
       
-      if (user) {
-        // Ensure gym details are present
-        if (!user.gymDetails) {
-          user.gymDetails = {
-            gymName: null,
-            gymLogo: null,
-            isOnboardingComplete: false,
-            onboardingCompletedAt: null
-          };
-        }
+  //     if (user) {
+  //       // Ensure gym details are present
+  //       if (!user.gymDetails) {
+  //         user.gymDetails = {
+  //           gymName: null,
+  //           gymLogo: null,
+  //           isOnboardingComplete: false,
+  //           onboardingCompletedAt: null
+  //         };
+  //       }
         
-        const cookieOptions = {
-          days: 7,
-          secure: window.location.protocol === 'https:',
-          sameSite: 'Lax'
+  //       const cookieOptions = {
+  //         days: 7,
+  //         secure: window.location.protocol === 'https:',
+  //         sameSite: 'Lax'
+  //       };
+        
+  //       cookieUtils.setJSON(AUTH_COOKIE_NAME, user, cookieOptions);
+  //       cookieUtils.set(IS_AUTHENTICATED_COOKIE, 'true', cookieOptions);
+        
+  //       set({ 
+  //         user,
+  //         loading: false,
+  //         isInitialized: true,
+  //         error: null
+  //       });
+
+  //       get().fetchSubscriptionStatus();
+  //     } else {
+  //       cookieUtils.remove(AUTH_COOKIE_NAME);
+  //       cookieUtils.remove(IS_AUTHENTICATED_COOKIE);
+  //       cookieUtils.remove(SUBSCRIPTION_COOKIE_NAME);
+        
+  //       set({ 
+  //         user: null,
+  //         subscription: null,
+  //         loading: false,
+  //         isInitialized: true,
+  //         error: null
+  //       });
+  //     }
+  //   } catch (error) {
+  //     cookieUtils.remove(AUTH_COOKIE_NAME);
+  //     cookieUtils.remove(IS_AUTHENTICATED_COOKIE);
+  //     cookieUtils.remove(SUBSCRIPTION_COOKIE_NAME);
+      
+  //     set({ 
+  //       user: null,
+  //       subscription: null,
+  //       loading: false,
+  //       isInitialized: true,
+  //       error: null
+  //     });
+  //   }
+  // },
+// इस method को replace करें:
+checkAuth: async () => {
+  const currentState = get();
+  
+  // अगर already initialized है और user exists, तो skip करें
+  if (currentState.isInitialized && currentState.user) {
+    return;
+  }
+
+  set({ loading: true });
+  
+  try {
+    console.log('🔍 Checking authentication with server...');
+    
+    // Direct server call करें - client-side cookie check नहीं करें
+    const data = await fetchCurrentUser();
+    
+    if (data.success && data.user) {
+      const user = data.user;
+      
+      // Gym details ensure करें
+      if (!user.gymDetails) {
+        user.gymDetails = {
+          gymName: null,
+          gymLogo: null,
+          isOnboardingComplete: false,
+          onboardingCompletedAt: null
         };
-        
-        cookieUtils.setJSON(AUTH_COOKIE_NAME, user, cookieOptions);
-        cookieUtils.set(IS_AUTHENTICATED_COOKIE, 'true', cookieOptions);
-        
-        set({ 
-          user,
-          loading: false,
-          isInitialized: true,
-          error: null
-        });
-
-        get().fetchSubscriptionStatus();
-      } else {
-        cookieUtils.remove(AUTH_COOKIE_NAME);
-        cookieUtils.remove(IS_AUTHENTICATED_COOKIE);
-        cookieUtils.remove(SUBSCRIPTION_COOKIE_NAME);
-        
-        set({ 
-          user: null,
-          subscription: null,
-          loading: false,
-          isInitialized: true,
-          error: null
-        });
       }
-    } catch (error) {
-      cookieUtils.remove(AUTH_COOKIE_NAME);
-      cookieUtils.remove(IS_AUTHENTICATED_COOKIE);
-      cookieUtils.remove(SUBSCRIPTION_COOKIE_NAME);
+      
+      const cookieOptions = {
+        days: 7,
+        secure: window.location.protocol === 'https:',
+        sameSite: 'Lax'
+      };
+      
+      // Client-side cookies update करें
+      cookieUtils.setJSON(AUTH_COOKIE_NAME, user, cookieOptions);
+      cookieUtils.set(IS_AUTHENTICATED_COOKIE, 'true', cookieOptions);
       
       set({ 
-        user: null,
-        subscription: null,
+        user,
+        loading: false,
+        isInitialized: true,
+        error: null
+      });
+
+      // Subscription fetch करें
+      get().fetchSubscriptionStatus();
+      
+      console.log('✅ Authentication successful, user logged in');
+    } else {
+      // Authentication failed
+      console.log('❌ No valid session found');
+      get().clearAuth();
+      set({ 
         loading: false,
         isInitialized: true,
         error: null
       });
     }
-  },
-
+  } catch (error) {
+    console.error('❌ Auth check failed:', error);
+    get().clearAuth();
+    set({ 
+      loading: false,
+      isInitialized: true,
+      error: null
+    });
+  }
+},
   // UPDATED: Refresh user method with gym details handling
 // In AuthStore
 // Enhanced refreshUser method in AuthStore with detailed debugging

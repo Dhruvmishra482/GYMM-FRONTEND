@@ -265,7 +265,8 @@ export const editMember = async (phoneNo,updateData) =>
 {
   try
   {
-    const response = await axiosInstance.patch(`/member/editmember/${phoneNo}`,updateData);
+// Fix: Remove the extra "/member" since it's already in the base mounting
+const response = await axiosInstance.patch(`/member/editmember/${phoneNo}`, updateData);
     return {
       success: true,
       message: response.data.message,

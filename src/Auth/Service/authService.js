@@ -126,3 +126,5 @@ export const resetPasswordAPI = async (token, newPassword, confirmPassword) => {
     };
   }
 };
+
+// authService.js में add करें:

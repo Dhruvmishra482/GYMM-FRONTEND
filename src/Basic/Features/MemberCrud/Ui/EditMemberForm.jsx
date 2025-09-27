@@ -13,8 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-import { getMemberByPhone,editMember } from "../Service/memberService";
-
+import { getMemberByPhone, editMember } from "../Service/memberService";
 
 const EditMemberForm = () => {
   const { phoneNumber } = useParams();
@@ -179,7 +178,9 @@ const EditMemberForm = () => {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Member</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Error Loading Member
+          </h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => navigate(-1)}
@@ -223,8 +224,12 @@ const EditMemberForm = () => {
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{formData.name || "Member"}</h2>
-              <p className="text-sm text-blue-600 font-medium">{formData.phoneNo}</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {formData.name || "Member"}
+              </h2>
+              <p className="text-sm text-blue-600 font-medium">
+                {formData.phoneNo}
+              </p>
               <p className="text-sm text-gray-500">{formData.email}</p>
             </div>
           </div>
@@ -244,7 +249,9 @@ const EditMemberForm = () => {
         <div className="bg-white rounded-lg shadow-md border border-blue-100 overflow-hidden hover:shadow-lg transition-all duration-300">
           <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white">
             <h3 className="text-lg font-medium">Editable Information</h3>
-            <p className="text-blue-100 mt-1">Update the fields below to modify member details</p>
+            <p className="text-blue-100 mt-1">
+              Update the fields below to modify member details
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6">
@@ -281,14 +288,24 @@ const EditMemberForm = () => {
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 hover:border-purple-400 hover:shadow-sm appearance-none bg-white"
                   >
                     <option value="">Select plan duration</option>
-                    <option value="1month">1 Month</option>
-                    <option value="3months">3 Months</option>
-                    <option value="6months">6 Months</option>
-                    <option value="12months">12 Months</option>
+                    <option value="1 month">1 Month</option>
+                    <option value="3 month">3 Months</option>
+                    <option value="6 month">6 Months</option>
+                    <option value="1 year">12 Months</option>
                   </select>
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <svg
+                      className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -360,13 +377,24 @@ const EditMemberForm = () => {
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 hover:border-emerald-400 hover:shadow-sm appearance-none bg-white"
                   >
                     <option value="">Select payment status</option>
-                    <option value="paid">Paid</option>
-                    <option value="pending">Pending</option>
-                    <option value="overdue">Overdue</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Overdue">Overdue</option>{" "}
+                    {/* Changed from "overdue" to "Overdue" */}
                   </select>
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <svg
+                      className="w-5 h-5 text-gray-400 group-hover:text-emerald-500 transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -380,37 +408,51 @@ const EditMemberForm = () => {
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                    Name
+                  </label>
                   <p className="text-sm text-gray-900 bg-gradient-to-r from-gray-50 to-blue-50 px-3 py-2 rounded-lg border border-gray-100">
                     {formData.name || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                    Email
+                  </label>
                   <p className="text-sm text-gray-900 bg-gradient-to-r from-gray-50 to-purple-50 px-3 py-2 rounded-lg border border-gray-100">
                     {formData.email || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Phone Number</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                    Phone Number
+                  </label>
                   <p className="text-sm text-gray-900 bg-gradient-to-r from-gray-50 to-green-50 px-3 py-2 rounded-lg border border-gray-100">
                     {formData.phoneNo || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Joining Date</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                    Joining Date
+                  </label>
                   <p className="text-sm text-gray-900 bg-gradient-to-r from-gray-50 to-orange-50 px-3 py-2 rounded-lg border border-gray-100">
-                    {formData.joiningDate ? new Date(formData.joiningDate).toLocaleDateString() : "N/A"}
+                    {formData.joiningDate
+                      ? new Date(formData.joiningDate).toLocaleDateString()
+                      : "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Gender</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                    Gender
+                  </label>
                   <p className="text-sm text-gray-900 bg-gradient-to-r from-gray-50 to-indigo-50 px-3 py-2 rounded-lg border border-gray-100">
                     {formData.gender || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">Address</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                    Address
+                  </label>
                   <p className="text-sm text-gray-900 bg-gradient-to-r from-gray-50 to-pink-50 px-3 py-2 rounded-lg border border-gray-100">
                     {formData.address || "N/A"}
                   </p>
