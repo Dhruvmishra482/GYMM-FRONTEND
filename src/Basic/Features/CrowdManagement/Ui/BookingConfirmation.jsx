@@ -1,6 +1,8 @@
-import React, { useMemo, useCallback, useEffect, useState } from 'react';
+import React, { useMemo, useCallback, useEffect, useState, lazy, Suspense } from 'react';
 
-// Custom animation hook
+// ==================== CUSTOM HOOKS ====================
+
+// Custom animation hook with cleanup
 const useModalAnimation = () => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -13,12 +15,37 @@ const useModalAnimation = () => {
   return isVisible;
 };
 
+// Custom hook for click outside
+const useClickOutside = (ref, handler) => {
+  useEffect(() => {
+    const listener = (event) => {
+      if (!ref.current || ref.current.contains(event.target)) {
+        return;
+      }
+      handler(event);
+    };
+
+    // Use passive event listeners for better scroll performance
+    document.addEventListener('mousedown', listener, { passive: true });
+    document.addEventListener('touchstart', listener, { passive: true });
+
+    return () => {
+      document.removeEventListener('mousedown', listener);
+      document.removeEventListener('touchstart', listener);
+    };
+  }, [ref, handler]);
+};
+
+// ==================== MEMOIZED COMPONENTS ====================
+
 // Memoized Warning Message Component
 const WarningMessage = React.memo(({ warning, getWarningColors }) => {
   return (
     <div className={`rounded-lg border p-3 mb-4 transition-all duration-300 ${getWarningColors(warning.type)}`}>
       <div className="flex items-start space-x-2">
-        <span className="text-lg">{warning.icon}</span>
+        <span className="text-lg" role="img" aria-label={warning.title}>
+          {warning.icon}
+        </span>
         <div className="flex-1">
           <h5 className="font-medium">{warning.title}</h5>
           <p className="text-sm mt-1">{warning.message}</p>
@@ -31,16 +58,18 @@ const WarningMessage = React.memo(({ warning, getWarningColors }) => {
 WarningMessage.displayName = 'WarningMessage';
 
 // Memoized Slot Details Component
-const SlotDetails = React.memo(({ slot, isUpdate, currentBooking }) => {
+const SlotDetails = React.memo(({ slot, isUpdate, currentBooking, currentDate }) => {
   return (
     <div className="mb-4">
       <div className="text-center mb-4">
-        <div className="text-3xl mb-2">{slot.color}</div>
+        <div className="text-3xl mb-2" role="img" aria-label="Slot indicator">
+          {slot.color}
+        </div>
         <h4 className="text-xl font-bold text-gray-900">
           {slot.slotTime}
         </h4>
         <p className="text-sm text-gray-600">
-          {new Date().toLocaleDateString()} • Workout Time
+          {currentDate} • Workout Time
         </p>
       </div>
 
@@ -59,29 +88,54 @@ const SlotDetails = React.memo(({ slot, isUpdate, currentBooking }) => {
       )}
     </div>
   );
+}, (prevProps, nextProps) => {
+  // Custom comparison function for deeper optimization
+  return (
+    prevProps.slot.slotTime === nextProps.slot.slotTime &&
+    prevProps.slot.color === nextProps.slot.color &&
+    prevProps.isUpdate === nextProps.isUpdate &&
+    prevProps.currentDate === nextProps.currentDate &&
+    prevProps.currentBooking?.slotTime === nextProps.currentBooking?.slotTime
+  );
 });
 
 SlotDetails.displayName = 'SlotDetails';
 
 // Memoized Capacity Info Component
 const CapacityInfo = React.memo(({ slot }) => {
+  // Memoize status text transformation
+  const statusText = useMemo(() => 
+    slot.status.toLowerCase().replace('_', ' '),
+    [slot.status]
+  );
+
   return (
     <div className="text-sm text-gray-600 space-y-1">
       <div className="flex justify-between">
         <span>Capacity:</span>
-        <span>{slot.currentBookings}/{slot.maxCapacity}</span>
+        <span className="font-medium">
+          {slot.currentBookings}/{slot.maxCapacity}
+        </span>
       </div>
       <div className="flex justify-between">
         <span>Status:</span>
-        <span className="capitalize">{slot.status.toLowerCase().replace('_', ' ')}</span>
+        <span className="capitalize font-medium">{statusText}</span>
       </div>
       {slot.availableSpots > 0 && (
         <div className="flex justify-between">
           <span>Spots remaining:</span>
-          <span>{slot.availableSpots}</span>
+          <span className="font-medium text-green-600">{slot.availableSpots}</span>
         </div>
       )}
     </div>
+  );
+}, (prevProps, nextProps) => {
+  // Deep comparison for slot properties
+  return (
+    prevProps.slot.currentBookings === nextProps.slot.currentBookings &&
+    prevProps.slot.maxCapacity === nextProps.slot.maxCapacity &&
+    prevProps.slot.status === nextProps.slot.status &&
+    prevProps.slot.availableSpots === nextProps.slot.availableSpots
   );
 });
 
@@ -89,10 +143,28 @@ CapacityInfo.displayName = 'CapacityInfo';
 
 // Memoized Loading Spinner Component
 const LoadingSpinner = React.memo(() => (
-  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+  <div 
+    className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+    role="status"
+    aria-label="Loading"
+  />
 ));
 
 LoadingSpinner.displayName = 'LoadingSpinner';
+
+// Memoized Terms Component
+const TermsAndConditions = React.memo(() => (
+  <div className="mt-4 text-xs text-gray-500 bg-gray-50 rounded p-2">
+    <p>
+      By confirming, you agree to arrive at your selected time. 
+      You can modify your booking until 30 minutes before the slot starts.
+    </p>
+  </div>
+));
+
+TermsAndConditions.displayName = 'TermsAndConditions';
+
+// ==================== MAIN COMPONENT ====================
 
 const BookingConfirmation = ({
   slot,
@@ -103,11 +175,15 @@ const BookingConfirmation = ({
   loading
 }) => {
   const isVisible = useModalAnimation();
+  const modalRef = React.useRef(null);
   
   // Memoize isUpdate calculation
   const isUpdate = useMemo(() => Boolean(currentBooking), [currentBooking]);
   
-  // Memoize warning message calculation
+  // Memoize current date (calculate once)
+  const currentDate = useMemo(() => new Date().toLocaleDateString(), []);
+  
+  // Memoize warning message calculation with proper dependencies
   const warning = useMemo(() => {
     if (slot.percentage > 100) {
       return {
@@ -144,27 +220,25 @@ const BookingConfirmation = ({
     };
   }, [slot.percentage, slot.currentBookings, slot.maxCapacity, slot.overflowCount]);
   
-  // Memoize warning colors function
+  // Memoize warning colors function (stable reference)
   const getWarningColors = useCallback((type) => {
-    switch (type) {
-      case 'error':
-        return 'bg-red-50 border-red-200 text-red-800';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
-      case 'info':
-        return 'bg-blue-50 border-blue-200 text-blue-800';
-      default:
-        return 'bg-green-50 border-green-200 text-green-800';
-    }
+    const colorMap = {
+      error: 'bg-red-50 border-red-200 text-red-800',
+      warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+      info: 'bg-blue-50 border-blue-200 text-blue-800',
+      success: 'bg-green-50 border-green-200 text-green-800'
+    };
+    return colorMap[type] || colorMap.success;
   }, []);
 
   // Memoize button styling
   const confirmButtonClass = useMemo(() => {
-    return `flex-1 px-4 py-2 rounded-md text-white font-medium disabled:opacity-50 transition-all duration-200 ${
-      warning.type === 'error' 
-        ? 'bg-red-600 hover:bg-red-700' 
-        : 'bg-blue-600 hover:bg-blue-700'
-    }`;
+    const baseClass = 'flex-1 px-4 py-2 rounded-md text-white font-medium disabled:opacity-50 transition-all duration-200';
+    const colorClass = warning.type === 'error' 
+      ? 'bg-red-600 hover:bg-red-700 active:bg-red-800' 
+      : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800';
+    
+    return `${baseClass} ${colorClass}`;
   }, [warning.type]);
 
   // Memoize button text
@@ -175,7 +249,13 @@ const BookingConfirmation = ({
     return isUpdate ? 'Update Slot' : 'Confirm Booking';
   }, [loading, isUpdate]);
 
-  // useCallback for event handlers
+  // Memoize cancel button class
+  const cancelButtonClass = useMemo(() => 
+    'flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 transition-colors duration-200',
+    []
+  );
+
+  // Optimized event handlers with useCallback
   const handleConfirm = useCallback(() => {
     if (!loading) {
       onConfirm();
@@ -188,25 +268,70 @@ const BookingConfirmation = ({
     }
   }, [loading, onCancel]);
 
-  // Memoize current date
-  const currentDate = useMemo(() => new Date().toLocaleDateString(), []);
+  // Throttled backdrop click handler
+  const handleBackdropClick = useCallback((e) => {
+    if (e.target === e.currentTarget) {
+      handleCancel();
+    }
+  }, [handleCancel]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  // Keyboard event handler (ESC to close)
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && !loading) {
+        handleCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleCancel, loading]);
+
+  // Memoize backdrop class
+  const backdropClass = useMemo(() => 
+    `fixed inset-0 bg-black flex items-center justify-center z-50 p-4 transition-all duration-300 ${
+      isVisible ? 'bg-opacity-50' : 'bg-opacity-0'
+    }`,
+    [isVisible]
+  );
+
+  // Memoize modal class
+  const modalClass = useMemo(() => 
+    `bg-white rounded-lg w-full max-w-md transform transition-all duration-300 ${
+      isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+    }`,
+    [isVisible]
+  );
 
   return (
     <div 
-      className={`fixed inset-0 bg-black flex items-center justify-center z-50 p-4 transition-all duration-300 ${
-        isVisible ? 'bg-opacity-50' : 'bg-opacity-0'
-      }`}
-      onClick={handleCancel}
+      className={backdropClass}
+      onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-modal-title"
     >
       <div 
-        className={`bg-white rounded-lg w-full max-w-md transform transition-all duration-300 ${
-          isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-        }`}
+        ref={modalRef}
+        className={modalClass}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 
+            id="booking-modal-title"
+            className="text-lg font-semibold text-gray-900"
+          >
             {isUpdate ? 'Update Booking' : 'Confirm Booking'}
           </h3>
           <p className="text-sm text-gray-600 mt-1">
@@ -221,6 +346,7 @@ const BookingConfirmation = ({
             slot={slot} 
             isUpdate={isUpdate} 
             currentBooking={currentBooking}
+            currentDate={currentDate}
           />
 
           {/* Capacity Warning */}
@@ -233,12 +359,7 @@ const BookingConfirmation = ({
           <CapacityInfo slot={slot} />
 
           {/* Terms */}
-          <div className="mt-4 text-xs text-gray-500 bg-gray-50 rounded p-2">
-            <p>
-              By confirming, you agree to arrive at your selected time. 
-              You can modify your booking until 30 minutes before the slot starts.
-            </p>
-          </div>
+          <TermsAndConditions />
         </div>
 
         {/* Footer */}
@@ -246,7 +367,8 @@ const BookingConfirmation = ({
           <button
             onClick={handleCancel}
             disabled={loading}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors duration-200"
+            className={cancelButtonClass}
+            aria-label="Cancel booking"
           >
             Cancel
           </button>
@@ -254,11 +376,12 @@ const BookingConfirmation = ({
             onClick={handleConfirm}
             disabled={loading}
             className={confirmButtonClass}
+            aria-label={confirmButtonText}
           >
             {loading ? (
               <div className="flex items-center justify-center">
                 <LoadingSpinner />
-                {confirmButtonText}
+                <span>{confirmButtonText}</span>
               </div>
             ) : (
               confirmButtonText
@@ -270,4 +393,16 @@ const BookingConfirmation = ({
   );
 };
 
-export default React.memo(BookingConfirmation);
+// Export with React.memo and custom comparison
+export default React.memo(BookingConfirmation, (prevProps, nextProps) => {
+  return (
+    prevProps.slot.slotTime === nextProps.slot.slotTime &&
+    prevProps.slot.currentBookings === nextProps.slot.currentBookings &&
+    prevProps.slot.percentage === nextProps.slot.percentage &&
+    prevProps.memberName === nextProps.memberName &&
+    prevProps.loading === nextProps.loading &&
+    prevProps.currentBooking?.slotTime === nextProps.currentBooking?.slotTime &&
+    prevProps.onConfirm === nextProps.onConfirm &&
+    prevProps.onCancel === nextProps.onCancel
+  );
+});

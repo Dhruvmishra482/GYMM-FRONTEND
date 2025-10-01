@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+
+// ==================== CUSTOM HOOKS ====================
 
 // Custom animation hook
 const useModalAnimation = () => {
@@ -12,9 +14,29 @@ const useModalAnimation = () => {
   return isVisible;
 };
 
+// Prevent body scroll when modal is open
+const useBodyScrollLock = () => {
+  useEffect(() => {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+};
+
+// ==================== MEMOIZED COMPONENTS ====================
+
 // Memoized Close Icon Component
 const CloseIcon = React.memo(() => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg 
+    className="w-6 h-6" 
+    fill="none" 
+    stroke="currentColor" 
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
   </svg>
 ));
@@ -33,21 +55,32 @@ const SlotCapacityCard = React.memo(({
   const effectiveCapacity = slotSpecificCapacity || defaultCapacity;
 
   const handleChange = useCallback((e) => {
-    onCapacityChange(slotTime, e.target.value);
+    const value = e.target.value;
+    // Debounce logic: only update if value is valid
+    if (value === '' || (parseInt(value) >= 5 && parseInt(value) <= 100)) {
+      onCapacityChange(slotTime, value);
+    }
   }, [slotTime, onCapacityChange]);
 
   const handleRemove = useCallback(() => {
     onRemove(slotTime);
   }, [slotTime, onRemove]);
 
+  // Memoize card class
+  const cardClass = useMemo(() => 
+    `border rounded-lg p-4 transition-all duration-200 ${
+      hasSpecificCapacity ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white'
+    }`,
+    [hasSpecificCapacity]
+  );
+
+  // Memoize placeholder text
+  const placeholder = useMemo(() => `Default (${defaultCapacity})`, [defaultCapacity]);
+
   return (
-    <div
-      className={`border rounded-lg p-4 transition-all duration-200 ${
-        hasSpecificCapacity ? 'border-blue-300 bg-blue-50' : 'border-gray-200'
-      }`}
-    >
+    <div className={cardClass}>
       <div className="flex justify-between items-center mb-2">
-        <span className="font-medium text-sm">{slotTime}</span>
+        <span className="font-medium text-sm text-gray-900">{slotTime}</span>
         <span className="text-xs text-gray-500">
           Current: {effectiveCapacity} members
         </span>
@@ -60,15 +93,17 @@ const SlotCapacityCard = React.memo(({
           max="100"
           value={slotSpecificCapacity || ''}
           onChange={handleChange}
-          placeholder={`Default (${defaultCapacity})`}
-          className="flex-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder={placeholder}
+          className="flex-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow duration-200"
+          aria-label={`Capacity for ${slotTime}`}
         />
         
         {hasSpecificCapacity && (
           <button
             onClick={handleRemove}
-            className="text-red-600 hover:text-red-800 text-sm transition-colors duration-200"
+            className="text-red-600 hover:text-red-800 active:text-red-900 text-sm transition-colors duration-200 px-2 py-1 rounded hover:bg-red-50"
             title="Use default capacity"
+            aria-label={`Reset capacity for ${slotTime}`}
           >
             Reset
           </button>
@@ -76,11 +111,20 @@ const SlotCapacityCard = React.memo(({
       </div>
 
       {hasSpecificCapacity && (
-        <p className="text-xs text-blue-600 mt-1">
+        <p className="text-xs text-blue-600 mt-1 animate-fadeIn">
           Using custom capacity: {slotSpecificCapacity} members
         </p>
       )}
     </div>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison for deep optimization
+  return (
+    prevProps.slotTime === nextProps.slotTime &&
+    prevProps.slotSpecificCapacity === nextProps.slotSpecificCapacity &&
+    prevProps.defaultCapacity === nextProps.defaultCapacity &&
+    prevProps.onCapacityChange === nextProps.onCapacityChange &&
+    prevProps.onRemove === nextProps.onRemove
   );
 });
 
@@ -106,34 +150,63 @@ const CapacitySummary = React.memo(({
   }, [totalDailyCapacity, allSlotTimes.length]);
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 mb-6">
-      <h4 className="font-medium text-gray-900 mb-2">Summary</h4>
+    <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-4 mb-6 border border-gray-200">
+      <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+        <span className="mr-2">📊</span>
+        Summary
+      </h4>
       <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-gray-600">Default Capacity:</span>
-          <span className="ml-2 font-medium">{defaultCapacity} members</span>
+        <div className="bg-white rounded-lg p-3 border border-gray-100">
+          <span className="text-gray-600 block mb-1">Default Capacity:</span>
+          <span className="text-lg font-bold text-blue-600">{defaultCapacity}</span>
+          <span className="text-gray-500 text-xs ml-1">members</span>
         </div>
-        <div>
-          <span className="text-gray-600">Custom Slots:</span>
-          <span className="ml-2 font-medium">{customSlotsCount} slots</span>
+        <div className="bg-white rounded-lg p-3 border border-gray-100">
+          <span className="text-gray-600 block mb-1">Custom Slots:</span>
+          <span className="text-lg font-bold text-purple-600">{customSlotsCount}</span>
+          <span className="text-gray-500 text-xs ml-1">slots</span>
         </div>
-        <div>
-          <span className="text-gray-600">Total Daily Capacity:</span>
-          <span className="ml-2 font-medium">{totalDailyCapacity} members</span>
+        <div className="bg-white rounded-lg p-3 border border-gray-100">
+          <span className="text-gray-600 block mb-1">Total Daily Capacity:</span>
+          <span className="text-lg font-bold text-green-600">{totalDailyCapacity}</span>
+          <span className="text-gray-500 text-xs ml-1">members</span>
         </div>
-        <div>
-          <span className="text-gray-600">Average per Slot:</span>
-          <span className="ml-2 font-medium">{averagePerSlot} members</span>
+        <div className="bg-white rounded-lg p-3 border border-gray-100">
+          <span className="text-gray-600 block mb-1">Average per Slot:</span>
+          <span className="text-lg font-bold text-orange-600">{averagePerSlot}</span>
+          <span className="text-gray-500 text-xs ml-1">members</span>
         </div>
       </div>
     </div>
+  );
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.defaultCapacity === nextProps.defaultCapacity &&
+    JSON.stringify(prevProps.slotSpecificCapacity) === JSON.stringify(nextProps.slotSpecificCapacity) &&
+    prevProps.allSlotTimes.length === nextProps.allSlotTimes.length
   );
 });
 
 CapacitySummary.displayName = 'CapacitySummary';
 
+// Memoized Loading Spinner
+const LoadingSpinner = React.memo(() => (
+  <div 
+    className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
+    role="status"
+    aria-label="Loading"
+  />
+));
+
+LoadingSpinner.displayName = 'LoadingSpinner';
+
+// ==================== MAIN COMPONENT ====================
+
 const CapacityControls = ({ currentSettings, onClose, onSave, loading }) => {
   const isVisible = useModalAnimation();
+  useBodyScrollLock();
+  
+  const modalRef = useRef(null);
 
   const [defaultCapacity, setDefaultCapacity] = useState(20);
   const [slotSpecificCapacity, setSlotSpecificCapacity] = useState({});
@@ -160,11 +233,13 @@ const CapacityControls = ({ currentSettings, onClose, onSave, loading }) => {
     return slotSpecificCapacity[slotTime] || defaultCapacity;
   }, [slotSpecificCapacity, defaultCapacity]);
 
-  // useCallback for event handlers
+  // Debounced handlers with useCallback
   const handleDefaultCapacityChange = useCallback((value) => {
     const newValue = parseInt(value) || 20;
-    setDefaultCapacity(newValue);
-    setHasChanges(true);
+    if (newValue >= 5 && newValue <= 100) {
+      setDefaultCapacity(newValue);
+      setHasChanges(true);
+    }
   }, []);
 
   const handleSlotCapacityChange = useCallback((slotTime, value) => {
@@ -216,28 +291,86 @@ const CapacityControls = ({ currentSettings, onClose, onSave, loading }) => {
     }
   }, [handleClose]);
 
+  // Keyboard event handler (ESC to close)
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && !loading) {
+        handleClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleClose, loading]);
+
+  // Memoized class names
+  const backdropClass = useMemo(() => 
+    `fixed inset-0 bg-black flex items-center justify-center z-50 p-4 transition-all duration-300 ${
+      isVisible ? 'bg-opacity-50' : 'bg-opacity-0'
+    }`,
+    [isVisible]
+  );
+
+  const modalClass = useMemo(() => 
+    `bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 shadow-2xl ${
+      isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+    }`,
+    [isVisible]
+  );
+
+  const saveButtonClass = useMemo(() => 
+    'px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200',
+    []
+  );
+
+  const cancelButtonClass = useMemo(() => 
+    'px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-200',
+    []
+  );
+
+  // Memoized status message
+  const statusMessage = useMemo(() => 
+    hasChanges ? '⚠️ You have unsaved changes' : '✅ No changes made',
+    [hasChanges]
+  );
+
+  const statusMessageClass = useMemo(() => 
+    `text-sm ${hasChanges ? 'text-orange-600 font-medium' : 'text-gray-600'}`,
+    [hasChanges]
+  );
+
   return (
     <div 
-      className={`fixed inset-0 bg-black flex items-center justify-center z-50 p-4 transition-all duration-300 ${
-        isVisible ? 'bg-opacity-50' : 'bg-opacity-0'
-      }`}
+      className={backdropClass}
       onClick={handleBackdropClick}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="capacity-modal-title"
     >
       <div 
-        className={`bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 ${
-          isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-        }`}
+        ref={modalRef}
+        className={modalClass}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10 rounded-t-lg">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Capacity Settings
-            </h2>
+            <div>
+              <h2 
+                id="capacity-modal-title"
+                className="text-xl font-semibold text-gray-900"
+              >
+                ⚙️ Capacity Settings
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Manage gym capacity for each time slot
+              </p>
+            </div>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              className="text-gray-400 hover:text-gray-600 active:text-gray-800 transition-colors duration-200 p-2 rounded-lg hover:bg-gray-100"
               disabled={loading}
+              aria-label="Close modal"
             >
               <CloseIcon />
             </button>
@@ -258,7 +391,8 @@ const CapacityControls = ({ currentSettings, onClose, onSave, loading }) => {
                 max="100"
                 value={defaultCapacity}
                 onChange={(e) => handleDefaultCapacityChange(e.target.value)}
-                className="flex-1"
+                className="flex-1 accent-blue-600"
+                aria-label="Default capacity slider"
               />
               <div className="flex items-center space-x-2">
                 <input
@@ -268,19 +402,21 @@ const CapacityControls = ({ currentSettings, onClose, onSave, loading }) => {
                   value={defaultCapacity}
                   onChange={(e) => handleDefaultCapacityChange(e.target.value)}
                   className="w-20 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Default capacity input"
                 />
-                <span className="text-sm text-gray-600">members</span>
+                <span className="text-sm text-gray-600 font-medium">members</span>
               </div>
             </div>
           </div>
 
           {/* Slot-Specific Capacities */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2 flex items-center">
+              <span className="mr-2">🕐</span>
               Slot-Specific Capacities
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Override the default capacity for specific time slots. Leave empty to use default capacity.
+            <p className="text-sm text-gray-600 mb-4 bg-blue-50 border border-blue-100 rounded-lg p-3">
+              💡 <strong>Tip:</strong> Override the default capacity for specific time slots. Leave empty to use default capacity.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -307,26 +443,35 @@ const CapacityControls = ({ currentSettings, onClose, onSave, loading }) => {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4">
+        <div className="sticky bottom-0 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-200 px-6 py-4 rounded-b-lg">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-600">
-              {hasChanges ? 'You have unsaved changes' : 'No changes made'}
+            <p className={statusMessageClass}>
+              {statusMessage}
             </p>
             
             <div className="flex space-x-3">
               <button
                 onClick={handleClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                className={cancelButtonClass}
                 disabled={loading}
+                aria-label="Cancel changes"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={!hasChanges || loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className={saveButtonClass}
+                aria-label="Save capacity changes"
               >
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <LoadingSpinner />
+                    <span>Saving...</span>
+                  </div>
+                ) : (
+                  'Save Changes'
+                )}
               </button>
             </div>
           </div>
@@ -336,4 +481,12 @@ const CapacityControls = ({ currentSettings, onClose, onSave, loading }) => {
   );
 };
 
-export default React.memo(CapacityControls);
+// Export with deep comparison
+export default React.memo(CapacityControls, (prevProps, nextProps) => {
+  return (
+    prevProps.loading === nextProps.loading &&
+    JSON.stringify(prevProps.currentSettings) === JSON.stringify(nextProps.currentSettings) &&
+    prevProps.onClose === nextProps.onClose &&
+    prevProps.onSave === nextProps.onSave
+  );
+});

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   User, Mail, Phone, Calendar, MapPin, Award, Star,
   ChevronLeft, Search, Settings, Crown, Shield, Flame,
@@ -476,6 +477,8 @@ const MemberCard = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   const { isFlipped, isAnimating, flip } = useCardFlip();
+  const navigate = useNavigate();
+  const location = useLocation();
   const visibleStats = useStaggerAnimation(3, 150);
 
   useEffect(() => {
@@ -580,6 +583,10 @@ const MemberCard = () => {
     );
   }
 
+  const openProfileModal = useCallback(() => {
+    navigate("/my-profile", { state: { background: location } });
+  }, [navigate, location]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-orange-900 to-red-900 p-4 relative overflow-hidden">
       <BackgroundElements />
@@ -594,8 +601,11 @@ const MemberCard = () => {
             <span>Back to Search</span>
           </button>
           <div className="flex space-x-3">
-            <button className="p-3 bg-orange-900/30 backdrop-blur-sm rounded-xl border border-orange-500/20 text-orange-300 hover:bg-orange-800/40 transition-all duration-300 hover:scale-110">
-              <Settings className="w-5 h-5" />
+            <button
+              onClick={openProfileModal}
+              className="px-4 py-2 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl border border-orange-500/20 hover:from-orange-500 hover:to-red-500 transition-all duration-300 hover:scale-105"
+            >
+              View Profile
             </button>
           </div>
         </div>

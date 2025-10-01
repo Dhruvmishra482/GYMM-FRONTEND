@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState, useMemo, useCallback, memo, lazy, S
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { hasFeatureAccess } from "../../../../utils/planUtils";
+import ModalContainer from "../../../../Components/Modal/ModalContainer";
+import MyProfile from "../../ProfileDropDown/Logic/MyProfilePage";
 
 import {
   Eye,
@@ -164,6 +166,7 @@ const MemberList = ({
   const [statusFilter, setStatusFilter] = useState('all');
   const [planFilter, setPlanFilter] = useState('all');
   const ITEMS_PER_PAGE = 30;
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const {
     user,
@@ -282,7 +285,7 @@ const MemberList = ({
   const handleEditMember = useCallback((member) => {
     console.log("Edit member:", member);
     setIsModalOpen(false);
-    navigate(`/edit-member/${member.phoneNo}`);
+    navigate(`/edit-member/${member.phoneNo}`, { state: { background: location } });
   }, [navigate, setIsModalOpen]);
 
   const handleRefresh = useCallback(() => {
@@ -497,13 +500,13 @@ const MemberList = ({
                     </div>
 
                     <div className="py-2">
-                      <Link
-                        to="/my-profile"
-                        className="flex items-center gap-3 px-4 py-2 text-gray-700 transition-colors hover:bg-blue-50"
+                      <button
+                        onClick={() => setIsProfileModalOpen(true)}
+                        className="flex items-center w-full gap-3 px-4 py-2 text-gray-700 transition-colors hover:bg-blue-50"
                       >
                         <User className="w-4 h-4" />
                         My Profile
-                      </Link>
+                      </button>
                       
                       {hasFeatureAccess(userPlan, 'dueMembers') && (
                         <Link
@@ -906,6 +909,13 @@ const MemberList = ({
           </div>
         </div>
       )}
+
+    {/* Profile Modal (local, no routing) */}
+    {isProfileModalOpen && (
+      <ModalContainer onClose={() => setIsProfileModalOpen(false)} maxWidth={720} padding={0} backdropBlur={8} backdropOpacity={0.65} borderRadius={16}>
+        <MyProfile />
+      </ModalContainer>
+    )}
     </div>
   );
 };
