@@ -283,7 +283,8 @@
 // };
 
 // export default App;
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation ,useNavigate} from "react-router-dom";
+
 
 import Navigation from "./Components/Hero/UI/Navigation";
 
@@ -324,10 +325,14 @@ import BasicAnalyticsReports from "./Basic/Features/MemberCrud/Ui/BasicAnalytics
 import MyAnalyticsPage from "./Basic/Features/MemberCrud/Logic/AnalyticsPage";
 import SlotBookingPage from "./Basic/Features/CrowdManagement/Logic/SlotBookingPage";
 import CrowdManagementPage from "./Basic/Features/CrowdManagement/Logic/CrowdManagementPage";
-
+import AuthModal from "./Auth/Ui/AuthModel";
+import { useState } from "react";
 const App = () => {
   const { user, loading, checkAuth, isInitialized } = useAuthStore();
   const location = useLocation();
+    const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
    
@@ -380,7 +385,20 @@ const App = () => {
     <>
       {!shouldHideNav && <Navigation />}
       <ToastContainer />
+        {/* ✅ STEP 2: AuthModal yaha ADD karo - Routes ke BAHAR */}
+      {showAuthModal && (
+        <AuthModal 
+          isOpen={showAuthModal}
+          onClose={() => {
+            setShowAuthModal(false);
+            setSelectedPlan(null);
+          }}
+          mode={authMode}
+          preSelectedPlan={selectedPlan}
+        />
+      )}
       <Routes>
+        
         <Route
           path="/"
           element={user ? <Navigate to="/dashboard" replace /> : <HeroMain />}
@@ -390,6 +408,43 @@ const App = () => {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/book-slot" element={<SlotBookingPage />} />
+        <Route 
+  path="/signup/basic" 
+  element={
+    <SignUpRedirect 
+      plan="Basic"
+      setShowAuthModal={setShowAuthModal}
+      setAuthMode={setAuthMode}
+      setSelectedPlan={setSelectedPlan}
+    />
+  } 
+/>
+
+<Route 
+  path="/signup/advanced" 
+  element={
+    <SignUpRedirect 
+      plan="Advanced"
+      setShowAuthModal={setShowAuthModal}
+      setAuthMode={setAuthMode}
+      setSelectedPlan={setSelectedPlan}
+    />
+  } 
+/>
+
+<Route 
+  path="/signup/enterprise" 
+  element={
+    <SignUpRedirect 
+      plan="Enterprise"
+      setShowAuthModal={setShowAuthModal}
+      setAuthMode={setAuthMode}
+      setSelectedPlan={setSelectedPlan}
+    />
+  } 
+/>
+
+{/* Protected routes */}
 
         {/* Protected routes */}
         <Route
@@ -514,5 +569,17 @@ const App = () => {
     </>
   );
 };
+function SignUpRedirect({ plan, setShowAuthModal, setAuthMode, setSelectedPlan }) {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    setSelectedPlan(plan);
+    setAuthMode('signup');
+    setShowAuthModal(true);
+    navigate('/', { replace: true });
+  }, [plan, navigate, setShowAuthModal, setAuthMode, setSelectedPlan]);
+  
+  return null;
+}
 
 export default App;

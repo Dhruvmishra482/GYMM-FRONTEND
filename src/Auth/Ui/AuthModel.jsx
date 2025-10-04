@@ -6,7 +6,7 @@ import { signUpService,verifyOTPService,resendOTPService } from "../Service/auth
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const AuthModal = ({ isOpen, onClose, defaultTab = "login" }) => {
+const AuthModal = ({ isOpen, onClose, defaultTab = "login",  mode: initialMode, preSelectedPlan}) => {
   const { login, loading } = useAuthStore();
   const navigate = useNavigate();
   const modalRef = useRef(null);
@@ -34,12 +34,16 @@ const AuthModal = ({ isOpen, onClose, defaultTab = "login" }) => {
   const [userData, setUserData] = useState(null);
 
   // FIXED: Update activeTab when defaultTab prop changes
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab(defaultTab);
-    }
-  }, [defaultTab, isOpen]);
-
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     setActiveTab(defaultTab);
+  //   }
+  // }, [defaultTab, isOpen]);
+useEffect(() => {
+  if (isOpen) {
+    setActiveTab(initialMode || defaultTab);
+  }
+}, [defaultTab, initialMode, isOpen]);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -448,6 +452,29 @@ const AuthModal = ({ isOpen, onClose, defaultTab = "login" }) => {
               ) : (
                 /* SIGNUP FORM */
                 <form onSubmit={handleSignup}>
+                    {/* ✅✅✅ YAHAAN ADD KARO - Form ke turant baad */}
+    {preSelectedPlan && (
+      <div style={{
+        marginBottom: '16px',
+        padding: '12px',
+        borderRadius: '8px',
+        background: 'linear-gradient(to right, rgba(251, 146, 60, 0.1), rgba(236, 72, 153, 0.1))',
+        border: '1px solid rgba(251, 146, 60, 0.3)'
+      }}>
+        <p style={{ 
+          textAlign: 'center', 
+          fontSize: '14px', 
+          color: '#111827',
+          margin: 0
+        }}>
+          Selected Plan: <span style={{ 
+            fontWeight: 'bold', 
+            color: '#ea580c' 
+          }}>{preSelectedPlan}</span>
+        </p>
+      </div>
+    )}
+    {/* ✅✅✅ YAHAAN TAK */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '4px' }}>

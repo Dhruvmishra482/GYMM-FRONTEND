@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Check,
   X,
@@ -22,7 +23,11 @@ const PricingPage = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [activeFeature, setActiveFeature] = useState(0);
   const [expandedPlans, setExpandedPlans] = useState({});
-
+   const navigate = useNavigate();
+  const handlePlanSelection = (planName) => {
+    const planPath = planName.toLowerCase(); // "Basic" -> "basic"
+    navigate(`/signup/${planPath}`);
+  };
   // Billing options configuration
   const billingOptions = [
     { key: "monthly", label: "Monthly", suffix: "/mo", popular: false },
@@ -577,13 +582,21 @@ const PricingPage = () => {
                     )}
                   </div>
 
-                  <button
+                  {/* <button
                     className={`group w-full py-4 px-6 rounded-xl font-bold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden mt-auto ${
                       plan.popular
                         ? "bg-gradient-to-r from-orange-400 to-pink-500 text-black hover:from-orange-500 hover:to-pink-600 shadow-xl shadow-orange-500/30"
                         : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/40"
                     }`}
-                  >
+                  > */}
+                   <button
+                  onClick={() => handlePlanSelection(plan.name)}
+                  className={`group w-full py-4 px-6 rounded-xl font-bold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden mt-auto ${
+                    plan.popular
+                      ? "bg-gradient-to-r from-orange-400 to-pink-500 text-black hover:from-orange-500 hover:to-pink-600 shadow-xl shadow-orange-500/30"
+                      : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/40"
+                  }`}
+                >
                     <span className="relative z-10 flex items-center justify-center">
                       {plan.buttonText}
                       <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
