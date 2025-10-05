@@ -371,6 +371,9 @@ const App = () => {
     "/payment/failed",
     "/my-subscription",
     "/my-analytics",
+    "/contact",
+    "/pricing",
+    "/forgot-password"
   ];
 
   const isEditMemberPath = location.pathname.startsWith("/edit-member");

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import { Crown, Rocket, Check, ArrowRight, Star } from "lucide-react";
 
 const SubscriptionRequired = ({ user, subscriptionStatus, onSubscriptionUpdate }) => {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Mail,
   Phone,
@@ -621,9 +622,9 @@ export default function ContactUs() {
                   <span className="relative">Schedule Demo</span>
                 </button>
 
-                <button className="relative px-10 py-4 text-lg font-bold text-gray-300 transition-all bg-transparent border-2 border-gray-600 rounded-full group hover:border-purple-400 hover:text-purple-300">
-                  <span className="relative">View Pricing</span>
-                </button>
+                <Link to="/pricing"className="relative px-10 py-4 text-lg font-bold text-gray-300 transition-all bg-transparent border-2 border-gray-600 rounded-full group hover:border-purple-400 hover:text-purple-300">
+                   <span className="relative">View Pricing</span>
+                </Link>
               </div>
             </div>
           </div>
