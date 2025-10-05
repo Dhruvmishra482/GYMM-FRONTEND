@@ -1,18 +1,144 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
+
+// Custom animation hook for statistics cards
+const useStatsAnimation = (index) => {
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    const delay = index * 80;
+    const timer = setTimeout(() => setIsVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [index]);
+
+  return isVisible;
+};
+
+// Memoized Loading Skeleton Component
+const LoadingSkeleton = React.memo(() => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+    {Array.from({ length: 5 }, (_, i) => (
+      <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
+        <div className="h-4 bg-gray-200 rounded mb-2"></div>
+        <div className="h-8 bg-gray-200 rounded mb-1"></div>
+        <div className="h-3 bg-gray-200 rounded"></div>
+      </div>
+    ))}
+  </div>
+));
+
+LoadingSkeleton.displayName = 'LoadingSkeleton';
+
+// Memoized Stat Card Component
+const StatCard = React.memo(({ stat, index, loading }) => {
+  const isVisible = useStatsAnimation(index);
+
+  return (
+    <div
+      className={`bg-white rounded-lg border-2 p-4 ${stat.color} transition-all duration-500 transform ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-2xl">{stat.icon}</span>
+        {loading && (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+        )}
+      </div>
+      
+      <h3 className="text-sm font-medium opacity-75 mb-1">
+        {stat.title}
+      </h3>
+      
+      <div className="text-2xl font-bold mb-1">
+        {stat.value}
+      </div>
+      
+      <p className="text-xs opacity-60">
+        {stat.subtitle}
+      </p>
+    </div>
+  );
+});
+
+StatCard.displayName = 'StatCard';
+
+// Memoized Status Indicator Component
+const StatusIndicator = React.memo(({ color, label }) => (
+  <div className="flex items-center space-x-1">
+    <div className={`w-3 h-3 ${color} rounded-full`}></div>
+    <span>{label}</span>
+  </div>
+));
+
+StatusIndicator.displayName = 'StatusIndicator';
+
+// Memoized Live Status Component
+const LiveStatus = React.memo(() => (
+  <div className="flex items-center justify-end mt-1">
+    <div className="flex space-x-1">
+      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+      <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+    </div>
+    <span className="text-xs text-gray-400 ml-2">Live data</span>
+  </div>
+));
+
+LiveStatus.displayName = 'LiveStatus';
+
+// Memoized Overview Summary Component
+const OverviewSummary = React.memo(({ statistics, getLastUpdatedText }) => (
+  <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="flex justify-between items-center">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          Today's Overview
+        </h3>
+        <div className="flex space-x-6 text-sm text-gray-600">
+          <span>
+            <strong>{statistics?.totalCapacity || 0}</strong> total capacity
+          </span>
+          <span>
+            <strong>{statistics?.fullSlots || 0}</strong> full slots
+          </span>
+          <span>
+            Utilization: <strong>{statistics?.utilizationRate || 0}%</strong>
+          </span>
+        </div>
+      </div>
+      
+      <div className="text-right">
+        <p className="text-sm text-gray-500">
+          Last updated: {getLastUpdatedText()}
+        </p>
+        <LiveStatus />
+      </div>
+    </div>
+    
+    {/* Status Indicators */}
+    <div className="mt-4 flex space-x-4 text-xs">
+      <StatusIndicator color="bg-green-500" label="Safe (0-69%)" />
+      <StatusIndicator color="bg-yellow-500" label="Busy (70-84%)" />
+      <StatusIndicator color="bg-red-500" label="Full (85%+)" />
+      <StatusIndicator color="bg-red-600" label="Overflow (100%+)" />
+    </div>
+  </div>
+));
+
+OverviewSummary.displayName = 'OverviewSummary';
 
 const StatisticsPanel = ({ statistics, lastUpdated, loading }) => {
-  // Format numbers for display
-  const formatNumber = (num) => {
+  // Memoize format functions
+  const formatNumber = useCallback((num) => {
     return num?.toLocaleString() || '0';
-  };
+  }, []);
 
-  // Format percentage for display
-  const formatPercentage = (num) => {
+  const formatPercentage = useCallback((num) => {
     return `${num || 0}%`;
-  };
+  }, []);
 
-  // Get last updated text
-  const getLastUpdatedText = () => {
+  // Memoize last updated text calculation
+  const getLastUpdatedText = useCallback(() => {
     if (!lastUpdated) return 'Never updated';
     
     const now = Date.now();
@@ -24,23 +150,10 @@ const StatisticsPanel = ({ statistics, lastUpdated, loading }) => {
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
     return `${hours}h ago`;
-  };
+  }, [lastUpdated]);
 
-  if (loading && !statistics) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-            <div className="h-8 bg-gray-200 rounded mb-1"></div>
-            <div className="h-3 bg-gray-200 rounded"></div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  const stats = [
+  // Memoize statistics data
+  const stats = useMemo(() => [
     {
       title: 'Total Bookings',
       value: formatNumber(statistics?.totalBookings),
@@ -76,96 +189,34 @@ const StatisticsPanel = ({ statistics, lastUpdated, loading }) => {
       color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
       icon: '🎯'
     }
-  ];
+  ], [statistics, formatNumber, formatPercentage]);
+
+  // Early return for loading state
+  if (loading && !statistics) {
+    return <LoadingSkeleton />;
+  }
 
   return (
     <div>
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
         {stats.map((stat, index) => (
-          <div
+          <StatCard
             key={index}
-            className={`bg-white rounded-lg border-2 p-4 ${stat.color}`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">{stat.icon}</span>
-              {loading && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-              )}
-            </div>
-            
-            <h3 className="text-sm font-medium opacity-75 mb-1">
-              {stat.title}
-            </h3>
-            
-            <div className="text-2xl font-bold mb-1">
-              {stat.value}
-            </div>
-            
-            <p className="text-xs opacity-60">
-              {stat.subtitle}
-            </p>
-          </div>
+            stat={stat}
+            index={index}
+            loading={loading}
+          />
         ))}
       </div>
 
       {/* Summary Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              Today's Overview
-            </h3>
-            <div className="flex space-x-6 text-sm text-gray-600">
-              <span>
-                <strong>{statistics?.totalCapacity || 0}</strong> total capacity
-              </span>
-              <span>
-                <strong>{statistics?.fullSlots || 0}</strong> full slots
-              </span>
-              <span>
-                Utilization: <strong>{statistics?.utilizationRate || 0}%</strong>
-              </span>
-            </div>
-          </div>
-          
-          <div className="text-right">
-            <p className="text-sm text-gray-500">
-              Last updated: {getLastUpdatedText()}
-            </p>
-            <div className="flex items-center justify-end mt-1">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              </div>
-              <span className="text-xs text-gray-400 ml-2">Live data</span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Status Indicators */}
-        <div className="mt-4 flex space-x-4 text-xs">
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span>Safe (0-69%)</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-            <span>Busy (70-84%)</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span>Full (85%+)</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 bg-red-600 rounded-full"></div>
-            <span>Overflow (100%+)</span>
-          </div>
-        </div>
-      </div>
+      <OverviewSummary
+        statistics={statistics}
+        getLastUpdatedText={getLastUpdatedText}
+      />
     </div>
   );
 };
 
-export default StatisticsPanel;
+export default React.memo(StatisticsPanel);

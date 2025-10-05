@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import {
   Mail,
   Phone,
@@ -19,12 +18,147 @@ import {
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../../Auth/Store/AuthStore";
-import { contactFormService } from "./contactFormService"
+import { contactFormService } from "./contactFormService";
 
-export default function ContactUs() {
+// Custom animation hook
+const useAnimation = (delay = 0) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+
+  return isVisible;
+};
+
+// Memoized ContactInfo Card Component
+const ContactInfoCard = React.memo(({ info, index }) => {
+  const isVisible = useAnimation(index * 100);
+
+  return (
+    <div 
+      className={`relative h-full group transition-all duration-500 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+    >
+      <div className="absolute inset-0 transition-all duration-300 bg-gradient-to-r from-orange-500/20 via-pink-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl"></div>
+      <div className="relative flex flex-col h-full p-8 transition-all duration-300 transform border bg-gray-900/50 backdrop-blur-xl rounded-2xl border-gray-700/50 hover:border-orange-400/50 hover:-translate-y-2">
+        <div className="mb-6 text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
+          {info.icon}
+        </div>
+        <h3 className="mb-4 text-xl font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
+          {info.title}
+        </h3>
+        <div className="flex-grow text-sm text-gray-300">
+          {info.content}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+ContactInfoCard.displayName = 'ContactInfoCard';
+
+// Memoized Feature Card Component
+const FeatureCard = React.memo(({ feature, index }) => {
+  const isVisible = useAnimation(index * 150);
+
+  return (
+    <div 
+      className={`relative group transition-all duration-500 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      }`}
+    >
+      <div
+        className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-all duration-300`}
+      ></div>
+      <div className="relative p-8 transition-all duration-300 transform border bg-gray-900/50 backdrop-blur-xl rounded-2xl border-gray-700/50 hover:border-gray-600/50 hover:-translate-y-2">
+        <div
+          className={`text-transparent bg-gradient-to-r ${feature.gradient} bg-clip-text mb-6 flex justify-center`}
+        >
+          {feature.icon}
+        </div>
+        <h3
+          className={`text-xl font-bold mb-4 bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent`}
+        >
+          {feature.title}
+        </h3>
+        <p className="text-sm leading-relaxed text-gray-300">
+          {feature.description}
+        </p>
+      </div>
+    </div>
+  );
+});
+
+FeatureCard.displayName = 'FeatureCard';
+
+// Memoized Input Field Component
+const InputField = React.memo(({ 
+  label, 
+  name, 
+  type = "text", 
+  value, 
+  onChange, 
+  error, 
+  placeholder, 
+  disabled, 
+  icon: Icon,
+  required = false 
+}) => {
+  return (
+    <div className="space-y-3">
+      <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
+        {Icon && <Icon className="inline w-4 h-4 mr-1" />}
+        {label} {required && '*'}
+      </label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
+          error ? 'border-red-500' : 'border-gray-600/50'
+        } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all`}
+        placeholder={placeholder}
+        disabled={disabled}
+      />
+      {error && (
+        <p className="flex items-center space-x-1 text-sm text-red-400">
+          <AlertCircle className="w-3 h-3" />
+          <span>{error}</span>
+        </p>
+      )}
+    </div>
+  );
+});
+
+InputField.displayName = 'InputField';
+
+// Memoized Status Message Component
+const StatusMessage = React.memo(({ type, message, details }) => {
+  const isSuccess = type === 'success';
+  const Icon = isSuccess ? CheckCircle : AlertCircle;
+  const colorClass = isSuccess ? 'green' : 'red';
+
+  return (
+    <div className={`flex items-center p-4 mb-8 space-x-3 border rounded-lg bg-${colorClass}-900/30 border-${colorClass}-500/30 animate-fadeIn`}>
+      <Icon className={`flex-shrink-0 w-5 h-5 text-${colorClass}-400`} />
+      <div>
+        <p className={`font-medium text-${colorClass}-300`}>{message}</p>
+        {details && <p className={`text-sm text-${colorClass}-400`}>{details}</p>}
+      </div>
+    </div>
+  );
+});
+
+StatusMessage.displayName = 'StatusMessage';
+
+const ContactUs = () => {
   // Get user info from auth store
   const { user, isInitialized } = useAuthStore();
-  const isLoggedIn = !!user;
+  const isLoggedIn = useMemo(() => !!user, [user]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -38,12 +172,95 @@ export default function ContactUs() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
+  const [submitStatus, setSubmitStatus] = useState(null);
   const [errors, setErrors] = useState({});
 
   // Get current location
   const location = useLocation();
-  const showCTA = location.pathname === "/contact";
+  const showCTA = useMemo(() => location.pathname === "/contact", [location.pathname]);
+
+  // Animation hook for hero section
+  const heroVisible = useAnimation(0);
+
+  // Memoized contact info
+  const contactInfo = useMemo(() => [
+    {
+      icon: <Mail className="w-8 h-8" />,
+      title: "Email Support",
+      content: (
+        <div>
+          <p className="mb-2">
+            <strong>General Inquiries:</strong> govind@fittracker.in
+          </p>
+          <p className="mb-2">
+            <strong>Technical Support:</strong> dhruv@fittracker.in
+          </p>
+          <p>
+            <strong>Sales:</strong> sales@fittacker.com
+          </p>
+        </div>
+      ),
+    },
+    {
+      icon: <Phone className="w-8 h-8" />,
+      title: "Phone Support",
+      content: (
+        <div>
+          <p className="mb-2">
+            <strong>Main Line:</strong> +91 62390-38301
+          </p>
+          <p className="mb-2">
+            <strong>Support:</strong> +91 94657-37989
+          </p>
+          <p className="text-sm text-purple-300">
+            Available 24/7 for emergencies
+          </p>
+        </div>
+      ),
+    },
+    {
+      icon: <Clock className="w-8 h-8" />,
+      title: "Business Hours",
+      content: (
+        <div>
+          <p className="mb-2">
+            <strong>Monday - Friday:</strong> 10:00 AM - 11:00 
+          </p>
+          <p className="mb-2">
+            <strong>Saturday:</strong> 08:00 AM - 11:00 PM 
+          </p>
+          <p className="mb-2">
+            <strong>Sunday:</strong> Closed
+          </p>
+          <p className="text-sm text-cyan-300">
+            Emergency support available 24/7
+          </p>
+        </div>
+      ),
+    },
+  ], []);
+
+  // Memoized features
+  const features = useMemo(() => [
+    {
+      icon: <Users className="w-6 h-6" />,
+      title: "Dedicated Success Manager",
+      description: "Personalized guidance to ensure your gym's growth",
+      gradient: "from-orange-400 to-pink-400",
+    },
+    {
+      icon: <Shield className="w-6 h-6" />,
+      title: "Enterprise-Grade Security",
+      description: "Bank-level protection to keep your member data safe",
+      gradient: "from-cyan-400 to-blue-400",
+    },
+    {
+      icon: <Headphones className="w-6 h-6" />,
+      title: "24/7 Priority Support",
+      description: "Instant help anytime via chat, call, or WhatsApp",
+      gradient: "from-purple-400 to-pink-400",
+    },
+  ], []);
 
   // Auto-fill form if user is logged in
   useEffect(() => {
@@ -59,7 +276,8 @@ export default function ContactUs() {
     }
   }, [isLoggedIn, user, isInitialized]);
 
-  const handleInputChange = (e) => {
+  // useCallback for event handlers
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -67,21 +285,22 @@ export default function ContactUs() {
     }));
 
     // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
-    }
-  };
+    setErrors(prev => {
+      if (prev[name]) {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      }
+      return prev;
+    });
+  }, []);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const validation = contactFormService.validateFormData(formData);
     setErrors(validation.errors);
     return validation.isValid;
-  };
-
-  const handleSubmit = async (e) => {
+  }, [formData]);
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
     // Reset status
@@ -146,86 +365,7 @@ export default function ContactUs() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const contactInfo = [
-    {
-      icon: <Mail className="w-8 h-8" />,
-      title: "Email Support",
-      content: (
-        <div>
-          <p className="mb-2">
-            <strong>General Inquiries:</strong> govind@fittracker.in
-          </p>
-          <p className="mb-2">
-            <strong>Technical Support:</strong> dhruv@fittracker.in
-          </p>
-          <p>
-            <strong>Sales:</strong> sales@fittacker.com
-          </p>
-        </div>
-      ),
-    },
-    {
-      icon: <Phone className="w-8 h-8" />,
-      title: "Phone Support",
-      content: (
-        <div>
-          <p className="mb-2">
-            <strong>Main Line:</strong> +91 62390-38301
-          </p>
-          <p className="mb-2">
-            <strong>Support:</strong> +91 94657-37989
-          </p>
-          <p className="text-sm text-purple-300">
-            Available 24/7 for emergencies
-          </p>
-        </div>
-      ),
-    },
-    {
-      icon: <Clock className="w-8 h-8" />,
-      title: "Business Hours",
-      content: (
-        <div>
-          <p className="mb-2">
-            <strong>Monday - Friday:</strong> 10:00 AM - 11:00 
-          </p>
-          <p className="mb-2">
-            <strong>Saturday:</strong> 08:00 AM - 11:00 PM 
-          </p>
-          <p className="mb-2">
-            <strong>Sunday:</strong> Closed
-          </p>
-          <p className="text-sm text-cyan-300">
-            Emergency support available 24/7
-          </p>
-        </div>
-      ),
-    },
-  ];
-
- const features = [
-  {
-    icon: <Users className="w-6 h-6" />,
-    title: "Dedicated Success Manager",
-    description: "Personalized guidance to ensure your gym’s growth",
-    gradient: "from-orange-400 to-pink-400",
-  },
-  {
-    icon: <Shield className="w-6 h-6" />,
-    title: "Enterprise-Grade Security",
-    description: "Bank-level protection to keep your member data safe",
-    gradient: "from-cyan-400 to-blue-400",
-  },
-  {
-    icon: <Headphones className="w-6 h-6" />,
-    title: "24/7 Priority Support",
-    description: "Instant help anytime via chat, call, or WhatsApp",
-    gradient: "from-purple-400 to-pink-400",
-  },
-];
-
+  }, [formData, isLoggedIn, user, validateForm]);
 
   return (
     <div className="relative min-h-screen py-10 overflow-hidden bg-black">
@@ -238,7 +378,9 @@ export default function ContactUs() {
 
       <div className="relative z-10 px-6 py-16 mx-auto max-w-7xl">
         {/* Hero Section */}
-        <div className="mb-16 text-center">
+        <div className={`mb-16 text-center transition-all duration-1000 ${
+          heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}>
           <div className="inline-flex items-center px-6 py-3 mb-8 space-x-2 border rounded-full bg-gradient-to-r from-orange-600/20 to-pink-600/20 backdrop-blur-sm border-orange-500/30">
             <Sparkles className="w-5 h-5 text-orange-400" />
             <span className="font-semibold text-orange-300">
@@ -298,20 +440,7 @@ export default function ContactUs() {
         {/* Contact Information Grid */}
         <div className="grid max-w-6xl gap-8 mx-auto mb-16 md:grid-cols-3">
           {contactInfo.map((info, index) => (
-            <div key={index} className="relative h-full group">
-              <div className="absolute inset-0 transition-all duration-300 bg-gradient-to-r from-orange-500/20 via-pink-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl"></div>
-              <div className="relative flex flex-col h-full p-8 transition-all duration-300 transform border bg-gray-900/50 backdrop-blur-xl rounded-2xl border-gray-700/50 hover:border-orange-400/50 hover:-translate-y-2">
-                <div className="mb-6 text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                  {info.icon}
-                </div>
-                <h3 className="mb-4 text-xl font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                  {info.title}
-                </h3>
-                <div className="flex-grow text-sm text-gray-300">
-                  {info.content}
-                </div>
-              </div>
-            </div>
+            <ContactInfoCard key={index} info={info} index={index} />
           ))}
         </div>
 
@@ -340,95 +469,56 @@ export default function ContactUs() {
 
             {/* Success/Error Messages */}
             {submitStatus === 'success' && (
-              <div className="flex items-center p-4 mb-8 space-x-3 border rounded-lg bg-green-900/30 border-green-500/30">
-                <CheckCircle className="flex-shrink-0 w-5 h-5 text-green-400" />
-                <div>
-                  <p className="font-medium text-green-300">Message sent successfully!</p>
-                  <p className="text-sm text-green-400">We'll get back to you within 24 hours.</p>
-                </div>
-              </div>
+              <StatusMessage 
+                type="success"
+                message="Message sent successfully!"
+                details="We'll get back to you within 24 hours."
+              />
             )}
 
             {submitStatus === 'error' && (
-              <div className="flex items-center p-4 mb-8 space-x-3 border rounded-lg bg-red-900/30 border-red-500/30">
-                <AlertCircle className="flex-shrink-0 w-5 h-5 text-red-400" />
-                <div>
-                  <p className="font-medium text-red-300">Failed to send message</p>
-                  <p className="text-sm text-red-400">{errors.submit || "Please try again later."}</p>
-                </div>
-              </div>
+              <StatusMessage 
+                type="error"
+                message="Failed to send message"
+                details={errors.submit || "Please try again later."}
+              />
             )}
 
             <form onSubmit={handleSubmit}>
               <div className="grid gap-8 md:grid-cols-2">
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
-                      errors.name ? 'border-red-500' : 'border-gray-600/50'
-                    } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all`}
-                    placeholder="Enter your full name"
-                    disabled={isSubmitting}
-                  />
-                  {errors.name && (
-                    <p className="flex items-center space-x-1 text-sm text-red-400">
-                      <AlertCircle className="w-3 h-3" />
-                      <span>{errors.name}</span>
-                    </p>
-                  )}
-                </div>
+                <InputField
+                  label="Full Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  error={errors.name}
+                  placeholder="Enter your full name"
+                  disabled={isSubmitting}
+                  required
+                />
 
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
-                      errors.email ? 'border-red-500' : 'border-gray-600/50'
-                    } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all`}
-                    placeholder="Enter your email address"
-                    disabled={isSubmitting}
-                  />
-                  {errors.email && (
-                    <p className="flex items-center space-x-1 text-sm text-red-400">
-                      <AlertCircle className="w-3 h-3" />
-                      <span>{errors.email}</span>
-                    </p>
-                  )}
-                </div>
+                <InputField
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  error={errors.email}
+                  placeholder="Enter your email address"
+                  disabled={isSubmitting}
+                  required
+                />
 
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
-                      errors.phone ? 'border-red-500' : 'border-gray-600/50'
-                    } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all`}
-                    placeholder="Enter your phone number"
-                    disabled={isSubmitting}
-                  />
-                  {errors.phone && (
-                    <p className="flex items-center space-x-1 text-sm text-red-400">
-                      <AlertCircle className="w-3 h-3" />
-                      <span>{errors.phone}</span>
-                    </p>
-                  )}
-                </div>
+                <InputField
+                  label="Phone Number"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  error={errors.phone}
+                  placeholder="Enter your phone number"
+                  disabled={isSubmitting}
+                />
 
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
@@ -460,59 +550,37 @@ export default function ContactUs() {
                 </div>
 
                 {/* Gym Details Section */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                    <Building2 className="inline w-4 h-4 mr-1" />
-                    Gym/Business Name
-                  </label>
-                  <input
-                    type="text"
-                    name="gymName"
-                    value={formData.gymName}
-                    onChange={handleInputChange}
-                    className="w-full px-6 py-4 text-white placeholder-gray-500 transition-all border bg-gray-800/50 backdrop-blur-sm border-gray-600/50 rounded-xl focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30"
-                    placeholder="Your gym or business name"
-                    disabled={isSubmitting}
-                  />
-                </div>
+                <InputField
+                  label="Gym/Business Name"
+                  name="gymName"
+                  value={formData.gymName}
+                  onChange={handleInputChange}
+                  placeholder="Your gym or business name"
+                  disabled={isSubmitting}
+                  icon={Building2}
+                />
 
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                    <User className="inline w-4 h-4 mr-1" />
-                    Owner/Manager Name
-                  </label>
-                  <input
-                    type="text"
-                    name="ownerName"
-                    value={formData.ownerName}
-                    onChange={handleInputChange}
-                    className="w-full px-6 py-4 text-white placeholder-gray-500 transition-all border bg-gray-800/50 backdrop-blur-sm border-gray-600/50 rounded-xl focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30"
-                    placeholder="Owner or manager name"
-                    disabled={isSubmitting}
-                  />
-                </div>
+                <InputField
+                  label="Owner/Manager Name"
+                  name="ownerName"
+                  value={formData.ownerName}
+                  onChange={handleInputChange}
+                  placeholder="Owner or manager name"
+                  disabled={isSubmitting}
+                  icon={User}
+                />
 
                 <div className="space-y-3 md:col-span-2">
-                  <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-                    Subject *
-                  </label>
-                  <input
-                    type="text"
+                  <InputField
+                    label="Subject"
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
-                      errors.subject ? 'border-red-500' : 'border-gray-600/50'
-                    } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all`}
+                    error={errors.subject}
                     placeholder="Brief subject of your inquiry"
                     disabled={isSubmitting}
+                    required
                   />
-                  {errors.subject && (
-                    <p className="flex items-center space-x-1 text-sm text-red-400">
-                      <AlertCircle className="w-3 h-3" />
-                      <span>{errors.subject}</span>
-                    </p>
-                  )}
                 </div>
 
                 <div className="space-y-3 md:col-span-2">
@@ -577,26 +645,7 @@ export default function ContactUs() {
 
           <div className="grid gap-8 mt-12 md:grid-cols-3">
             {features.map((feature, index) => (
-              <div key={index} className="relative group">
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-all duration-300`}
-                ></div>
-                <div className="relative p-8 transition-all duration-300 transform border bg-gray-900/50 backdrop-blur-xl rounded-2xl border-gray-700/50 hover:border-gray-600/50 hover:-translate-y-2">
-                  <div
-                    className={`text-transparent bg-gradient-to-r ${feature.gradient} bg-clip-text mb-6 flex justify-center`}
-                  >
-                    {feature.icon}
-                  </div>
-                  <h3
-                    className={`text-xl font-bold mb-4 bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent`}
-                  >
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-gray-300">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
+              <FeatureCard key={index} feature={feature} index={index} />
             ))}
           </div>
         </div>
@@ -632,4 +681,6 @@ export default function ContactUs() {
       </div>
     </div>
   );
-}
+};
+
+export default React.memo(ContactUs);

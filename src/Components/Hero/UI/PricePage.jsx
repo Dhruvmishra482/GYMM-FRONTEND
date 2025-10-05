@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+// PricingPage.jsx - Part 1 - Enhanced with Lazy Loading + Advanced Memoization + useTransition
+import React, { useState, useEffect, useCallback, useMemo, memo, Suspense, lazy, useTransition, startTransition } from "react";
 import {
   Check,
   X,
@@ -17,43 +17,9 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-const PricingPage = () => {
-  const [billingPeriod, setBillingPeriod] = useState("monthly");
-  const [hoveredCard, setHoveredCard] = useState(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [activeFeature, setActiveFeature] = useState(0);
-  const [expandedPlans, setExpandedPlans] = useState({});
-   const navigate = useNavigate();
-  const handlePlanSelection = (planName) => {
-    const planPath = planName.toLowerCase(); // "Basic" -> "basic"
-    navigate(`/signup/${planPath}`);
-  };
-  // Billing options configuration
-  const billingOptions = [
-    { key: "monthly", label: "Monthly", suffix: "/mo", popular: false },
-    { key: "quarterly", label: "3 Months", suffix: "/3mo", popular: false },
-    { key: "half-yearly", label: "6 Months", suffix: "/6mo", popular: true },
-    { key: "yearly", label: "1 Year", suffix: "/yr", popular: false }
-  ];
-
-  // Toggle expanded features for a specific plan
-  const togglePlanExpansion = (planIndex) => {
-    setExpandedPlans(prev => ({
-      ...prev,
-      [planIndex]: !prev[planIndex]
-    }));
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  // Animated number counter
-  const AnimatedNumber = ({ value, duration = 2000 }) => {
+// Lazy load heavy components
+const AnimatedNumber = lazy(() => Promise.resolve({
+  default: memo(({ value, duration = 2000 }) => {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
@@ -74,10 +40,58 @@ const PricingPage = () => {
     }, [value, duration]);
 
     return count;
-  };
+  })
+}));
 
-  // Pricing configuration based on billing period
-  const pricingConfig = {
+// Loading skeletons for better UX
+const StatsCardSkeleton = memo(() => (
+  <div className="p-6 border bg-white/5 backdrop-blur-lg rounded-2xl border-white/10 animate-pulse">
+    <div className="w-16 h-10 bg-slate-700 rounded mb-2"></div>
+    <div className="w-24 h-4 bg-slate-700 rounded"></div>
+  </div>
+));
+StatsCardSkeleton.displayName = 'StatsCardSkeleton';
+
+const PricingCardSkeleton = memo(() => (
+  <div className="relative bg-black/40 backdrop-blur-2xl rounded-2xl p-6 border border-white/20 animate-pulse">
+    <div className="w-12 h-12 bg-slate-700 rounded-xl mx-auto mb-4"></div>
+    <div className="w-32 h-6 bg-slate-700 rounded mx-auto mb-2"></div>
+    <div className="w-40 h-4 bg-slate-700 rounded mx-auto mb-4"></div>
+    <div className="w-full h-12 bg-slate-700 rounded mb-6"></div>
+    <div className="space-y-3 mb-6">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex items-center">
+          <div className="w-5 h-5 bg-slate-700 rounded-full mr-3"></div>
+          <div className="w-3/4 h-3 bg-slate-700 rounded"></div>
+        </div>
+      ))}
+    </div>
+    <div className="w-full h-12 bg-slate-700 rounded"></div>
+  </div>
+));
+PricingCardSkeleton.displayName = 'PricingCardSkeleton';
+
+const PricingPage = memo(() => {
+  const [billingPeriod, setBillingPeriod] = useState("monthly");
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [activeFeature, setActiveFeature] = useState(0);
+  const [expandedPlans, setExpandedPlans] = useState({});
+  const [isVisible, setIsVisible] = useState(false);
+  
+  // useTransition for better performance during heavy state updates
+  const [isPending, startTransition] = useTransition();
+
+  // Memoized billing options configuration
+  const billingOptions = useMemo(() => [
+    { key: "monthly", label: "Monthly", suffix: "/mo", popular: false },
+    { key: "quarterly", label: "3 Months", suffix: "/3mo", popular: false },
+    { key: "half-yearly", label: "6 Months", suffix: "/6mo", popular: true },
+    { key: "yearly", label: "1 Year", suffix: "/yr", popular: false }
+  ], []);
+
+  // Memoized pricing configuration
+  const pricingConfig = useMemo(() => ({
     Basic: {
       monthly: { price: 399, savings: 0 },
       quarterly: { price: 1097, savings: 100 },
@@ -96,9 +110,10 @@ const PricingPage = () => {
       "half-yearly": { price: 5095, savings: 899 },
       yearly: { price: 9990, savings: 1998 }
     }
-  };
+  }), []);
 
-  const plans = [
+  // Memoized plans data
+  const plans = useMemo(() => [
     {
       name: "Basic",
       tagline: "Start Your Gym Journey",
@@ -176,9 +191,10 @@ const PricingPage = () => {
       popular: true,
       buttonText: "Claim Your Throne",
     },
-  ];
+  ], []);
 
-  const features = [
+  // Memoized features data
+  const features = useMemo(() => [
     {
       icon: <Target className="w-8 h-8" />,
       title: "AI-Powered Member Experience",
@@ -197,7 +213,51 @@ const PricingPage = () => {
       description:
         "Send fee reminders, direct QR payment links, daily progress updates, and re-activation campaigns – all through WhatsApp automation.",
     },
-  ];
+  ], []);
+
+  // Memoized mouse glow style
+  const mouseGlowStyle = useMemo(() => ({
+    background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.1), transparent 40%)`,
+  }), [mousePos.x, mousePos.y]);
+
+  // Memoized callbacks with useTransition for heavy operations
+  const handleMouseMove = useCallback((e) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const setBillingPeriodCallback = useCallback((period) => {
+    startTransition(() => {
+      setBillingPeriod(period);
+    });
+  }, []);
+
+  const togglePlanExpansion = useCallback((planIndex) => {
+    startTransition(() => {
+      setExpandedPlans(prev => ({
+        ...prev,
+        [planIndex]: !prev[planIndex]
+      }));
+    });
+  }, []);
+
+  const handleCardHover = useCallback((cardIndex) => {
+    setHoveredCard(cardIndex);
+  }, []);
+
+  const handleCardLeave = useCallback(() => {
+    setHoveredCard(null);
+  }, []);
+
+  const handleFeatureClick = useCallback((index) => {
+    startTransition(() => {
+      setActiveFeature(index);
+    });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [handleMouseMove]);
 
   return (
     <div className="relative min-h-screen py-6 overflow-hidden bg-black">
@@ -258,12 +318,10 @@ const PricingPage = () => {
           background: transparent;
         }
         
-        /* Smooth scroll behavior */
         .smooth-scroll {
           scroll-behavior: smooth;
         }
         
-        /* Custom fade effect for scrollable content */
         .scroll-fade-top {
           background: linear-gradient(
             to bottom,
@@ -300,9 +358,7 @@ const PricingPage = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-cyan-900/20"></div>
         <div
           className="absolute inset-0 opacity-30"
-          style={{
-            background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.1), transparent 40%)`,
-          }}
+          style={mouseGlowStyle}
         ></div>
         {/* Floating orbs */}
         <div className="absolute rounded-full top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-400/30 to-blue-500/30 blur-3xl animate-pulse"></div>
@@ -343,42 +399,48 @@ const PricingPage = () => {
               supercharge your success.
             </p>
 
-            {/* Stats */}
+            {/* Stats - Lazy loaded */}
             <div className="grid max-w-4xl gap-8 mx-auto mb-16 md:grid-cols-3">
-              <div className="p-6 border bg-white/5 backdrop-blur-lg rounded-2xl border-white/10">
-                <div className="mb-2 text-4xl font-bold text-orange-400">
-                  <AnimatedNumber value={10} />+
+              <Suspense fallback={<StatsCardSkeleton />}>
+                <div className="p-6 border bg-white/5 backdrop-blur-lg rounded-2xl border-white/10">
+                  <div className="mb-2 text-4xl font-bold text-orange-400">
+                    <AnimatedNumber value={10} />+
+                  </div>
+                  <div className="text-white/70">Gyms Transformed</div>
                 </div>
-                <div className="text-white/70">Gyms Transformed</div>
-              </div>
-              <div className="p-6 border bg-white/5 backdrop-blur-lg rounded-2xl border-white/10">
-                <div className="mb-2 text-4xl font-bold text-cyan-400">
-                  $<AnimatedNumber value={10} />
-                  K+
+              </Suspense>
+              <Suspense fallback={<StatsCardSkeleton />}>
+                <div className="p-6 border bg-white/5 backdrop-blur-lg rounded-2xl border-white/10">
+                  <div className="mb-2 text-4xl font-bold text-cyan-400">
+                    $<AnimatedNumber value={10} />K+
+                  </div>
+                  <div className="text-white/70">Revenue Generated</div>
                 </div>
-                <div className="text-white/70">Revenue Generated</div>
-              </div>
-              <div className="p-6 border bg-white/5 backdrop-blur-lg rounded-2xl border-white/10">
-                <div className="mb-2 text-4xl font-bold text-pink-400">
-                  <AnimatedNumber value={95} />%
+              </Suspense>
+              <Suspense fallback={<StatsCardSkeleton />}>
+                <div className="p-6 border bg-white/5 backdrop-blur-lg rounded-2xl border-white/10">
+                  <div className="mb-2 text-4xl font-bold text-pink-400">
+                    <AnimatedNumber value={95} />%
+                  </div>
+                  <div className="text-white/70">Retention Rate</div>
                 </div>
-                <div className="text-white/70">Retention Rate</div>
-              </div>
+              </Suspense>
             </div>
 
             {/* Enhanced 4-Option Billing Toggle */}
             <div className="flex items-center justify-center mb-16">
-              <div className="p-2 border rounded-2xl bg-white/10 backdrop-blur-lg border-white/20">
+              <div className={`p-2 border rounded-2xl bg-white/10 backdrop-blur-lg border-white/20 transition-opacity duration-300 ${isPending ? 'opacity-70' : ''}`}>
                 <div className="grid grid-cols-2 gap-1 md:grid-cols-4">
                   {billingOptions.map((option) => (
                     <button
                       key={option.key}
-                      onClick={() => setBillingPeriod(option.key)}
+                      onClick={() => setBillingPeriodCallback(option.key)}
+                      disabled={isPending}
                       className={`relative px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
                         billingPeriod === option.key
                           ? "bg-gradient-to-r from-orange-400 to-pink-500 text-black shadow-lg transform scale-105"
                           : "text-white/70 hover:text-white hover:bg-white/5"
-                      }`}
+                      } ${isPending ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     >
                       {option.label}
                       {option.popular && (
@@ -401,255 +463,275 @@ const PricingPage = () => {
           </div>
         </div>
       </section>
-
-      {/* Pricing Cards - Improved with Expandable Features */}
+      {/* Pricing Cards - Lazy loaded with useTransition for smooth interactions */}
       <section className="relative z-10 pb-20">
         <div className="container px-6 mx-auto">
           <div className="grid gap-8 mx-auto lg:grid-cols-3 max-w-7xl">
             {plans.map((plan, index) => (
-              <div
-                key={index}
-                className={`relative group cursor-pointer transition-all duration-500 ${
-                  plan.popular ? "lg:scale-105 lg:-translate-y-2" : ""
-                } ${hoveredCard === index ? "scale-102" : ""} ${
-                  expandedPlans[index] ? "h-auto" : ""
-                }`}
-                onMouseEnter={() => setHoveredCard(index)}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                {/* Glow effect */}
+              <Suspense key={index} fallback={<PricingCardSkeleton />}>
                 <div
-                  className={`absolute -inset-1 bg-gradient-to-r ${plan.color} rounded-2xl blur opacity-0 group-hover:opacity-60 transition-opacity duration-500`}
-                ></div>
-
-                <div
-                  className={`relative bg-black/40 backdrop-blur-2xl rounded-2xl p-6 border transition-all duration-500 flex flex-col min-h-full ${
-                    plan.popular
-                      ? "border-orange-400/50 bg-gradient-to-b from-orange-500/20 via-black/40 to-black/40"
-                      : "border-white/20 group-hover:border-white/40"
-                  }`}
+                  className={`relative group cursor-pointer transition-all duration-500 ${
+                    plan.popular ? "lg:scale-105 lg:-translate-y-2" : ""
+                  } ${hoveredCard === index ? "scale-102" : ""} ${
+                    expandedPlans[index] ? "h-auto" : ""
+                  } ${isPending ? 'opacity-70' : 'opacity-100'}`}
+                  onMouseEnter={() => handleCardHover(index)}
+                  onMouseLeave={handleCardLeave}
                 >
-                  {plan.popular && (
-                    <div className="absolute transform -translate-x-1/2 -top-4 left-1/2">
-                      <div className="flex items-center px-6 py-2 text-sm font-bold text-black rounded-full shadow-xl bg-gradient-to-r from-orange-400 to-pink-500">
-                        <Crown className="w-4 h-4 mr-1" />
-                        POPULAR
-                      </div>
-                    </div>
-                  )}
+                  {/* Glow effect */}
+                  <div
+                    className={`absolute -inset-1 bg-gradient-to-r ${plan.color} rounded-2xl blur opacity-0 group-hover:opacity-60 transition-opacity duration-500`}
+                  ></div>
 
-                  <div className="mb-6 text-center">
-                    <div
-                      className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r ${plan.color} mb-4`}
-                    >
-                      <div className="text-white scale-75">{plan.icon}</div>
-                    </div>
-
-                    <h3 className="mb-1 text-2xl font-bold text-white">
-                      {plan.name}
-                    </h3>
-                    <p className="mb-2 text-lg font-semibold text-transparent bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text">
-                      {plan.tagline}
-                    </p>
-                    <p className="mb-4 text-sm leading-relaxed text-white/60">
-                      {plan.description}
-                    </p>
-
-                    <div className="mb-6">
-                      <div className="flex items-baseline justify-center mb-1">
-                        <span className="text-4xl font-black text-transparent bg-gradient-to-r from-white to-white/80 bg-clip-text">
-                          ₹{pricingConfig[plan.name][billingPeriod]?.price.toLocaleString()}
-                        </span>
-                        <span className="ml-2 text-lg text-white/60">
-                          {billingOptions.find(opt => opt.key === billingPeriod)?.suffix}
-                        </span>
-                      </div>
-                      {billingPeriod !== "monthly" && pricingConfig[plan.name][billingPeriod]?.savings > 0 && (
-                        <div className="text-sm font-semibold text-green-400">
-                          Save ₹{pricingConfig[plan.name][billingPeriod].savings.toLocaleString()}
+                  <div
+                    className={`relative bg-black/40 backdrop-blur-2xl rounded-2xl p-6 border transition-all duration-500 flex flex-col min-h-full ${
+                      plan.popular
+                        ? "border-orange-400/50 bg-gradient-to-b from-orange-500/20 via-black/40 to-black/40"
+                        : "border-white/20 group-hover:border-white/40"
+                    }`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute transform -translate-x-1/2 -top-4 left-1/2">
+                        <div className="flex items-center px-6 py-2 text-sm font-bold text-black rounded-full shadow-xl bg-gradient-to-r from-orange-400 to-pink-500">
+                          <Crown className="w-4 h-4 mr-1" />
+                          POPULAR
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    )}
 
-                  {/* Features List with Expandable Functionality */}
-                  <div className="flex-grow mb-6">
-                    {/* Always show first 5 features */}
-                    <div className="mb-3 space-y-3">
-                      {plan.features.slice(0, 5).map((feature, featureIndex) => (
-                        <div
-                          key={featureIndex}
-                          className={`flex items-start text-sm transition-all duration-300 ${
-                            feature.highlight
-                              ? "bg-gradient-to-r from-orange-400/20 to-transparent rounded-lg p-2 -ml-2"
-                              : ""
-                          }`}
-                        >
-                          {feature.included ? (
-                            <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
-                              <Check className="w-3 h-3 text-black" />
-                            </div>
-                          ) : (
-                            <div className="w-5 h-5 bg-gray-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
-                              <X className="w-3 h-3 text-gray-400" />
-                            </div>
-                          )}
-                          <span
-                            className={`${
-                              feature.included ? "text-white" : "text-gray-500"
-                            } ${
-                              feature.highlight ? "font-semibold" : ""
-                            } text-sm leading-relaxed flex-1`}
-                          >
-                            {feature.name}
-                            {feature.highlight && (
-                              <Sparkles className="inline w-3 h-3 ml-1 text-orange-400" />
-                            )}
+                    <div className="mb-6 text-center">
+                      <div
+                        className={`inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-r ${plan.color} mb-4`}
+                      >
+                        <div className="text-white scale-75">{plan.icon}</div>
+                      </div>
+
+                      <h3 className="mb-1 text-2xl font-bold text-white">
+                        {plan.name}
+                      </h3>
+                      <p className="mb-2 text-lg font-semibold text-transparent bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text">
+                        {plan.tagline}
+                      </p>
+                      <p className="mb-4 text-sm leading-relaxed text-white/60">
+                        {plan.description}
+                      </p>
+
+                      <div className="mb-6">
+                        <div className="flex items-baseline justify-center mb-1">
+                          <span className="text-4xl font-black text-transparent bg-gradient-to-r from-white to-white/80 bg-clip-text">
+                            ₹{pricingConfig[plan.name][billingPeriod]?.price.toLocaleString()}
+                          </span>
+                          <span className="ml-2 text-lg text-white/60">
+                            {billingOptions.find(opt => opt.key === billingPeriod)?.suffix}
                           </span>
                         </div>
-                      ))}
-                    </div>
-                    
-
-                    {/* Expandable additional features with enhanced scrollable container */}
-                    <div className={`transition-all duration-500 ${
-                      expandedPlans[index] ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
-                    } overflow-hidden`}>
-                      <div className="relative">
-                        {/* Fade gradients for better visual indication */}
-                        <div className="scroll-fade-top"></div>
-                        <div className="scroll-fade-bottom"></div>
-                        
-                        {/* Enhanced scrollable container */}
-                        <div className="pr-3 space-y-3 overflow-y-auto enhanced-scrollbar smooth-scroll max-h-80">
-                          {plan.features.slice(5).map((feature, featureIndex) => (
-                            <div
-                              key={featureIndex + 5}
-                              className={`flex items-start text-sm transition-all duration-300 hover:translate-x-1 ${
-                                feature.highlight
-                                  ? "bg-gradient-to-r from-orange-400/20 to-transparent rounded-lg p-2 -ml-2"
-                                  : ""
-                              }`}
-                            >
-                              {feature.included ? (
-                                <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5 shadow-lg shadow-green-400/30">
-                                  <Check className="w-3 h-3 text-black" />
-                                </div>
-                              ) : (
-                                <div className="w-5 h-5 bg-gray-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
-                                  <X className="w-3 h-3 text-gray-400" />
-                                </div>
-                              )}
-                              <span
-                                className={`${
-                                  feature.included ? "text-white" : "text-gray-500"
-                                } ${
-                                  feature.highlight ? "font-semibold" : ""
-                                } text-sm leading-relaxed flex-1`}
-                              >
-                                {feature.name}
-                                {feature.highlight && (
-                                  <Sparkles className="inline w-3 h-3 ml-1 text-orange-400 animate-pulse" />
-                                )}
-                              </span>
-                            </div>
-                          ))}
-                          
-                          {/* Invisible padding element for better scroll experience */}
-                          <div className="h-2"></div>
-                        </div>
+                        {billingPeriod !== "monthly" && pricingConfig[plan.name][billingPeriod]?.savings > 0 && (
+                          <div className="text-sm font-semibold text-green-400">
+                            Save ₹{pricingConfig[plan.name][billingPeriod].savings.toLocaleString()}
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Expand/Collapse Button */}
-                    {plan.features.length > 5 && (
-                      <button
-                        onClick={() => togglePlanExpansion(index)}
-                        className="flex items-center justify-center w-full pt-3 mt-4 text-sm text-center text-orange-400 transition-colors duration-300 border-t hover:text-orange-300 group border-white/10"
-                      >
-                        <span className="mr-2 font-medium">
-                          {expandedPlans[index] 
-                            ? "Show Less Features" 
-                            : `+ ${plan.features.length - 5} More Features`
-                          }
-                        </span>
-                        {expandedPlans[index] ? (
-                          <ChevronUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform duration-300" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300" />
-                        )}
-                      </button>
-                    )}
+                    {/* Features List with Expandable Functionality */}
+                    <div className="flex-grow mb-6">
+                      {/* Always show first 5 features */}
+                      <div className="mb-3 space-y-3">
+                        {plan.features.slice(0, 5).map((feature, featureIndex) => (
+                          <div
+                            key={featureIndex}
+                            className={`flex items-start text-sm transition-all duration-300 ${
+                              feature.highlight
+                                ? "bg-gradient-to-r from-orange-400/20 to-transparent rounded-lg p-2 -ml-2"
+                                : ""
+                            }`}
+                          >
+                            {feature.included ? (
+                              <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                <Check className="w-3 h-3 text-black" />
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 bg-gray-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                <X className="w-3 h-3 text-gray-400" />
+                              </div>
+                            )}
+                            <span
+                              className={`${
+                                feature.included ? "text-white" : "text-gray-500"
+                              } ${
+                                feature.highlight ? "font-semibold" : ""
+                              } text-sm leading-relaxed flex-1`}
+                            >
+                              {feature.name}
+                              {feature.highlight && (
+                                <Sparkles className="inline w-3 h-3 ml-1 text-orange-400" />
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      
+
+                      {/* Expandable additional features with enhanced scrollable container */}
+                      <div className={`transition-all duration-500 ${
+                        expandedPlans[index] ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
+                      } overflow-hidden`}>
+                        <div className="relative">
+                          {/* Fade gradients for better visual indication */}
+                          <div className="scroll-fade-top"></div>
+                          <div className="scroll-fade-bottom"></div>
+                          
+                          {/* Enhanced scrollable container */}
+                          <div className="pr-3 space-y-3 overflow-y-auto enhanced-scrollbar smooth-scroll max-h-80">
+                            {plan.features.slice(5).map((feature, featureIndex) => (
+                              <div
+                                key={featureIndex + 5}
+                                className={`flex items-start text-sm transition-all duration-300 hover:translate-x-1 ${
+                                  feature.highlight
+                                    ? "bg-gradient-to-r from-orange-400/20 to-transparent rounded-lg p-2 -ml-2"
+                                    : ""
+                                }`}
+                              >
+                                {feature.included ? (
+                                  <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5 shadow-lg shadow-green-400/30">
+                                    <Check className="w-3 h-3 text-black" />
+                                  </div>
+                                ) : (
+                                  <div className="w-5 h-5 bg-gray-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0 mt-0.5">
+                                    <X className="w-3 h-3 text-gray-400" />
+                                  </div>
+                                )}
+                                <span
+                                  className={`${
+                                    feature.included ? "text-white" : "text-gray-500"
+                                  } ${
+                                    feature.highlight ? "font-semibold" : ""
+                                  } text-sm leading-relaxed flex-1`}
+                                >
+                                  {feature.name}
+                                  {feature.highlight && (
+                                    <Sparkles className="inline w-3 h-3 ml-1 text-orange-400 animate-pulse" />
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                            
+                            {/* Invisible padding element for better scroll experience */}
+                            <div className="h-2"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Expand/Collapse Button with useTransition */}
+                      {plan.features.length > 5 && (
+                        <button
+                          onClick={() => togglePlanExpansion(index)}
+                          disabled={isPending}
+                          className={`flex items-center justify-center w-full pt-3 mt-4 text-sm text-center text-orange-400 transition-colors duration-300 border-t hover:text-orange-300 group border-white/10 ${
+                            isPending ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+                          }`}
+                        >
+                          <span className="mr-2 font-medium">
+                            {expandedPlans[index] 
+                              ? "Show Less Features" 
+                              : `+ ${plan.features.length - 5} More Features`
+                            }
+                          </span>
+                          {expandedPlans[index] ? (
+                            <ChevronUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform duration-300" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+
+                    <button
+                      className={`group w-full py-4 px-6 rounded-xl font-bold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden mt-auto ${
+                        plan.popular
+                          ? "bg-gradient-to-r from-orange-400 to-pink-500 text-black hover:from-orange-500 hover:to-pink-600 shadow-xl shadow-orange-500/30"
+                          : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/40"
+                      }`}
+                    >
+                      <span className="relative z-10 flex items-center justify-center">
+                        {plan.buttonText}
+                        <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                      </span>
+                      <div className="absolute inset-0 transition-transform duration-700 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full"></div>
+                    </button>
                   </div>
+                </div>
+              </Suspense>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                  {/* <button
-                    className={`group w-full py-4 px-6 rounded-xl font-bold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden mt-auto ${
-                      plan.popular
-                        ? "bg-gradient-to-r from-orange-400 to-pink-500 text-black hover:from-orange-500 hover:to-pink-600 shadow-xl shadow-orange-500/30"
-                        : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/40"
-                    }`}
-                  > */}
-                   <button
-                  onClick={() => handlePlanSelection(plan.name)}
-                  className={`group w-full py-4 px-6 rounded-xl font-bold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden mt-auto ${
-                    plan.popular
-                      ? "bg-gradient-to-r from-orange-400 to-pink-500 text-black hover:from-orange-500 hover:to-pink-600 shadow-xl shadow-orange-500/30"
-                      : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/40"
-                  }`}
+      {/* Enhanced Features Section - Lazy loaded */}
+      <Suspense fallback={
+        <section className="relative z-10 py-20 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
+          <div className="container px-6 mx-auto">
+            <div className="mb-20 text-center">
+              <div className="w-2/3 h-12 bg-slate-700 rounded-2xl mx-auto mb-6 animate-pulse"></div>
+              <div className="w-1/2 h-6 bg-slate-700 rounded-xl mx-auto animate-pulse"></div>
+            </div>
+            <div className="grid gap-12 md:grid-cols-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="p-8 border bg-white/5 backdrop-blur-lg rounded-3xl border-white/10 animate-pulse">
+                  <div className="w-16 h-16 bg-slate-700 rounded-2xl mb-6"></div>
+                  <div className="w-3/4 h-6 bg-slate-700 rounded mb-4"></div>
+                  <div className="w-full h-16 bg-slate-700 rounded"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      }>
+        <section className="relative z-10 py-20 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
+          <div className="container px-6 mx-auto">
+            <div className="mb-20 text-center">
+              <h2 className="mb-6 text-5xl font-black text-white">
+                Why Industry Leaders Choose
+                <span className="text-transparent bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text">
+                  {" "}
+                  FitTracker
+                </span>
+              </h2>
+              <p className="max-w-3xl mx-auto text-xl text-white/70">
+                Cutting-edge technology meets intuitive design. Experience the
+                future of gym management.
+              </p>
+            </div>
+
+            <div className="grid gap-12 md:grid-cols-3">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  className={`p-8 transition-all duration-500 border cursor-pointer group bg-white/5 backdrop-blur-lg rounded-3xl border-white/10 hover:border-orange-400/50 hover:scale-105 ${
+                    activeFeature === index ? 'border-orange-400/50 scale-105' : ''
+                  } ${isPending ? 'opacity-70' : 'opacity-100'}`}
+                  onClick={() => handleFeatureClick(index)}
                 >
-                    <span className="relative z-10 flex items-center justify-center">
-                      {plan.buttonText}
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
-                    </span>
-                    <div className="absolute inset-0 transition-transform duration-700 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:translate-x-full"></div>
-                  </button>
+                  <div className="flex items-center justify-center w-16 h-16 mb-6 transition-transform duration-300 bg-gradient-to-r from-orange-400 to-pink-500 rounded-2xl group-hover:scale-110">
+                    <div className="text-black">{feature.icon}</div>
+                  </div>
+                  <h3 className="mb-4 text-2xl font-bold text-white">
+                    {feature.title}
+                  </h3>
+                  <p className="leading-relaxed text-white/70">
+                    {feature.description}
+                  </p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Enhanced Features Section */}
-      <section className="relative z-10 py-20 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
-        <div className="container px-6 mx-auto">
-          <div className="mb-20 text-center">
-            <h2 className="mb-6 text-5xl font-black text-white">
-              Why Industry Leaders Choose
-              <span className="text-transparent bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text">
-                {" "}
-                FitTracker
-              </span>
-            </h2>
-            <p className="max-w-3xl mx-auto text-xl text-white/70">
-              Cutting-edge technology meets intuitive design. Experience the
-              future of gym management.
-            </p>
-          </div>
-
-          <div className="grid gap-12 md:grid-cols-3">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="p-8 transition-all duration-500 border cursor-pointer group bg-white/5 backdrop-blur-lg rounded-3xl border-white/10 hover:border-orange-400/50 hover:scale-105"
-                onClick={() => setActiveFeature(index)}
-              >
-                <div className="flex items-center justify-center w-16 h-16 mb-6 transition-transform duration-300 bg-gradient-to-r from-orange-400 to-pink-500 rounded-2xl group-hover:scale-110">
-                  <div className="text-black">{feature.icon}</div>
-                </div>
-                <h3 className="mb-4 text-2xl font-bold text-white">
-                  {feature.title}
-                </h3>
-                <p className="leading-relaxed text-white/70">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      </Suspense>
     </div>
   );
-};
+});
+
+// Display name for debugging
+PricingPage.displayName = 'PricingPage';
 
 export default PricingPage;

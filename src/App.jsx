@@ -325,8 +325,9 @@ import BasicAnalyticsReports from "./Basic/Features/MemberCrud/Ui/BasicAnalytics
 import MyAnalyticsPage from "./Basic/Features/MemberCrud/Logic/AnalyticsPage";
 import SlotBookingPage from "./Basic/Features/CrowdManagement/Logic/SlotBookingPage";
 import CrowdManagementPage from "./Basic/Features/CrowdManagement/Logic/CrowdManagementPage";
-import AuthModal from "./Auth/Ui/AuthModel";
-import { useState } from "react";
+import ProfileModal from "./Basic/Features/ProfileDropDown/Ui/ProfileModal";
+import EditMemberModal from "./Basic/Features/MemberCrud/Ui/EditMemberModal";
+
 const App = () => {
   const { user, loading, checkAuth, isInitialized } = useAuthStore();
   const location = useLocation();
@@ -384,24 +385,14 @@ const App = () => {
     isEditMemberPath ||
     isPaymentPath;
 
+  // Modal routing support using background locations
+  const state = location.state && location.state;
+
   return (
     <>
       {!shouldHideNav && <Navigation />}
       <ToastContainer />
-        {/* ✅ STEP 2: AuthModal yaha ADD karo - Routes ke BAHAR */}
-      {showAuthModal && (
-        <AuthModal 
-          isOpen={showAuthModal}
-          onClose={() => {
-            setShowAuthModal(false);
-            setSelectedPlan(null);
-          }}
-          mode={authMode}
-          preSelectedPlan={selectedPlan}
-        />
-      )}
-      <Routes>
-        
+      <Routes location={state?.background || location}>
         <Route
           path="/"
           element={user ? <Navigate to="/dashboard" replace /> : <HeroMain />}
@@ -569,6 +560,27 @@ const App = () => {
         <Route path="/unauthorized" element={<div>Unauthorized Access</div>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {state?.background && (
+        <Routes>
+          <Route
+            path="/my-profile"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <ProfileModal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-member/:phoneNumber"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <EditMemberModal />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      )}
     </>
   );
 };
