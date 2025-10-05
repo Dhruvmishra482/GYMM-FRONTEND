@@ -1,5 +1,5 @@
 // src/components/Hero/HeroMain.jsx
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import Navigation from "./Navigation";
 import Home from "./Home";
 import MainFeatures from "./MainFeatures";
@@ -9,19 +9,20 @@ import ContactUs from "../../../Basic/Features/ContactUs/ContactUs";
 import AuthModal from "../../../Auth/Ui/AuthModel";
 import Stats from "./Stats";
 
-
-const HeroMain = () => {
+const HeroMain = memo(() => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState("login");
 
-  const handleOpenAuthModal = (tab = "login") => {
+  // Memoized callback to prevent unnecessary re-renders of child components
+  const handleOpenAuthModal = useCallback((tab = "login") => {
     setAuthModalTab(tab);
     setIsAuthModalOpen(true);
-  };
+  }, []); // Empty dependency array since it doesn't depend on any props or state
 
-  const handleCloseAuthModal = () => {
+  // Memoized callback for closing modal
+  const handleCloseAuthModal = useCallback(() => {
     setIsAuthModalOpen(false);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen text-white bg-black">
@@ -58,6 +59,9 @@ const HeroMain = () => {
       />
     </div>
   );
-};
+});
+
+// Display name for debugging
+HeroMain.displayName = 'HeroMain';
 
 export default HeroMain;

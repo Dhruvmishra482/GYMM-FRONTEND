@@ -1,16 +1,16 @@
 // src/components/Hero/CTA.jsx
-import React from "react";
+import React, { memo, useCallback } from "react";
 import { Rocket, ChevronDown } from "lucide-react";
 
-const CTA = ({ onOpenAuthModal }) => {
-  const handleStartTodayClick = () => {
+const CTA = memo(({ onOpenAuthModal }) => {
+  // Memoized callback for start today click
+  const handleStartTodayClick = useCallback(() => {
     if (onOpenAuthModal) {
       onOpenAuthModal("signup");
     }
-  };
+  }, [onOpenAuthModal]);
 
   return (
-    
     <section className="relative z-10 py-20">
       <div className="container px-6 mx-auto text-center">
         <div className="max-w-4xl mx-auto">
@@ -52,6 +52,9 @@ const CTA = ({ onOpenAuthModal }) => {
       </div>
     </section>
   );
-};
+});
+
+// Display name for debugging
+CTA.displayName = 'CTA';
 
 export default CTA;

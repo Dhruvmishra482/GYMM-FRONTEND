@@ -1,10 +1,9 @@
-// src/components/Hero/Navigation.jsx
-import React, { useState, useEffect } from "react";
+// src/components/Hero/Navigation.jsx - Part 1 (First Half)
+import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Rocket, Menu, X, User, LogIn } from "lucide-react";
 import imagelogo from "../images/Untitled_design-removebg-preview.png"
 
-
-const Navigation = ({ onOpenAuthModal }) => {
+const Navigation = memo(({ onOpenAuthModal }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
@@ -12,97 +11,51 @@ const Navigation = ({ onOpenAuthModal }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthPage, setIsAuthPage] = useState(false);
 
-  useEffect(() => {
-    const currentPath = window.location.pathname;
-    if (currentPath === "/login" || currentPath === "/signup") {
-      setIsAuthPage(true);
-    } else {
-      setIsAuthPage(false);
+  // Memoized navigation items
+  const navItems = useMemo(() => [
+    { name: "Home", id: "home" },
+    { name: "Features", id: "features" },
+    { name: "Pricing", id: "pricing" },
+    { name: "Contact", id: "contact" },
+  ], []);
+
+  // Memoized sections array for scroll detection
+  const sections = useMemo(() => [
+    { id: "home", selector: '[data-section="home"]' },
+    { id: "features", selector: '[data-section="features"]' },
+    { id: "pricing", selector: '[data-section="pricing"]' },
+    { id: "contact", selector: '[data-section="contact"]' },
+  ], []);
+
+  // Memoized callbacks
+  const handleMouseMove = useCallback((e) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    setIsScrolled(window.scrollY > 20);
+  }, []);
+
+  const toggleMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
+  }, []);
+
+  const handleLoginClick = useCallback(() => {
+    if (onOpenAuthModal) {
+      onOpenAuthModal("login");
     }
-  }, [window.location.pathname]);
+    setIsMobileMenuOpen(false);
+  }, [onOpenAuthModal]);
 
-  useEffect(() => {
-    const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  // Enhanced scroll detection for header background
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Check if we're on the main page or a separate page
-  useEffect(() => {
-    const currentPath = window.location.pathname;
-    const isOnMainPage = currentPath === "/" || currentPath === "/home";
-    setIsMainPage(isOnMainPage);
-
-    if (!isOnMainPage) {
-      setActiveSection(""); // Clear active section if not on main page
-    } else {
-      // Check if there's a hash in the URL and scroll to that section
-      const hash = window.location.hash.replace("#", "");
-      if (hash) {
-        // Small delay to ensure DOM is ready
-        setTimeout(() => {
-          scrollToSection(hash);
-          setActiveSection(hash);
-        }, 100);
-      }
+  const handleSignupClick = useCallback(() => {
+    if (onOpenAuthModal) {
+      onOpenAuthModal("signup");
     }
-  }, []);
-
-  // Scroll detection to highlight active section (only on main page)
-  useEffect(() => {
-    if (!isMainPage) return; // Don't run scroll detection on other pages
-
-    const handleScroll = () => {
-      const sections = [
-        {
-          id: "home",
-          element: document.querySelector('[data-section="home"]'),
-        },
-        {
-          id: "features",
-          element: document.querySelector('[data-section="features"]'),
-        },
-        {
-          id: "pricing",
-          element: document.querySelector('[data-section="pricing"]'),
-        },
-        {
-          id: "contact",
-          element: document.querySelector('[data-section="contact"]'),
-        },
-      ];
-
-      const scrollPosition = window.scrollY + 100; // Offset for better UX
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section.element && section.element.offsetTop <= scrollPosition) {
-          setActiveSection(section.id);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Initial check
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isMainPage]);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+    setIsMobileMenuOpen(false);
+  }, [onOpenAuthModal]);
 
   // Enhanced smooth scrolling function OR navigate to main page
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = useCallback((sectionId) => {
     // If we're not on the main page, navigate to main page with hash
     if (!isMainPage) {
       window.location.href = `/home#${sectionId}`;
@@ -124,53 +77,103 @@ const Navigation = ({ onOpenAuthModal }) => {
       window.history.replaceState(null, null, `#${sectionId}`);
     }
     setIsMobileMenuOpen(false); // Close mobile menu after click
-  };
+  }, [isMainPage]);
 
   // Function to check if a nav item is active
-  const isActive = (item) => {
+  const isActive = useCallback((item) => {
     if (!isMainPage) return false; // No highlighting on other pages
     const itemId = item.toLowerCase();
     return activeSection === itemId;
-  };
+  }, [isMainPage, activeSection]);
 
-  const navItems = [
-    { name: "Home", id: "home" },
-    { name: "Features", id: "features" },
-    { name: "Pricing", id: "pricing" },
-    { name: "Contact", id: "contact" },
-  ];
+  // Memoized mouse glow style
+  const mouseGlowStyle = useMemo(() => ({
+    background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,165,0,0.08) 0%, transparent 50%)`,
+  }), [mousePos.x, mousePos.y]);
 
-  // Handle auth modal opening - FIXED: Now passes correct tab
-  const handleLoginClick = () => {
-    if (onOpenAuthModal) {
-      onOpenAuthModal("login"); // Pass "login" tab
+  // Memoized header className
+  const headerClassName = useMemo(() => 
+    `fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-16 ${
+      isAuthPage 
+        ? "bg-black" 
+        : isScrolled 
+          ? "bg-black/20 backdrop-blur-md border-b border-white/10" 
+          : "bg-black/10 backdrop-blur-sm"
+    }`
+  , [isAuthPage, isScrolled]);
+
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    if (currentPath === "/login" || currentPath === "/signup") {
+      setIsAuthPage(true);
+    } else {
+      setIsAuthPage(false);
     }
-    setIsMobileMenuOpen(false);
-  };
+  }, []);
 
-  const handleSignupClick = () => {
-    if (onOpenAuthModal) {
-      onOpenAuthModal("signup"); // Pass "signup" tab
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [handleMouseMove]);
+
+  // Enhanced scroll detection for header background
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // Check if we're on the main page or a separate page
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    const isOnMainPage = currentPath === "/" || currentPath === "/home";
+    setIsMainPage(isOnMainPage);
+
+    if (!isOnMainPage) {
+      setActiveSection(""); // Clear active section if not on main page
+    } else {
+      // Check if there's a hash in the URL and scroll to that section
+      const hash = window.location.hash.replace("#", "");
+      if (hash) {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          scrollToSection(hash);
+          setActiveSection(hash);
+        }, 100);
+      }
     }
-    setIsMobileMenuOpen(false);
-  };
+  }, [scrollToSection]);
+
+  // Scroll detection to highlight active section (only on main page)
+  useEffect(() => {
+    if (!isMainPage) return; // Don't run scroll detection on other pages
+
+    const handleSectionScroll = () => {
+      const sectionsData = sections.map(section => ({
+        ...section,
+        element: document.querySelector(section.selector),
+      }));
+
+      const scrollPosition = window.scrollY + 100; // Offset for better UX
+
+      for (let i = sectionsData.length - 1; i >= 0; i--) {
+        const section = sectionsData[i];
+        if (section.element && section.element.offsetTop <= scrollPosition) {
+          setActiveSection(section.id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleSectionScroll);
+    handleSectionScroll(); // Initial check
+    return () => window.removeEventListener("scroll", handleSectionScroll);
+  }, [isMainPage, sections]);
 
   return (
-   <header 
-  className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-16
-    ${isAuthPage 
-      ? "bg-black" 
-      : isScrolled 
-        ? "bg-black/20 backdrop-blur-md border-b border-white/10" 
-        : "bg-black/10 backdrop-blur-sm"
-    }`}
->
-
+    <header className={headerClassName}>
       <div
         className="absolute inset-0 pointer-events-none opacity-5"
-        style={{
-          background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,165,0,0.08) 0%, transparent 50%)`,
-        }}
+        style={mouseGlowStyle}
       />
 
       <div className="px-4 pt-2 mx-auto max-w-7xl lg:px-6">
@@ -296,6 +299,9 @@ const Navigation = ({ onOpenAuthModal }) => {
       </div>
     </header>
   );
-};
+});
+
+// Display name for debugging
+Navigation.displayName = 'Navigation';
 
 export default Navigation;
