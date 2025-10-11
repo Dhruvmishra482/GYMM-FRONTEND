@@ -15,7 +15,7 @@ const PLAN_FEATURES = {
   BASIC: {
     memberLimit: 150,
     statusFiltering: false,
-    dueMembers: false,
+    dueMembers: true,
     whatsappNotifications: false,
     advancedAnalytics: false,
     inactiveAlerts: false,

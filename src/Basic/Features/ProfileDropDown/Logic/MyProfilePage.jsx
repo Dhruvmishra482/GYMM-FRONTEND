@@ -1,8 +1,6 @@
 // pages/MyProfile.jsx
 import React, { useState, useEffect } from "react";
-
 import MyProfileUI from "../Ui/MyProfileUi";
-
 import {
   getOwnerProfile,
   updateOwnerProfile,
@@ -12,6 +10,7 @@ import {
 const MyProfile = () => {
   // State management
   const [profile, setProfile] = useState(null);
+  const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,15 +40,20 @@ const MyProfile = () => {
   // Fetch owner profile
   const fetchProfile = async () => {
     try {
-      console.log("🔄 Fetching owner profile...");
+      console.log("Fetching owner profile...");
       setIsLoading(true);
       setError("");
 
       const result = await getOwnerProfile();
 
       if (result.success) {
-        console.log("✅ Profile fetched successfully:", result.data);
+        console.log("Profile fetched successfully:", result.data);
+        console.log("Gym details:", result.data.gymDetails);
+        console.log("Gym logo:", result.data.gymDetails?.gymLogo);
+
         setProfile(result.data);
+        setUser(result.data);
+
         setFormData({
           firstName: result.data.firstName || "",
           lastName: result.data.lastName || "",
@@ -57,17 +61,16 @@ const MyProfile = () => {
           email: result.data.email || "",
         });
       } else {
-        console.error("❌ Failed to fetch profile:", result.message);
+        console.error("Failed to fetch profile:", result.message);
         setError(result.message || "Failed to fetch profile");
 
-        // Handle session expiry
         if (result.needsLogin) {
-          console.log("🔒 Session expired, redirecting to login");
+          console.log("Session expired, redirecting to login");
           handleSessionExpiry();
         }
       }
     } catch (err) {
-      console.error("❌ Network error while fetching profile:", err);
+      console.error("Network error while fetching profile:", err);
       setError("Network error. Please try again.");
     } finally {
       setIsLoading(false);
@@ -82,7 +85,7 @@ const MyProfile = () => {
 
   // Start editing mode
   const handleEditClick = () => {
-    console.log("✏️ Starting edit mode");
+    console.log("Starting edit mode");
     setIsEditing(true);
     setError("");
     setSuccess("");
@@ -90,8 +93,7 @@ const MyProfile = () => {
 
   // Cancel editing
   const handleCancel = () => {
-    console.log("❌ Cancelling edit mode");
-    // Reset form data to original values
+    console.log("Cancelling edit mode");
     setFormData({
       firstName: profile?.firstName || "",
       lastName: profile?.lastName || "",
@@ -107,14 +109,13 @@ const MyProfile = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(`📝 Input changed: ${name} = ${value}`);
+    console.log(`Input changed: ${name} = ${value}`);
 
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -122,7 +123,6 @@ const MyProfile = () => {
       }));
     }
 
-    // Clear general error when user starts editing
     if (error) {
       setError("");
     }
@@ -130,14 +130,14 @@ const MyProfile = () => {
 
   // Validate form data
   const validateForm = () => {
-    console.log("🔍 Validating form data:", formData);
+    console.log("Validating form data:", formData);
     const validation = validateProfileData(formData);
     setErrors(validation.errors);
 
     if (!validation.isValid) {
-      console.log("❌ Form validation failed:", validation.errors);
+      console.log("Form validation failed:", validation.errors);
     } else {
-      console.log("✅ Form validation passed");
+      console.log("Form validation passed");
     }
 
     return validation.isValid;
@@ -145,10 +145,10 @@ const MyProfile = () => {
 
   // Save profile changes
   const handleSave = async () => {
-    console.log("💾 Attempting to save profile changes...");
+    console.log("Attempting to save profile changes...");
 
     if (!validateForm()) {
-      console.log("❌ Form validation failed, not saving");
+      console.log("Form validation failed, not saving");
       return;
     }
 
@@ -157,16 +157,18 @@ const MyProfile = () => {
       setError("");
       setSuccess("");
 
-      console.log("📤 Sending profile update request:", formData);
+      console.log("Sending profile update request:", formData);
       const result = await updateOwnerProfile(formData);
 
       if (result.success) {
-        console.log("✅ Profile updated successfully:", result.data);
+        console.log("Profile updated successfully:", result.data);
+        console.log("Updated gym details:", result.data.gymDetails);
+
         setProfile(result.data);
+        setUser(result.data);
         setIsEditing(false);
         setSuccess("Profile updated successfully!");
 
-        // Update form data with the returned data (in case server formatted anything)
         setFormData({
           firstName: result.data.firstName,
           lastName: result.data.lastName,
@@ -174,12 +176,11 @@ const MyProfile = () => {
           email: result.data.email,
         });
       } else {
-        console.error("❌ Profile update failed:", result.message);
+        console.error("Profile update failed:", result.message);
         setError(result.message || "Failed to update profile");
 
-        // Handle validation errors from server
         if (result.validationErrors && result.validationErrors.length > 0) {
-          console.log("📋 Server validation errors:", result.validationErrors);
+          console.log("Server validation errors:", result.validationErrors);
           const serverErrors = {};
           result.validationErrors.forEach((error, index) => {
             serverErrors[`server_${index}`] = error;
@@ -187,14 +188,13 @@ const MyProfile = () => {
           setErrors((prev) => ({ ...prev, ...serverErrors }));
         }
 
-        // Handle session expiry
         if (result.needsLogin) {
-          console.log("🔒 Session expired during update");
+          console.log("Session expired during update");
           handleSessionExpiry();
         }
       }
     } catch (err) {
-      console.error("❌ Network error during profile update:", err);
+      console.error("Network error during profile update:", err);
       setError("Network error. Please try again.");
     } finally {
       setIsSaving(false);
@@ -203,7 +203,7 @@ const MyProfile = () => {
 
   // Refresh profile data
   const handleRefresh = async () => {
-    console.log("🔄 Refreshing profile data...");
+    console.log("Refreshing profile data...");
     await fetchProfile();
   };
 
@@ -248,6 +248,7 @@ const MyProfile = () => {
     profile,
     formData,
     errors,
+    user,
 
     // States
     isLoading,
@@ -272,6 +273,12 @@ const MyProfile = () => {
     clearError: () => setError(""),
     clearSuccess: () => setSuccess(""),
   };
+
+  console.log("MyProfile render - passing user to UI:", {
+    hasUser: !!user,
+    gymLogo: user?.gymDetails?.gymLogo,
+    profileImage: user?.profileImage,
+  });
 
   return <MyProfileUI {...uiProps} />;
 };

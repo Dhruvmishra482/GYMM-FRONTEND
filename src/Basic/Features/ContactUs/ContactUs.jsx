@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  lazy,
+  Suspense,
+} from "react";
 import {
   Mail,
   Phone,
@@ -13,12 +20,13 @@ import {
   CheckCircle,
   Loader2,
   User,
-  Building2
+  Building2,
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../../Auth/Store/AuthStore";
 import { contactFormService } from "./contactFormService";
+import { Link } from "react-router-dom";
 
 // Custom animation hook
 const useAnimation = (delay = 0) => {
@@ -37,9 +45,9 @@ const ContactInfoCard = React.memo(({ info, index }) => {
   const isVisible = useAnimation(index * 100);
 
   return (
-    <div 
+    <div
       className={`relative h-full group transition-all duration-500 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
       <div className="absolute inset-0 transition-all duration-300 bg-gradient-to-r from-orange-500/20 via-pink-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl"></div>
@@ -50,24 +58,22 @@ const ContactInfoCard = React.memo(({ info, index }) => {
         <h3 className="mb-4 text-xl font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
           {info.title}
         </h3>
-        <div className="flex-grow text-sm text-gray-300">
-          {info.content}
-        </div>
+        <div className="flex-grow text-sm text-gray-300">{info.content}</div>
       </div>
     </div>
   );
 });
 
-ContactInfoCard.displayName = 'ContactInfoCard';
+ContactInfoCard.displayName = "ContactInfoCard";
 
 // Memoized Feature Card Component
 const FeatureCard = React.memo(({ feature, index }) => {
   const isVisible = useAnimation(index * 150);
 
   return (
-    <div 
+    <div
       className={`relative group transition-all duration-500 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
       <div
@@ -92,68 +98,74 @@ const FeatureCard = React.memo(({ feature, index }) => {
   );
 });
 
-FeatureCard.displayName = 'FeatureCard';
+FeatureCard.displayName = "FeatureCard";
 
 // Memoized Input Field Component
-const InputField = React.memo(({ 
-  label, 
-  name, 
-  type = "text", 
-  value, 
-  onChange, 
-  error, 
-  placeholder, 
-  disabled, 
-  icon: Icon,
-  required = false 
-}) => {
-  return (
-    <div className="space-y-3">
-      <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-        {Icon && <Icon className="inline w-4 h-4 mr-1" />}
-        {label} {required && '*'}
-      </label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
-          error ? 'border-red-500' : 'border-gray-600/50'
-        } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all`}
-        placeholder={placeholder}
-        disabled={disabled}
-      />
-      {error && (
-        <p className="flex items-center space-x-1 text-sm text-red-400">
-          <AlertCircle className="w-3 h-3" />
-          <span>{error}</span>
-        </p>
-      )}
-    </div>
-  );
-});
+const InputField = React.memo(
+  ({
+    label,
+    name,
+    type = "text",
+    value,
+    onChange,
+    error,
+    placeholder,
+    disabled,
+    icon: Icon,
+    required = false,
+  }) => {
+    return (
+      <div className="space-y-3">
+        <label className="block text-sm font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
+          {Icon && <Icon className="inline w-4 h-4 mr-1" />}
+          {label} {required && "*"}
+        </label>
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
+            error ? "border-red-500" : "border-gray-600/50"
+          } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all`}
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+        {error && (
+          <p className="flex items-center space-x-1 text-sm text-red-400">
+            <AlertCircle className="w-3 h-3" />
+            <span>{error}</span>
+          </p>
+        )}
+      </div>
+    );
+  }
+);
 
-InputField.displayName = 'InputField';
+InputField.displayName = "InputField";
 
 // Memoized Status Message Component
 const StatusMessage = React.memo(({ type, message, details }) => {
-  const isSuccess = type === 'success';
+  const isSuccess = type === "success";
   const Icon = isSuccess ? CheckCircle : AlertCircle;
-  const colorClass = isSuccess ? 'green' : 'red';
+  const colorClass = isSuccess ? "green" : "red";
 
   return (
-    <div className={`flex items-center p-4 mb-8 space-x-3 border rounded-lg bg-${colorClass}-900/30 border-${colorClass}-500/30 animate-fadeIn`}>
+    <div
+      className={`flex items-center p-4 mb-8 space-x-3 border rounded-lg bg-${colorClass}-900/30 border-${colorClass}-500/30 animate-fadeIn`}
+    >
       <Icon className={`flex-shrink-0 w-5 h-5 text-${colorClass}-400`} />
       <div>
         <p className={`font-medium text-${colorClass}-300`}>{message}</p>
-        {details && <p className={`text-sm text-${colorClass}-400`}>{details}</p>}
+        {details && (
+          <p className={`text-sm text-${colorClass}-400`}>{details}</p>
+        )}
       </div>
     </div>
   );
 });
 
-StatusMessage.displayName = 'StatusMessage';
+StatusMessage.displayName = "StatusMessage";
 
 const ContactUs = () => {
   // Get user info from auth store
@@ -168,7 +180,7 @@ const ContactUs = () => {
     inquiry: "general",
     message: "",
     gymName: "",
-    ownerName: ""
+    ownerName: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -177,101 +189,114 @@ const ContactUs = () => {
 
   // Get current location
   const location = useLocation();
-  const showCTA = useMemo(() => location.pathname === "/contact", [location.pathname]);
+  const showCTA = useMemo(
+    () => location.pathname === "/contact",
+    [location.pathname]
+  );
 
   // Animation hook for hero section
   const heroVisible = useAnimation(0);
 
   // Memoized contact info
-  const contactInfo = useMemo(() => [
-    {
-      icon: <Mail className="w-8 h-8" />,
-      title: "Email Support",
-      content: (
-        <div>
-          <p className="mb-2">
-            <strong>General Inquiries:</strong> govind@fittracker.in
-          </p>
-          <p className="mb-2">
-            <strong>Technical Support:</strong> dhruv@fittracker.in
-          </p>
-          <p>
-            <strong>Sales:</strong> sales@fittacker.com
-          </p>
-        </div>
-      ),
-    },
-    {
-      icon: <Phone className="w-8 h-8" />,
-      title: "Phone Support",
-      content: (
-        <div>
-          <p className="mb-2">
-            <strong>Main Line:</strong> +91 62390-38301
-          </p>
-          <p className="mb-2">
-            <strong>Support:</strong> +91 94657-37989
-          </p>
-          <p className="text-sm text-purple-300">
-            Available 24/7 for emergencies
-          </p>
-        </div>
-      ),
-    },
-    {
-      icon: <Clock className="w-8 h-8" />,
-      title: "Business Hours",
-      content: (
-        <div>
-          <p className="mb-2">
-            <strong>Monday - Friday:</strong> 10:00 AM - 11:00 
-          </p>
-          <p className="mb-2">
-            <strong>Saturday:</strong> 08:00 AM - 11:00 PM 
-          </p>
-          <p className="mb-2">
-            <strong>Sunday:</strong> Closed
-          </p>
-          <p className="text-sm text-cyan-300">
-            Emergency support available 24/7
-          </p>
-        </div>
-      ),
-    },
-  ], []);
+  const contactInfo = useMemo(
+    () => [
+      {
+        icon: <Mail className="w-8 h-8" />,
+        title: "Email Support",
+        content: (
+          <div>
+            <p className="mb-2">
+              <strong>General Inquiries:</strong> govind@fittracker.in
+            </p>
+            <p className="mb-2">
+              <strong>Technical Support:</strong> dhruv@fittracker.in
+            </p>
+            <p>
+              <strong>Sales:</strong> sales@fittacker.com
+            </p>
+          </div>
+        ),
+      },
+      {
+        icon: <Phone className="w-8 h-8" />,
+        title: "Phone Support",
+        content: (
+          <div>
+            <p className="mb-2">
+              <strong>Main Line:</strong> +91 62390-38301
+            </p>
+            <p className="mb-2">
+              <strong>Support:</strong> +91 94657-37989
+            </p>
+            <p className="text-sm text-purple-300">
+              Available 24/7 for emergencies
+            </p>
+          </div>
+        ),
+      },
+      {
+        icon: <Clock className="w-8 h-8" />,
+        title: "Business Hours",
+        content: (
+          <div>
+            <p className="mb-2">
+              <strong>Monday - Friday:</strong> 10:00 AM - 11:00
+            </p>
+            <p className="mb-2">
+              <strong>Saturday:</strong> 08:00 AM - 11:00 PM
+            </p>
+            <p className="mb-2">
+              <strong>Sunday:</strong> Closed
+            </p>
+            <p className="text-sm text-cyan-300">
+              Emergency support available 24/7
+            </p>
+          </div>
+        ),
+      },
+    ],
+    []
+  );
 
   // Memoized features
-  const features = useMemo(() => [
-    {
-      icon: <Users className="w-6 h-6" />,
-      title: "Dedicated Success Manager",
-      description: "Personalized guidance to ensure your gym's growth",
-      gradient: "from-orange-400 to-pink-400",
-    },
-    {
-      icon: <Shield className="w-6 h-6" />,
-      title: "Enterprise-Grade Security",
-      description: "Bank-level protection to keep your member data safe",
-      gradient: "from-cyan-400 to-blue-400",
-    },
-    {
-      icon: <Headphones className="w-6 h-6" />,
-      title: "24/7 Priority Support",
-      description: "Instant help anytime via chat, call, or WhatsApp",
-      gradient: "from-purple-400 to-pink-400",
-    },
-  ], []);
+  const features = useMemo(
+    () => [
+      {
+        icon: <Users className="w-6 h-6" />,
+        title: "Dedicated Success Manager",
+        description: "Personalized guidance to ensure your gym's growth",
+        gradient: "from-orange-400 to-pink-400",
+      },
+      {
+        icon: <Shield className="w-6 h-6" />,
+        title: "Enterprise-Grade Security",
+        description: "Bank-level protection to keep your member data safe",
+        gradient: "from-cyan-400 to-blue-400",
+      },
+      {
+        icon: <Headphones className="w-6 h-6" />,
+        title: "24/7 Priority Support",
+        description: "Instant help anytime via chat, call, or WhatsApp",
+        gradient: "from-purple-400 to-pink-400",
+      },
+    ],
+    []
+  );
 
   // Auto-fill form if user is logged in
   useEffect(() => {
     if (isLoggedIn && user && isInitialized) {
-      setFormData(prevData => ({
+      setFormData((prevData) => ({
         ...prevData,
-        name: prevData.name || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-        email: prevData.email || user.email || '',
-        phone: prevData.phone || user.mobileNumber || '',
-        gymName: prevData.gymName || user.gymName || user.businessName || '',
-        ownerName: prevData.ownerName || `${user.firstName || ''} ${user.lastName || ''}`.trim()
+        name:
+          prevData.name ||
+          `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+        email: prevData.email || user.email || "",
+        phone: prevData.phone || user.mobileNumber || "",
+        gymName: prevData.gymName || user.gymName || user.businessName || "",
+        ownerName:
+          prevData.ownerName ||
+          `${user.firstName || ""} ${user.lastName || ""}`.trim(),
       }));
     }
   }, [isLoggedIn, user, isInitialized]);
@@ -279,13 +304,13 @@ const ContactUs = () => {
   // useCallback for event handlers
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
     // Clear error when user starts typing
-    setErrors(prev => {
+    setErrors((prev) => {
       if (prev[name]) {
         const newErrors = { ...prev };
         delete newErrors[name];
@@ -300,72 +325,79 @@ const ContactUs = () => {
     setErrors(validation.errors);
     return validation.isValid;
   }, [formData]);
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    
-    // Reset status
-    setSubmitStatus(null);
-    
-    // Validate form
-    if (!validateForm()) {
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    setIsSubmitting(true);
+      // Reset status
+      setSubmitStatus(null);
 
-    try {
-      // Prepare data for submission
-      const submissionData = {
-        ...formData,
-        // Add user context if logged in
-        ...(isLoggedIn && user && {
-          userContext: {
-            isLoggedIn: true,
-            userId: user._id || user.id,
-            userEmail: user.email,
-            userType: user.accountType || 'owner'
-          }
-        })
-      };
-
-      const result = await contactFormService.submitContactForm(submissionData);
-      
-      setSubmitStatus('success');
-      toast.success('Contact form submitted successfully! We\'ll get back to you within 24 hours.');
-      
-      // Reset form only if user is not logged in (to avoid clearing pre-filled data)
-      if (!isLoggedIn) {
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          subject: "",
-          inquiry: "general",
-          message: "",
-          gymName: "",
-          ownerName: ""
-        });
-      } else {
-        // For logged-in users, only clear the message fields
-        setFormData(prev => ({
-          ...prev,
-          subject: "",
-          message: "",
-          inquiry: "general"
-        }));
+      // Validate form
+      if (!validateForm()) {
+        return;
       }
 
-      console.log("Contact form submitted successfully:", result);
+      setIsSubmitting(true);
 
-    } catch (err) {
-      console.error("Contact form submission error:", err);
-      setSubmitStatus('error');
-      setErrors({ submit: err.message });
-      toast.error(err.message || 'Failed to send message. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [formData, isLoggedIn, user, validateForm]);
+      try {
+        // Prepare data for submission
+        const submissionData = {
+          ...formData,
+          // Add user context if logged in
+          ...(isLoggedIn &&
+            user && {
+              userContext: {
+                isLoggedIn: true,
+                userId: user._id || user.id,
+                userEmail: user.email,
+                userType: user.accountType || "owner",
+              },
+            }),
+        };
+
+        const result = await contactFormService.submitContactForm(
+          submissionData
+        );
+
+        setSubmitStatus("success");
+        toast.success(
+          "Contact form submitted successfully! We'll get back to you within 24 hours."
+        );
+
+        // Reset form only if user is not logged in (to avoid clearing pre-filled data)
+        if (!isLoggedIn) {
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            subject: "",
+            inquiry: "general",
+            message: "",
+            gymName: "",
+            ownerName: "",
+          });
+        } else {
+          // For logged-in users, only clear the message fields
+          setFormData((prev) => ({
+            ...prev,
+            subject: "",
+            message: "",
+            inquiry: "general",
+          }));
+        }
+
+        console.log("Contact form submitted successfully:", result);
+      } catch (err) {
+        console.error("Contact form submission error:", err);
+        setSubmitStatus("error");
+        setErrors({ submit: err.message });
+        toast.error(err.message || "Failed to send message. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, isLoggedIn, user, validateForm]
+  );
 
   return (
     <div className="relative min-h-screen py-10 overflow-hidden bg-black">
@@ -378,9 +410,13 @@ const ContactUs = () => {
 
       <div className="relative z-10 px-6 py-16 mx-auto max-w-7xl">
         {/* Hero Section */}
-        <div className={`mb-16 text-center transition-all duration-1000 ${
-          heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div
+          className={`mb-16 text-center transition-all duration-1000 ${
+            heroVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-8"
+          }`}
+        >
           <div className="inline-flex items-center px-6 py-3 mb-8 space-x-2 border rounded-full bg-gradient-to-r from-orange-600/20 to-pink-600/20 backdrop-blur-sm border-orange-500/30">
             <Sparkles className="w-5 h-5 text-orange-400" />
             <span className="font-semibold text-orange-300">
@@ -468,16 +504,16 @@ const ContactUs = () => {
             </div>
 
             {/* Success/Error Messages */}
-            {submitStatus === 'success' && (
-              <StatusMessage 
+            {submitStatus === "success" && (
+              <StatusMessage
                 type="success"
                 message="Message sent successfully!"
                 details="We'll get back to you within 24 hours."
               />
             )}
 
-            {submitStatus === 'error' && (
-              <StatusMessage 
+            {submitStatus === "error" && (
+              <StatusMessage
                 type="error"
                 message="Failed to send message"
                 details={errors.submit || "Please try again later."}
@@ -593,7 +629,7 @@ const ContactUs = () => {
                     onChange={handleInputChange}
                     rows="6"
                     className={`w-full bg-gray-800/50 backdrop-blur-sm border ${
-                      errors.message ? 'border-red-500' : 'border-gray-600/50'
+                      errors.message ? "border-red-500" : "border-gray-600/50"
                     } rounded-xl px-6 py-4 text-white placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/30 transition-all resize-none`}
                     placeholder="Please provide details about your inquiry, gym size, current challenges, or specific requirements..."
                     disabled={isSubmitting}
@@ -671,8 +707,11 @@ const ContactUs = () => {
                   <span className="relative">Schedule Demo</span>
                 </button>
 
-                <Link to="/pricing"className="relative px-10 py-4 text-lg font-bold text-gray-300 transition-all bg-transparent border-2 border-gray-600 rounded-full group hover:border-purple-400 hover:text-purple-300">
-                   <span className="relative">View Pricing</span>
+                <Link
+                  to="/pricing"
+                  className="relative px-10 py-4 text-lg font-bold text-gray-300 transition-all bg-transparent border-2 border-gray-600 rounded-full group hover:border-purple-400 hover:text-purple-300"
+                >
+                  <span className="relative">View Pricing</span>
                 </Link>
               </div>
             </div>

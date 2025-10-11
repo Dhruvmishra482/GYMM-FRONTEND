@@ -1,8 +1,20 @@
 import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  User, Calendar, DollarSign, Clock, CreditCard,
-  CheckCircle, ArrowLeft, Loader2, Save, AlertCircle,
+  User,
+  Calendar,
+  DollarSign,
+  Clock,
+  CreditCard,
+  CheckCircle,
+  ArrowLeft,
+  Loader2,
+  Save,
+  AlertCircle,
+  Mail,
+  Phone,
+  MapPin,
+  Users,
 } from "lucide-react";
 
 import { getMemberByPhone, editMember } from "../Service/memberService";
@@ -11,7 +23,6 @@ import { getMemberByPhone, editMember } from "../Service/memberService";
 // CUSTOM HOOKS
 // ============================================
 
-// Hook for form data management
 const useFormData = (initialData) => {
   const [formData, setFormData] = useState(initialData);
 
@@ -29,7 +40,6 @@ const useFormData = (initialData) => {
   return { formData, updateField, resetForm };
 };
 
-// Hook for member data fetching
 const useMemberData = (phoneNumber) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -58,6 +68,7 @@ const useMemberData = (phoneNumber) => {
           age: member.age ? member.age.toString() : "",
           gender: member.gender || "",
           address: member.address || "",
+          emergencyContact: member.emergencyContact || "",
           planDuration: member.planDuration || "",
           feesAmount: member.feesAmount ? member.feesAmount.toString() : "",
           nextDueDate: formatDate(member.nextDueDate),
@@ -100,7 +111,7 @@ const LoadingSpinner = memo(() => (
   </div>
 ));
 
-LoadingSpinner.displayName = 'LoadingSpinner';
+LoadingSpinner.displayName = "LoadingSpinner";
 
 const ErrorDisplay = memo(({ error, onBack }) => (
   <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-6">
@@ -122,7 +133,7 @@ const ErrorDisplay = memo(({ error, onBack }) => (
   </div>
 ));
 
-ErrorDisplay.displayName = 'ErrorDisplay';
+ErrorDisplay.displayName = "ErrorDisplay";
 
 const PageHeader = memo(({ onBack, memberName }) => (
   <div className="bg-gradient-to-r from-white via-blue-50 to-white shadow-md border-b border-blue-100">
@@ -145,7 +156,7 @@ const PageHeader = memo(({ onBack, memberName }) => (
   </div>
 ));
 
-PageHeader.displayName = 'PageHeader';
+PageHeader.displayName = "PageHeader";
 
 const MemberInfoCard = memo(({ name, phone, email }) => (
   <div className="bg-gradient-to-r from-white to-blue-50 rounded-lg shadow-md border border-blue-100 p-6 mb-6 hover:shadow-lg transition-all duration-300">
@@ -164,7 +175,7 @@ const MemberInfoCard = memo(({ name, phone, email }) => (
   </div>
 ));
 
-MemberInfoCard.displayName = 'MemberInfoCard';
+MemberInfoCard.displayName = "MemberInfoCard";
 
 const ErrorMessage = memo(({ message }) => {
   if (!message) return null;
@@ -179,91 +190,120 @@ const ErrorMessage = memo(({ message }) => {
   );
 });
 
-ErrorMessage.displayName = 'ErrorMessage';
+ErrorMessage.displayName = "ErrorMessage";
 
-const FormField = memo(({ 
-  label, 
-  icon: Icon, 
-  name, 
-  type = "text",
-  value, 
-  onChange, 
-  options = null,
-  iconColor = "gray-400",
-  hoverColor = "blue-500",
-  focusColor = "blue-500"
-}) => {
-  const handleChange = useCallback((e) => {
-    onChange(e);
-  }, [onChange]);
+const FormField = memo(
+  ({
+    label,
+    icon: Icon,
+    name,
+    type = "text",
+    value,
+    onChange,
+    options = null,
+    iconColor = "gray-400",
+    hoverColor = "blue-500",
+    focusColor = "blue-500",
+  }) => {
+    const handleChange = useCallback(
+      (e) => {
+        onChange(e);
+      },
+      [onChange]
+    );
 
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
-      <div className="relative group">
-        <Icon className={`absolute left-3 top-1/2 -translate-y-1/2 text-${iconColor} w-5 h-5 group-hover:text-${hoverColor} transition-colors`} />
-        
-        {type === "select" ? (
-          <>
-            <select
+    return (
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          {label}
+        </label>
+        <div className="relative group">
+          <Icon
+            className={`absolute left-3 top-1/2 -translate-y-1/2 text-${iconColor} w-5 h-5 group-hover:text-${hoverColor} transition-colors`}
+          />
+
+          {type === "select" ? (
+            <>
+              <select
+                name={name}
+                value={value}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${focusColor} focus:border-${focusColor} transition-all duration-200 hover:border-${hoverColor.replace(
+                  "500",
+                  "400"
+                )} hover:shadow-sm appearance-none bg-white`}
+              >
+                {options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg
+                  className={`w-5 h-5 text-gray-400 group-hover:text-${hoverColor} transition-colors`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </>
+          ) : type === "textarea" ? (
+            <textarea
               name={name}
               value={value}
               onChange={handleChange}
-              className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${focusColor} focus:border-${focusColor} transition-all duration-200 hover:border-${hoverColor.replace('500', '400')} hover:shadow-sm appearance-none bg-white`}
-            >
-              {options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg
-                className={`w-5 h-5 text-gray-400 group-hover:text-${hoverColor} transition-colors`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </>
-        ) : (
-          <input
-            type={type}
-            name={name}
-            value={value}
-            onChange={handleChange}
-            placeholder={`Enter ${label.toLowerCase()}`}
-            className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${focusColor} focus:border-${focusColor} transition-all duration-200 hover:border-${hoverColor.replace('500', '400')} hover:shadow-sm`}
-          />
-        )}
+              placeholder={`Enter ${label.toLowerCase()}`}
+              rows={3}
+              className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${focusColor} focus:border-${focusColor} transition-all duration-200 hover:border-${hoverColor.replace(
+                "500",
+                "400"
+              )} hover:shadow-sm resize-none`}
+            />
+          ) : (
+            <input
+              type={type}
+              name={name}
+              value={value}
+              onChange={handleChange}
+              placeholder={`Enter ${label.toLowerCase()}`}
+              className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-${focusColor} focus:border-${focusColor} transition-all duration-200 hover:border-${hoverColor.replace(
+                "500",
+                "400"
+              )} hover:shadow-sm`}
+            />
+          )}
+        </div>
       </div>
+    );
+  }
+);
+
+FormField.displayName = "FormField";
+
+const ReadOnlyField = memo(
+  ({ label, value, gradient = "from-gray-50 to-blue-50" }) => (
+    <div>
+      <label className="block text-sm font-medium text-gray-500 mb-1">
+        {label}
+      </label>
+      <p
+        className={`text-sm text-gray-900 bg-gradient-to-r ${gradient} px-3 py-2 rounded-lg border border-gray-100`}
+      >
+        {value || "N/A"}
+      </p>
     </div>
-  );
-});
+  )
+);
 
-FormField.displayName = 'FormField';
-
-const ReadOnlyField = memo(({ label, value, gradient = "from-gray-50 to-blue-50" }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-500 mb-1">
-      {label}
-    </label>
-    <p className={`text-sm text-gray-900 bg-gradient-to-r ${gradient} px-3 py-2 rounded-lg border border-gray-100`}>
-      {value || "N/A"}
-    </p>
-  </div>
-));
-
-ReadOnlyField.displayName = 'ReadOnlyField';
+ReadOnlyField.displayName = "ReadOnlyField";
 
 // ============================================
 // MAIN COMPONENT
@@ -272,198 +312,280 @@ ReadOnlyField.displayName = 'ReadOnlyField';
 const EditMemberForm = () => {
   const { phoneNumber } = useParams();
   const navigate = useNavigate();
-  
+
   const { loading, error: fetchError, memberData } = useMemberData(phoneNumber);
   const { formData, updateField, resetForm } = useFormData({
-    name: "", email: "", phoneNo: "", age: "", gender: "",
-    address: "", planDuration: "", feesAmount: "", nextDueDate: "",
-    lastPaidOn: "", paymentStatus: "", joiningDate: "",
-    paymentMethod: "", paymentNotes: "",
+    name: "",
+    email: "",
+    phoneNo: "",
+    age: "",
+    gender: "",
+    address: "",
+    emergencyContact: "",
+    planDuration: "",
+    feesAmount: "",
+    nextDueDate: "",
+    lastPaidOn: "",
+    paymentStatus: "",
+    joiningDate: "",
+    paymentMethod: "",
+    paymentNotes: "",
   });
 
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
-  // Reset form when member data is loaded
   useEffect(() => {
     if (memberData) {
       resetForm(memberData);
     }
   }, [memberData, resetForm]);
 
-  const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    updateField(name, value);
-  }, [updateField]);
+  const handleInputChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      updateField(name, value);
+    },
+    [updateField]
+  );
 
   const handleBack = useCallback(() => {
     navigate(-1);
   }, [navigate]);
 
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    try {
-      setSaving(true);
-      setSubmitError(null);
+      try {
+        setSaving(true);
+        setSubmitError(null);
 
-      const updateData = {};
+        console.log("📤 Submitting form data:", formData);
 
-      if (formData.age && formData.age.trim() !== "") {
-        updateData.age = parseInt(formData.age);
+        // Build update data - send all editable fields
+        const updateData = {};
+
+        if (formData.age && formData.age.trim() !== "") {
+          updateData.age = parseInt(formData.age);
+        }
+
+        if (formData.planDuration && formData.planDuration.trim() !== "") {
+          updateData.planDuration = formData.planDuration;
+        }
+
+        if (formData.feesAmount && formData.feesAmount.trim() !== "") {
+          updateData.feesAmount = parseFloat(formData.feesAmount);
+        }
+
+        if (formData.nextDueDate && formData.nextDueDate.trim() !== "") {
+          updateData.nextDueDate = formData.nextDueDate;
+        }
+
+        if (formData.lastPaidOn && formData.lastPaidOn.trim() !== "") {
+          updateData.lastPaidOn = formData.lastPaidOn;
+        }
+
+        if (formData.paymentStatus && formData.paymentStatus.trim() !== "") {
+          updateData.paymentStatus = formData.paymentStatus;
+        }
+
+        console.log("📦 Final update data:", updateData);
+
+        const result = await editMember(phoneNumber, updateData);
+
+        console.log("📥 Edit result:", result);
+
+        if (result.success) {
+          alert("✅ Member updated successfully!");
+          navigate(-1);
+        } else {
+          setSubmitError(result.message || "Failed to update member");
+        }
+      } catch (err) {
+        setSubmitError("Failed to update member");
+        console.error("❌ Error updating member:", err);
+      } finally {
+        setSaving(false);
       }
-
-      if (formData.gender && formData.gender.trim() !== "") {
-        updateData.gender = formData.gender;
-      }
-
-      if (formData.address && formData.address.trim() !== "") {
-        updateData.address = formData.address.trim();
-      }
-
-      if (formData.planDuration && formData.planDuration.trim() !== "") {
-        updateData.planDuration = formData.planDuration;
-      }
-
-      if (formData.feesAmount && formData.feesAmount.trim() !== "") {
-        updateData.feesAmount = parseFloat(formData.feesAmount);
-      }
-
-      if (formData.nextDueDate && formData.nextDueDate.trim() !== "") {
-        updateData.nextDueDate = formData.nextDueDate;
-      }
-
-      if (formData.lastPaidOn && formData.lastPaidOn.trim() !== "") {
-        updateData.lastPaidOn = formData.lastPaidOn;
-      }
-
-      if (formData.paymentStatus && formData.paymentStatus.trim() !== "") {
-        updateData.paymentStatus = formData.paymentStatus;
-      }
-
-      if (formData.paymentMethod && formData.paymentMethod.trim() !== "") {
-        updateData.paymentMethod = formData.paymentMethod;
-      }
-
-      if (formData.paymentNotes && formData.paymentNotes.trim() !== "") {
-        updateData.paymentNotes = formData.paymentNotes.trim();
-      }
-
-      const result = await editMember(phoneNumber, updateData);
-
-      if (result.success) {
-        alert("Member updated successfully!");
-        navigate(-1);
-      } else {
-        setSubmitError(result.message);
-      }
-    } catch (err) {
-      setSubmitError("Failed to update member");
-      console.error("Error updating member:", err);
-    } finally {
-      setSaving(false);
-    }
-  }, [formData, phoneNumber, navigate]);
+    },
+    [formData, phoneNumber, navigate]
+  );
 
   // Memoized form fields configuration
-  const editableFields = useMemo(() => [
-    {
-      label: "Age",
-      icon: User,
-      name: "age",
-      type: "number",
-      value: formData.age,
-      iconColor: "gray-400",
-      hoverColor: "blue-500",
-      focusColor: "blue-500"
-    },
-    {
-      label: "Plan Duration",
-      icon: Calendar,
-      name: "planDuration",
-      type: "select",
-      value: formData.planDuration,
-      iconColor: "gray-400",
-      hoverColor: "purple-500",
-      focusColor: "purple-500",
-      options: [
-        { value: "", label: "Select plan duration" },
-        { value: "1 month", label: "1 Month" },
-        { value: "3 month", label: "3 Months" },
-        { value: "6 month", label: "6 Months" },
-        { value: "1 year", label: "12 Months" }
-      ]
-    },
-    {
-      label: "Fees Amount",
-      icon: DollarSign,
-      name: "feesAmount",
-      type: "number",
-      value: formData.feesAmount,
-      iconColor: "gray-400",
-      hoverColor: "green-500",
-      focusColor: "green-500"
-    },
-    {
-      label: "Next Due Date",
-      icon: Clock,
-      name: "nextDueDate",
-      type: "date",
-      value: formData.nextDueDate,
-      iconColor: "gray-400",
-      hoverColor: "orange-500",
-      focusColor: "orange-500"
-    },
-    {
-      label: "Last Paid On",
-      icon: CreditCard,
-      name: "lastPaidOn",
-      type: "date",
-      value: formData.lastPaidOn,
-      iconColor: "gray-400",
-      hoverColor: "indigo-500",
-      focusColor: "indigo-500"
-    },
-    {
-      label: "Payment Status",
-      icon: CheckCircle,
-      name: "paymentStatus",
-      type: "select",
-      value: formData.paymentStatus,
-      iconColor: "gray-400",
-      hoverColor: "emerald-500",
-      focusColor: "emerald-500",
-      options: [
-        { value: "", label: "Select payment status" },
-        { value: "Paid", label: "Paid" },
-        { value: "Pending", label: "Pending" },
-        { value: "Overdue", label: "Overdue" }
-      ]
-    }
-  ], [formData]);
+  const editableFields = useMemo(
+    () => [
+      {
+        label: "Name",
+        icon: User,
+        name: "name",
+        type: "text",
+        value: formData.name,
+        iconColor: "gray-400",
+        hoverColor: "blue-500",
+        focusColor: "blue-500",
+      },
+      {
+        label: "Phone Number",
+        icon: Phone,
+        name: "phoneNo",
+        type: "text",
+        value: formData.phoneNo,
+        iconColor: "gray-400",
+        hoverColor: "green-500",
+        focusColor: "green-500",
+      },
+      {
+        label: "Gender",
+        icon: Users,
+        name: "gender",
+        type: "select",
+        value: formData.gender,
+        iconColor: "gray-400",
+        hoverColor: "purple-500",
+        focusColor: "purple-500",
+        options: [
+          { value: "", label: "Select gender" },
+          { value: "Male", label: "Male" },
+          { value: "Female", label: "Female" },
+          { value: "Other", label: "Other" },
+        ],
+      },
+      {
+        label: "Age",
+        icon: User,
+        name: "age",
+        type: "number",
+        value: formData.age,
+        iconColor: "gray-400",
+        hoverColor: "blue-500",
+        focusColor: "blue-500",
+      },
+      {
+        label: "Address",
+        icon: MapPin,
+        name: "address",
+        type: "textarea",
+        value: formData.address,
+        iconColor: "gray-400",
+        hoverColor: "red-500",
+        focusColor: "red-500",
+      },
+      {
+        label: "Plan Duration",
+        icon: Calendar,
+        name: "planDuration",
+        type: "select",
+        value: formData.planDuration,
+        iconColor: "gray-400",
+        hoverColor: "purple-500",
+        focusColor: "purple-500",
+        options: [
+          { value: "", label: "Select plan duration" },
+          { value: "1 month", label: "1 Month" },
+          { value: "3 month", label: "3 Months" },
+          { value: "6 month", label: "6 Months" },
+          { value: "1 year", label: "12 Months" },
+        ],
+      },
+      {
+        label: "Fees Amount",
+        icon: DollarSign,
+        name: "feesAmount",
+        type: "number",
+        value: formData.feesAmount,
+        iconColor: "gray-400",
+        hoverColor: "green-500",
+        focusColor: "green-500",
+      },
+      {
+        label: "Next Due Date",
+        icon: Clock,
+        name: "nextDueDate",
+        type: "date",
+        value: formData.nextDueDate,
+        iconColor: "gray-400",
+        hoverColor: "orange-500",
+        focusColor: "orange-500",
+      },
+      {
+        label: "Last Paid On",
+        icon: CreditCard,
+        name: "lastPaidOn",
+        type: "date",
+        value: formData.lastPaidOn,
+        iconColor: "gray-400",
+        hoverColor: "indigo-500",
+        focusColor: "indigo-500",
+      },
+      {
+        label: "Payment Status",
+        icon: CheckCircle,
+        name: "paymentStatus",
+        type: "select",
+        value: formData.paymentStatus,
+        iconColor: "gray-400",
+        hoverColor: "emerald-500",
+        focusColor: "emerald-500",
+        options: [
+          { value: "", label: "Select payment status" },
+          { value: "Paid", label: "Paid" },
+          { value: "Pending", label: "Pending" },
+          { value: "Overdue", label: "Overdue" },
+        ],
+      },
+    ],
+    [formData]
+  );
 
-  const readOnlyFields = useMemo(() => [
-    { label: "Name", value: formData.name, gradient: "from-gray-50 to-blue-50" },
-    { label: "Email", value: formData.email, gradient: "from-gray-50 to-purple-50" },
-    { label: "Phone Number", value: formData.phoneNo, gradient: "from-gray-50 to-green-50" },
-    { 
-      label: "Joining Date", 
-      value: formData.joiningDate ? new Date(formData.joiningDate).toLocaleDateString() : "N/A",
-      gradient: "from-gray-50 to-orange-50" 
-    },
-    { label: "Gender", value: formData.gender, gradient: "from-gray-50 to-indigo-50" },
-    { label: "Address", value: formData.address, gradient: "from-gray-50 to-pink-50" }
-  ], [formData]);
+  const readOnlyFields = useMemo(
+    () => [
+      {
+        label: "Name",
+        value: formData.name,
+        gradient: "from-gray-50 to-blue-50",
+      },
+      {
+        label: "Email",
+        value: formData.email,
+        gradient: "from-gray-50 to-purple-50",
+      },
+      {
+        label: "Phone Number",
+        value: formData.phoneNo,
+        gradient: "from-gray-50 to-green-50",
+      },
+      {
+        label: "Joining Date",
+        value: formData.joiningDate
+          ? new Date(formData.joiningDate).toLocaleDateString()
+          : "N/A",
+        gradient: "from-gray-50 to-orange-50",
+      },
+      {
+        label: "Gender",
+        value: formData.gender,
+        gradient: "from-gray-50 to-indigo-50",
+      },
+      {
+        label: "Address",
+        value: formData.address,
+        gradient: "from-gray-50 to-pink-50",
+      },
+    ],
+    [formData]
+  );
 
   if (loading) return <LoadingSpinner />;
-  if (fetchError) return <ErrorDisplay error={fetchError} onBack={handleBack} />;
+  if (fetchError)
+    return <ErrorDisplay error={fetchError} onBack={handleBack} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <PageHeader onBack={handleBack} memberName={formData.name} />
 
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <MemberInfoCard 
+        <MemberInfoCard
           name={formData.name}
           phone={formData.phoneNo}
           email={formData.email}

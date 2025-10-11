@@ -120,7 +120,7 @@
 //     <>
 //       {!shouldHideNav && <Navigation />}
 //       <ToastContainer />
-      
+
 //       <Routes>
 //         {/* ========================================
 //             PUBLIC ROUTES (Landing Pages)
@@ -141,7 +141,7 @@
 //         <Route path="/verify-email" element={<VerifyEmailPage />} />
 //         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 //         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-        
+
 //         {/* Redirect old auth routes to home - AuthModal will handle login/signup */}
 //         <Route path="/login" element={<Navigate to="/" replace />} />
 //         <Route path="/signup" element={<Navigate to="/" replace />} />
@@ -157,7 +157,7 @@
 //             </ProtectedRoute>
 //           }
 //         />
-        
+
 //         <Route
 //           path="/add-member"
 //           element={
@@ -166,7 +166,7 @@
 //             </ProtectedRoute>
 //           }
 //         />
-        
+
 //         <Route
 //           path="/edit-member/:phoneNumber"
 //           element={
@@ -175,7 +175,7 @@
 //             </ProtectedRoute>
 //           }
 //         />
-        
+
 //         <Route
 //           path="/search-member"
 //           element={
@@ -184,7 +184,7 @@
 //             </ProtectedRoute>
 //           }
 //         />
-        
+
 //         <Route
 //           path="/due-members"
 //           element={
@@ -241,7 +241,7 @@
 //             </ProtectedRoute>
 //           }
 //         />
-        
+
 //         <Route
 //           path="/payment/success"
 //           element={
@@ -250,7 +250,7 @@
 //             </ProtectedRoute>
 //           }
 //         />
-        
+
 //         <Route
 //           path="/payment/failed"
 //           element={
@@ -283,8 +283,13 @@
 // };
 
 // export default App;
-import { Routes, Route, Navigate, useLocation ,useNavigate} from "react-router-dom";
-
+import {
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import Navigation from "./Components/Hero/UI/Navigation";
 
@@ -327,26 +332,25 @@ import SlotBookingPage from "./Basic/Features/CrowdManagement/Logic/SlotBookingP
 import CrowdManagementPage from "./Basic/Features/CrowdManagement/Logic/CrowdManagementPage";
 import ProfileModal from "./Basic/Features/ProfileDropDown/Ui/ProfileModal";
 import EditMemberModal from "./Basic/Features/MemberCrud/Ui/EditMemberModal";
+import React, { useState } from "react";
 
 const App = () => {
   const { user, loading, checkAuth, isInitialized } = useAuthStore();
   const location = useLocation();
-    const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
   const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
-   
     const initializeAuth = async () => {
       if (!isInitialized) {
-        console.log('🚀 Initializing authentication...');
+        console.log("🚀 Initializing authentication...");
         await checkAuth();
       }
     };
 
     initializeAuth();
-  }, []); 
-
+  }, []);
 
   if (!isInitialized) {
     return (
@@ -374,7 +378,7 @@ const App = () => {
     "/my-analytics",
     "/contact",
     "/pricing",
-    "/forgot-password"
+    "/forgot-password",
   ];
 
   const isEditMemberPath = location.pathname.startsWith("/edit-member");
@@ -402,43 +406,43 @@ const App = () => {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/book-slot" element={<SlotBookingPage />} />
-        <Route 
-  path="/signup/basic" 
-  element={
-    <SignUpRedirect 
-      plan="Basic"
-      setShowAuthModal={setShowAuthModal}
-      setAuthMode={setAuthMode}
-      setSelectedPlan={setSelectedPlan}
-    />
-  } 
-/>
+        <Route
+          path="/signup/basic"
+          element={
+            <SignUpRedirect
+              plan="Basic"
+              setShowAuthModal={setShowAuthModal}
+              setAuthMode={setAuthMode}
+              setSelectedPlan={setSelectedPlan}
+            />
+          }
+        />
 
-<Route 
-  path="/signup/advanced" 
-  element={
-    <SignUpRedirect 
-      plan="Advanced"
-      setShowAuthModal={setShowAuthModal}
-      setAuthMode={setAuthMode}
-      setSelectedPlan={setSelectedPlan}
-    />
-  } 
-/>
+        <Route
+          path="/signup/advanced"
+          element={
+            <SignUpRedirect
+              plan="Advanced"
+              setShowAuthModal={setShowAuthModal}
+              setAuthMode={setAuthMode}
+              setSelectedPlan={setSelectedPlan}
+            />
+          }
+        />
 
-<Route 
-  path="/signup/enterprise" 
-  element={
-    <SignUpRedirect 
-      plan="Enterprise"
-      setShowAuthModal={setShowAuthModal}
-      setAuthMode={setAuthMode}
-      setSelectedPlan={setSelectedPlan}
-    />
-  } 
-/>
+        <Route
+          path="/signup/enterprise"
+          element={
+            <SignUpRedirect
+              plan="Enterprise"
+              setShowAuthModal={setShowAuthModal}
+              setAuthMode={setAuthMode}
+              setSelectedPlan={setSelectedPlan}
+            />
+          }
+        />
 
-{/* Protected routes */}
+        {/* Protected routes */}
 
         {/* Protected routes */}
         <Route
@@ -584,16 +588,21 @@ const App = () => {
     </>
   );
 };
-function SignUpRedirect({ plan, setShowAuthModal, setAuthMode, setSelectedPlan }) {
+function SignUpRedirect({
+  plan,
+  setShowAuthModal,
+  setAuthMode,
+  setSelectedPlan,
+}) {
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     setSelectedPlan(plan);
-    setAuthMode('signup');
+    setAuthMode("signup");
     setShowAuthModal(true);
-    navigate('/', { replace: true });
+    navigate("/", { replace: true });
   }, [plan, navigate, setShowAuthModal, setAuthMode, setSelectedPlan]);
-  
+
   return null;
 }
 
