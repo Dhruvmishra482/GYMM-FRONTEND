@@ -639,18 +639,19 @@ const PricingPage = memo(() => {
         </div>
       </section>
 
-      {/* Pricing Cards - Lazy loaded with useTransition for smooth interactions */}
+      {/* Pricing Cards - Equal Height Fix */}
       <section className="relative z-10 pb-20">
         <div className="container px-6 mx-auto">
-          <div className="grid gap-8 mx-auto lg:grid-cols-3 max-w-7xl">
+          {/* Added items-stretch to make all grid items equal height */}
+          <div className="grid gap-8 mx-auto lg:grid-cols-3 max-w-7xl items-stretch">
             {plans.map((plan, index) => (
               <Suspense key={index} fallback={<PricingCardSkeleton />}>
                 <div
-                  className={`relative group transition-all duration-500 ${
+                  className={`relative group transition-all duration-500 h-full flex ${
                     plan.popular ? "lg:scale-105 lg:-translate-y-2" : ""
                   } ${hoveredCard === index ? "scale-102" : ""} ${
-                    expandedPlans[index] ? "h-auto" : ""
-                  } ${isPending ? "opacity-70" : "opacity-100"} ${
+                    isPending ? "opacity-70" : "opacity-100"
+                  } ${
                     plan.comingSoon ? "pointer-events-none" : "cursor-pointer"
                   }`}
                   onMouseEnter={() =>
@@ -676,14 +677,18 @@ const PricingPage = memo(() => {
                   )}
 
                   {/* Card Content with blur when coming soon */}
-                  <div className={plan.comingSoon ? "filter blur-sm" : ""}>
+                  <div
+                    className={`w-full ${
+                      plan.comingSoon ? "filter blur-sm" : ""
+                    }`}
+                  >
                     {/* Glow effect */}
                     <div
                       className={`absolute -inset-1 bg-gradient-to-r ${plan.color} rounded-2xl blur opacity-0 group-hover:opacity-60 transition-opacity duration-500`}
                     ></div>
 
                     <div
-                      className={`relative bg-black/40 backdrop-blur-2xl rounded-2xl p-6 border transition-all duration-500 flex flex-col min-h-full ${
+                      className={`relative bg-black/40 backdrop-blur-2xl rounded-2xl p-6 border transition-all duration-500 flex flex-col h-full ${
                         plan.popular
                           ? "border-orange-400/50 bg-gradient-to-b from-orange-500/20 via-black/40 to-black/40"
                           : "border-white/20 group-hover:border-white/40"
