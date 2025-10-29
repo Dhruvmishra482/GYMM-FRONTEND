@@ -1,85 +1,255 @@
-// ForgotPasswordUI.jsx - Enhanced with Lazy Loading + Advanced Memoization + useTransition
-import React, { 
-  useState, 
-  useEffect, 
-  useCallback, 
-  useMemo, 
-  memo, 
-  Suspense, 
-  lazy, 
-  useTransition, 
-  startTransition 
-} from 'react';
-import { Mail, ArrowLeft, Shield, Crown, Loader2, CheckCircle, AlertCircle, Dumbbell } from 'lucide-react';
+// ForgotPasswordUI.jsx - Fixed with Visible Input Text
+import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
+import {
+  Mail,
+  ArrowLeft,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 
-// Lazy load sections for better performance
-const SuccessSection = lazy(() => Promise.resolve({
-  default: memo(({ message }) => (
-    <div className="text-center animate-in fade-in duration-500">
-      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <CheckCircle className="h-8 w-8 text-green-600" />
-      </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-        Check Your Email
-      </h3>
-      <p className="text-gray-600 mb-6">
-        {message || "We've sent a password reset link to your email address. Please check your inbox and follow the instructions."}
-      </p>
-      <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border border-green-200">
-        <p className="text-sm text-gray-600">
-          Didn't receive the email? Check your spam folder or try again.
-        </p>
-      </div>
-    </div>
-  ))
-}));
+const ForgotPasswordUI = memo(
+  ({
+    email,
+    setEmail,
+    onSubmit,
+    onBackToLogin,
+    isLoading,
+    error,
+    success,
+    message,
+  }) => {
+    const [mounted, setMounted] = useState(false);
 
-const FormSection = lazy(() => Promise.resolve({
-  default: memo(({ 
-    email, 
-    setEmail, 
-    onSubmit, 
-    isLoading, 
-    error 
-  }) => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Reset Your Password</h3>
-        <p className="text-gray-600 text-sm">
-          Enter your email address and we'll send you a link to reset your password
-        </p>
-      </div>
+    useEffect(() => {
+      setMounted(true);
+    }, []);
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <p className="text-sm text-red-700">{error}</p>
+    // Fixed input style with visible text color
+    const inputStyle = useMemo(
+      () => ({
+        width: "100%",
+        padding: "12px",
+        border: "1px solid #d1d5db",
+        borderRadius: "8px",
+        fontSize: "14px",
+        outline: "none",
+        transition: "border-color 0.2s ease",
+        color: "#111827", // ✅ TEXT COLOR - This was missing!
+        backgroundColor: "#ffffff", // ✅ Background color
+      }),
+      []
+    );
+
+    const handleEmailChange = useCallback(
+      (e) => {
+        setEmail(e.target.value);
+      },
+      [setEmail]
+    );
+
+    const handleSubmit = useCallback(
+      (e) => {
+        e.preventDefault();
+        if (email.trim()) {
+          onSubmit(e);
+        }
+      },
+      [email, onSubmit]
+    );
+
+    const handleBackToLogin = useCallback(() => {
+      onBackToLogin();
+    }, [onBackToLogin]);
+
+    if (success) {
+      return (
+        <div style={{ textAlign: "center", padding: "24px 0" }}>
+          <div
+            style={{
+              width: "64px",
+              height: "64px",
+              backgroundColor: "#d1fae5",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <CheckCircle
+              style={{ width: "32px", height: "32px", color: "#10b981" }}
+            />
           </div>
+          <h3
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#111827",
+              marginBottom: "8px",
+            }}
+          >
+            Check Your Email
+          </h3>
+          <p
+            style={{
+              color: "#6b7280",
+              marginBottom: "24px",
+              lineHeight: "1.5",
+              fontSize: "14px",
+            }}
+          >
+            {message ||
+              "We've sent a password reset link to your email address. Please check your inbox and follow the instructions."}
+          </p>
+          <div
+            style={{
+              backgroundColor: "#f0fdf4",
+              padding: "16px",
+              borderRadius: "8px",
+              border: "1px solid #d1fae5",
+              marginBottom: "24px",
+            }}
+          >
+            <p style={{ color: "#6b7280", fontSize: "14px", margin: 0 }}>
+              Didn't receive the email? Check your spam folder or try again.
+            </p>
+          </div>
+          <button
+            onClick={handleBackToLogin}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              color: "#2563eb",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "500",
+              padding: "8px",
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => (e.target.style.color = "#1d4ed8")}
+            onMouseLeave={(e) => (e.target.style.color = "#2563eb")}
+          >
+            <ArrowLeft size={16} />
+            Back to Login
+          </button>
         </div>
-      )}
+      );
+    }
 
-      <form onSubmit={onSubmit} className="space-y-6">
+    return (
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: "24px", textAlign: "center" }}>
+          <h3
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#111827",
+              marginBottom: "8px",
+            }}
+          >
+            Reset Your Password
+          </h3>
+          <p
+            style={{
+              color: "#6b7280",
+              fontSize: "14px",
+              margin: 0,
+            }}
+          >
+            Enter your email address and we'll send you a link to reset your
+            password
+          </p>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div
+            style={{
+              backgroundColor: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: "8px",
+              padding: "12px",
+              marginBottom: "16px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <AlertCircle
+              style={{
+                width: "20px",
+                height: "20px",
+                color: "#dc2626",
+                flexShrink: 0,
+              }}
+            />
+            <p style={{ color: "#dc2626", fontSize: "14px", margin: 0 }}>
+              {error}
+            </p>
+          </div>
+        )}
+
         {/* Email Input */}
-        <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-            <Mail className="w-4 h-4 text-orange-500" />
+        <div style={{ marginBottom: "16px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "#374151",
+              marginBottom: "8px",
+            }}
+          >
+            <Mail style={{ width: "16px", height: "16px", color: "#6b7280" }} />
             Email Address
           </label>
-          <div className="relative">
+          <div style={{ position: "relative" }}>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 hover:border-orange-400 hover:shadow-sm"
-              placeholder="Enter your email address"
+              style={inputStyle}
+              placeholder="Enter your email"
+              autoComplete="email"
               required
               disabled={isLoading}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#3b82f6";
+                e.stopPropagation();
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#d1d5db";
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
             />
             {email && (
-              <div className="absolute -top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center animate-in zoom-in-50 duration-300">
-                <Mail className="w-3 h-3 text-white" />
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-8px",
+                  right: "8px",
+                  width: "20px",
+                  height: "20px",
+                  backgroundColor: "#10b981",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Mail
+                  style={{ width: "12px", height: "12px", color: "white" }}
+                />
               </div>
             )}
           </div>
@@ -88,199 +258,118 @@ const FormSection = lazy(() => Promise.resolve({
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isLoading}
-          className={`
-            w-full py-4 px-6 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-3
-            ${isLoading
-              ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-              : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white hover:shadow-lg hover:scale-105 active:scale-95'
+          disabled={isLoading || !email.trim()}
+          style={{
+            width: "100%",
+            padding: "12px",
+            backgroundColor: isLoading || !email.trim() ? "#9ca3af" : "#111827",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            fontSize: "16px",
+            fontWeight: "600",
+            cursor: isLoading || !email.trim() ? "not-allowed" : "pointer",
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (!isLoading && email.trim()) {
+              e.target.style.backgroundColor = "#000000";
+              e.target.style.transform = "scale(1.02)";
             }
-          `}
+          }}
+          onMouseLeave={(e) => {
+            if (!isLoading && email.trim()) {
+              e.target.style.backgroundColor = "#111827";
+              e.target.style.transform = "scale(1)";
+            }
+          }}
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  animation: "spin 1s linear infinite",
+                }}
+              />
               Sending Reset Link...
             </>
           ) : (
             <>
-              <Mail className="w-5 h-5" />
+              <Mail style={{ width: "20px", height: "20px" }} />
               Send Reset Link
             </>
           )}
         </button>
-      </form>
-    </div>
-  ))
-}));
 
-const BackgroundAnimation = lazy(() => Promise.resolve({
-  default: memo(() => (
-    <div className="absolute inset-0 pointer-events-none">
-      <div className="absolute top-20 left-20 w-32 h-32 bg-blue-200/30 rounded-full animate-pulse"></div>
-      <div className="absolute top-40 right-32 w-24 h-24 bg-purple-200/40 rounded-full animate-bounce animation-delay-1000"></div>
-      <div className="absolute bottom-32 left-40 w-40 h-40 bg-indigo-200/20 rounded-full animate-pulse animation-delay-2000"></div>
-      <div className="absolute bottom-20 right-20 w-28 h-28 bg-blue-300/30 rounded-full animate-bounce animation-delay-3000"></div>
-    </div>
-  ))
-}));
+        {/* Back to Login */}
+        <div
+          style={{
+            textAlign: "center",
+            paddingTop: "16px",
+            borderTop: "1px solid #e5e7eb",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleBackToLogin}
+            disabled={isLoading}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              color: "#2563eb",
+              background: "none",
+              border: "none",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              fontSize: "14px",
+              fontWeight: "500",
+              margin: "0 auto",
+              padding: "8px",
+              opacity: isLoading ? 0.5 : 1,
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoading) e.target.style.color = "#1d4ed8";
+            }}
+            onMouseLeave={(e) => {
+              if (!isLoading) e.target.style.color = "#2563eb";
+            }}
+          >
+            <ArrowLeft size={16} />
+            Back to Login
+          </button>
+        </div>
 
-// Loading skeletons
-const FormSkeleton = memo(() => (
-  <div className="space-y-6 animate-pulse">
-    <div className="text-center mb-6">
-      <div className="h-6 bg-gray-300 rounded w-1/2 mx-auto mb-2"></div>
-      <div className="h-4 bg-gray-300 rounded w-3/4 mx-auto"></div>
-    </div>
-    <div>
-      <div className="h-4 bg-gray-300 rounded w-1/3 mb-2"></div>
-      <div className="h-12 bg-gray-300 rounded"></div>
-    </div>
-    <div className="h-12 bg-gray-300 rounded"></div>
-  </div>
-));
-FormSkeleton.displayName = 'FormSkeleton';
-
-const SuccessSkeleton = memo(() => (
-  <div className="text-center animate-pulse">
-    <div className="w-16 h-16 bg-gray-300 rounded-full mx-auto mb-4"></div>
-    <div className="h-6 bg-gray-300 rounded w-1/2 mx-auto mb-2"></div>
-    <div className="h-16 bg-gray-300 rounded mb-6"></div>
-    <div className="h-16 bg-gray-300 rounded"></div>
-  </div>
-));
-SuccessSkeleton.displayName = 'SuccessSkeleton';
-
-const ForgotPasswordUI = memo(({ 
-  email, 
-  setEmail, 
-  onSubmit, 
-  onBackToLogin,
-  isLoading, 
-  error, 
-  success, 
-  message 
-}) => {
-  const [mounted, setMounted] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  // Memoized callbacks
-  const handleEmailChange = useCallback((e) => {
-    startTransition(() => {
-      setEmail(e.target.value);
-    });
-  }, [setEmail]);
-
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-    onSubmit(e);
-  }, [onSubmit]);
-
-  const handleBackToLogin = useCallback(() => {
-    startTransition(() => {
-      onBackToLogin();
-    });
-  }, [onBackToLogin]);
-
-  // Memoized styles and classNames
-  const containerClassName = useMemo(() => 
-    `w-full max-w-md transform transition-all duration-1000 ${
-      mounted ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'
-    } ${isPending ? 'opacity-90' : 'opacity-100'}`
-  , [mounted, isPending]);
-
-  const animationStyles = useMemo(() => ({
-    ".animation-delay-1000": { animationDelay: "1s" },
-    ".animation-delay-2000": { animationDelay: "2s" },
-    ".animation-delay-3000": { animationDelay: "3s" }
-  }), []);
-
-  useEffect(() => {
-    startTransition(() => {
-      setMounted(true);
-    });
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Animated Background Elements - Lazy loaded */}
-      <Suspense fallback={null}>
-        <BackgroundAnimation />
-      </Suspense>
-
-      {/* Main Container */}
-      <div className={containerClassName}>
+        <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
         
-        {/* Header Card */}
-        <div className="bg-gradient-to-r from-white to-blue-50 rounded-xl shadow-md border border-blue-100 p-6 mb-6 text-center hover:shadow-lg transition-all duration-300">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg hover:scale-110 transition-transform duration-300">
-            <Crown className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Iron Throne Gym
-          </h1>
-          <p className="text-gray-600 text-sm">Reset your password</p>
-        </div>
+        input::placeholder {
+          color: #9ca3af;
+          opacity: 1;
+        }
+        
+        input:disabled {
+          background-color: #f3f4f6;
+          cursor: not-allowed;
+          opacity: 0.6;
+        }
+      `}</style>
+      </form>
+    );
+  }
+);
 
-        {/* Main Form Card */}
-        <div className="bg-white rounded-xl shadow-lg border border-blue-100 overflow-hidden hover:shadow-xl transition-all duration-300">
-          <div className="bg-gradient-to-r from-orange-500 to-red-600 p-6 text-white">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                <Shield className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h2 className="font-semibold">Forgot Password</h2>
-                <p className="text-orange-100 text-sm">We'll help you recover your account</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6">
-            {/* Success State - Lazy loaded */}
-            {success ? (
-              <Suspense fallback={<SuccessSkeleton />}>
-                <SuccessSection message={message} />
-              </Suspense>
-            ) : (
-              /* Form State - Lazy loaded */
-              <Suspense fallback={<FormSkeleton />}>
-                <FormSection
-                  email={email}
-                  setEmail={handleEmailChange}
-                  onSubmit={handleSubmit}
-                  isLoading={isLoading}
-                  error={error}
-                />
-              </Suspense>
-            )}
-
-            {/* Back to Login */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <button
-                onClick={handleBackToLogin}
-                disabled={isPending}
-                className="w-full flex items-center justify-center gap-2 text-blue-600 hover:text-blue-700 transition-colors group disabled:opacity-70 disabled:cursor-not-allowed"
-              >
-                <ArrowLeft className="h-4 w-4 transform group-hover:-translate-x-1 transition-transform duration-200" />
-                Back to Login
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Help Text Below */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-slate-400">
-            Need help? Contact our support team for assistance
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-// Display name for debugging
-ForgotPasswordUI.displayName = 'ForgotPasswordUI';
+ForgotPasswordUI.displayName = "ForgotPasswordUI";
 
 export default ForgotPasswordUI;
