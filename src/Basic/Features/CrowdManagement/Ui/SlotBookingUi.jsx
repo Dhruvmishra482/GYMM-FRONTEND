@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import SlotSelectionGrid from './SlotSelectionGrid';
-import BookingConfirmation from './BookingConfirmation';
+import React, { useState, useMemo, useCallback } from "react";
+import SlotSelectionGrid from "./slotSelectionGrid";
+import BookingConfirmation from "./BookingConfirmation";
 
 // Custom animation hook
 const useFadeIn = (delay = 0) => {
@@ -24,7 +24,7 @@ const LoadingState = React.memo(() => (
   </div>
 ));
 
-LoadingState.displayName = 'LoadingState';
+LoadingState.displayName = "LoadingState";
 
 // Memoized No Data Component
 const NoDataState = React.memo(() => (
@@ -35,66 +35,62 @@ const NoDataState = React.memo(() => (
   </div>
 ));
 
-NoDataState.displayName = 'NoDataState';
+NoDataState.displayName = "NoDataState";
 
 // Memoized Header Component
 const BookingHeader = React.memo(({ title, gymName, date, subtitle }) => {
   const isVisible = useFadeIn(0);
 
   return (
-    <div className={`bg-white shadow-sm border-b transition-opacity duration-500 ${
-      isVisible ? 'opacity-100' : 'opacity-0'
-    }`}>
+    <div
+      className={`bg-white shadow-sm border-b transition-opacity duration-500 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
       <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">
-            {title || 'Select Your Workout Slot'}
+            {title || "Select Your Workout Slot"}
           </h1>
           <p className="text-gray-600 mt-1">
             {gymName} • {date}
           </p>
-          {subtitle && (
-            <p className="text-sm text-gray-500 mt-2">
-              {subtitle}
-            </p>
-          )}
+          {subtitle && <p className="text-sm text-gray-500 mt-2">{subtitle}</p>}
         </div>
       </div>
     </div>
   );
 });
 
-BookingHeader.displayName = 'BookingHeader';
+BookingHeader.displayName = "BookingHeader";
 
 // Memoized Member Info Component
-const MemberInfo = React.memo(({ memberName, phoneNo, date, currentBooking }) => {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-gray-900">
-            Welcome, {memberName}
-          </h3>
-          <p className="text-sm text-gray-600">
-            {phoneNo}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-600">
-            Date: {date}
-          </p>
-          {currentBooking && (
-            <p className="text-sm font-medium text-blue-600">
-              Current: {currentBooking.slotTime}
-            </p>
-          )}
+const MemberInfo = React.memo(
+  ({ memberName, phoneNo, date, currentBooking }) => {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-gray-900">
+              Welcome, {memberName}
+            </h3>
+            <p className="text-sm text-gray-600">{phoneNo}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-gray-600">Date: {date}</p>
+            {currentBooking && (
+              <p className="text-sm font-medium text-blue-600">
+                Current: {currentBooking.slotTime}
+              </p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
-MemberInfo.displayName = 'MemberInfo';
+MemberInfo.displayName = "MemberInfo";
 
 // Memoized Instructions Component
 const Instructions = React.memo(({ instructions }) => {
@@ -115,7 +111,7 @@ const Instructions = React.memo(({ instructions }) => {
   );
 });
 
-Instructions.displayName = 'Instructions';
+Instructions.displayName = "Instructions";
 
 // Memoized Error Banner Component
 const ErrorBanner = React.memo(({ error }) => {
@@ -128,7 +124,7 @@ const ErrorBanner = React.memo(({ error }) => {
   );
 });
 
-ErrorBanner.displayName = 'ErrorBanner';
+ErrorBanner.displayName = "ErrorBanner";
 
 // Memoized Success Banner Component
 const SuccessBanner = React.memo(({ onClose }) => {
@@ -153,40 +149,42 @@ const SuccessBanner = React.memo(({ onClose }) => {
   );
 });
 
-SuccessBanner.displayName = 'SuccessBanner';
+SuccessBanner.displayName = "SuccessBanner";
 
 // Memoized Current Booking Component
-const CurrentBookingCard = React.memo(({ currentBooking, onCancel, cancellationLoading }) => {
-  const handleCancel = useCallback(() => {
-    onCancel(currentBooking._id);
-  }, [currentBooking._id, onCancel]);
+const CurrentBookingCard = React.memo(
+  ({ currentBooking, onCancel, cancellationLoading }) => {
+    const handleCancel = useCallback(() => {
+      onCancel(currentBooking._id);
+    }, [currentBooking._id, onCancel]);
 
-  if (!currentBooking) return null;
+    if (!currentBooking) return null;
 
-  return (
-    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="font-medium text-yellow-900">
-            Your Current Booking
-          </h4>
-          <p className="text-yellow-800">
-            {currentBooking.slotTime} - {currentBooking.bookingStatus}
-          </p>
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-medium text-yellow-900">
+              Your Current Booking
+            </h4>
+            <p className="text-yellow-800">
+              {currentBooking.slotTime} - {currentBooking.bookingStatus}
+            </p>
+          </div>
+          <button
+            onClick={handleCancel}
+            disabled={cancellationLoading}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 text-sm transition-colors duration-200"
+          >
+            {cancellationLoading ? "Cancelling..." : "Cancel"}
+          </button>
         </div>
-        <button
-          onClick={handleCancel}
-          disabled={cancellationLoading}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 text-sm transition-colors duration-200"
-        >
-          {cancellationLoading ? 'Cancelling...' : 'Cancel'}
-        </button>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
-CurrentBookingCard.displayName = 'CurrentBookingCard';
+CurrentBookingCard.displayName = "CurrentBookingCard";
 
 const SlotBookingUI = ({
   bookingData,
@@ -197,16 +195,25 @@ const SlotBookingUI = ({
   onBookingSuccessAck,
   bookingLoading,
   cancellationLoading,
-  bookingSuccess
+  bookingSuccess,
 }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Memoize computed values
   const slots = useMemo(() => bookingData?.slots || [], [bookingData?.slots]);
-  const currentBooking = useMemo(() => bookingData?.booking?.currentBooking, [bookingData?.booking?.currentBooking]);
-  const preferredSlot = useMemo(() => bookingData?.booking?.pattern?.preferredSlot, [bookingData?.booking?.pattern?.preferredSlot]);
-  const isDisabled = useMemo(() => bookingLoading || cancellationLoading, [bookingLoading, cancellationLoading]);
+  const currentBooking = useMemo(
+    () => bookingData?.booking?.currentBooking,
+    [bookingData?.booking?.currentBooking]
+  );
+  const preferredSlot = useMemo(
+    () => bookingData?.booking?.pattern?.preferredSlot,
+    [bookingData?.booking?.pattern?.preferredSlot]
+  );
+  const isDisabled = useMemo(
+    () => bookingLoading || cancellationLoading,
+    [bookingLoading, cancellationLoading]
+  );
 
   // useCallback for event handlers
   const handleSlotSelect = useCallback((slot) => {
@@ -227,9 +234,12 @@ const SlotBookingUI = ({
     setSelectedSlot(null);
   }, []);
 
-  const handleBookingCancel = useCallback((bookingId) => {
-    onBookingCancel(bookingId);
-  }, [onBookingCancel]);
+  const handleBookingCancel = useCallback(
+    (bookingId) => {
+      onBookingCancel(bookingId);
+    },
+    [onBookingCancel]
+  );
 
   const handleSuccessAck = useCallback(() => {
     onBookingSuccessAck();
