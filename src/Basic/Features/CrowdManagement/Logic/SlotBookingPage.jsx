@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useSlotBookingStore } from '../Store/slotBookingStore';
-import SlotBookingUI from '../Ui/slotBookingUi';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSlotBookingStore } from "../Store/slotBookingStore";
+import SlotBookingUI from "../Ui/SlotBookingUi";
+import { toast } from "react-toastify";
 
 const SlotBookingPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [tokenValidated, setTokenValidated] = useState(false);
-  
+
   const {
     bookingPageData,
     loading,
@@ -22,35 +22,39 @@ const SlotBookingPage = () => {
     bookingError,
     bookingSuccess,
     clearBookingSuccess,
-    cancellationLoading
+    cancellationLoading,
   } = useSlotBookingStore();
 
   // Get token from URL params
-  const token = searchParams.get('token');
+  const token = searchParams.get("token");
 
   // Validate token and load page data
   useEffect(() => {
     const validateAndLoadData = async () => {
       if (!token) {
-        toast.error('Invalid booking link. Please use the link from your WhatsApp message.');
-        navigate('/');
+        toast.error(
+          "Invalid booking link. Please use the link from your WhatsApp message."
+        );
+        navigate("/");
         return;
       }
 
       try {
         clearErrors();
         const data = await loadBookingPage(token);
-        
+
         if (data) {
           setTokenValidated(true);
-          toast.success(`Welcome ${data.member.name}! Select your workout slot.`);
+          toast.success(
+            `Welcome ${data.member.name}! Select your workout slot.`
+          );
         } else {
-          toast.error('Invalid or expired booking link.');
-          navigate('/');
+          toast.error("Invalid or expired booking link.");
+          navigate("/");
         }
       } catch (error) {
-        toast.error(error.message || 'Failed to load booking page');
-        navigate('/');
+        toast.error(error.message || "Failed to load booking page");
+        navigate("/");
       }
     };
 
@@ -67,17 +71,17 @@ const SlotBookingPage = () => {
     try {
       clearErrors();
       const result = await bookSlotTime(slotTime);
-      
+
       if (result) {
         const isUpdate = bookingPageData?.booking?.currentBooking;
         toast.success(
-          isUpdate 
+          isUpdate
             ? `Slot updated to ${slotTime} successfully!`
             : `Slot ${slotTime} booked successfully!`
         );
       }
     } catch (error) {
-      toast.error(error.message || 'Failed to book slot');
+      toast.error(error.message || "Failed to book slot");
     }
   };
 
@@ -86,12 +90,12 @@ const SlotBookingPage = () => {
     try {
       clearErrors();
       const result = await cancelBooking(bookingId);
-      
+
       if (result) {
-        toast.success('Booking cancelled successfully');
+        toast.success("Booking cancelled successfully");
       }
     } catch (error) {
-      toast.error(error.message || 'Failed to cancel booking');
+      toast.error(error.message || "Failed to cancel booking");
     }
   };
 
@@ -107,7 +111,9 @@ const SlotBookingPage = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Validating your booking link...</p>
-          <p className="text-sm text-gray-500 mt-2">Please wait while we verify your access</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Please wait while we verify your access
+          </p>
         </div>
       </div>
     );
@@ -119,7 +125,9 @@ const SlotBookingPage = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <div className="space-y-2 text-sm text-gray-500">
             <p>Please check:</p>
@@ -130,7 +138,7 @@ const SlotBookingPage = () => {
             </ul>
           </div>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
           >
             Go to Home
