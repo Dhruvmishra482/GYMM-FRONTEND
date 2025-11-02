@@ -66,9 +66,9 @@ const LoginForm = lazy(() =>
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck="false"
-              readOnly={false}
-              onFocus={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
+              // readOnly={false}
+              // onFocus={(e) => e.stopPropagation()}
+              // onClick={(e) => e.stopPropagation()}
             />
           </div>
 
@@ -818,6 +818,10 @@ const AuthModal = memo(
         fontSize: "14px",
         outline: "none",
         transition: "border-color 0.2s ease",
+        color: "#111827", // ADD THIS
+        backgroundColor: "#ffffff", // ADD THIS
+        WebkitTextFillColor: "#111827", // ADD THIS
+        WebkitBoxShadow: "0 0 0 1000px white inset",
       }),
       []
     );
