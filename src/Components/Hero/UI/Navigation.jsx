@@ -1,4 +1,4 @@
-// src/components/Hero/Navigation.jsx - Part 1 (First Half)
+// src/components/Hero/Navigation.jsx - Fully Responsive Version
 import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Rocket, Menu, X, User, LogIn } from "lucide-react";
 import imagelogo from "../images/Untitled_design-removebg-preview.png"
@@ -91,9 +91,9 @@ const Navigation = memo(({ onOpenAuthModal }) => {
     background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,165,0,0.08) 0%, transparent 50%)`,
   }), [mousePos.x, mousePos.y]);
 
-  // Memoized header className
+  // Memoized header className - Responsive
   const headerClassName = useMemo(() => 
-    `fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-16 ${
+    `fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-14 sm:h-16 ${
       isAuthPage 
         ? "bg-black" 
         : isScrolled 
@@ -176,31 +176,35 @@ const Navigation = memo(({ onOpenAuthModal }) => {
         style={mouseGlowStyle}
       />
 
-      <div className="px-4 pt-2 mx-auto max-w-7xl lg:px-6">
-        <div className="flex items-center justify-between h-14">
-          {/* Logo Section - Minimal */}
+      <div className="px-3 sm:px-4 md:px-6 pt-1 sm:pt-2 mx-auto max-w-7xl">
+        <div className="flex items-center justify-between h-12 sm:h-14">
+          {/* Logo Section - Responsive */}
           <button
             onClick={() =>
               isMainPage
                 ? scrollToSection("home")
                 : (window.location.href = "/home")
             }
-            className="flex items-center space-x-2 group"
+            className="flex items-center space-x-1 sm:space-x-2 group"
           >
-             <img src={imagelogo} alt="FitTracker Logo" className="w-auto h-20"/>
+            <img 
+              src={imagelogo} 
+              alt="FitTracker Logo" 
+              className="w-auto h-14 sm:h-16 md:h-18 lg:h-20"
+            />
             
-            <span className="hidden text-xl font-bold text-white sm:block">
+            <span className="hidden sm:block text-base md:text-lg lg:text-xl font-bold text-white">
               FitTracker
             </span>
           </button>
 
-          {/* Desktop Navigation - Clean */}
-          <nav className="items-center hidden space-x-8 md:flex">
+          {/* Desktop Navigation - Responsive spacing */}
+          <nav className="items-center hidden md:flex space-x-4 lg:space-x-6 xl:space-x-8">
             {navItems.map((item) => (
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.id)}
-                className={`text-xl font-medium transition-colors duration-200 ${
+                className={`text-base lg:text-lg xl:text-xl font-medium transition-colors duration-200 ${
                   isActive(item.name)
                     ? "text-white"
                     : "text-gray-300 hover:text-white"
@@ -211,38 +215,38 @@ const Navigation = memo(({ onOpenAuthModal }) => {
             ))}
           </nav>
 
-          {/* Desktop Auth Buttons - Minimal */}
-          <div className="items-center hidden space-x-3 md:flex">
+          {/* Desktop Auth Buttons - Responsive */}
+          <div className="items-center hidden md:flex space-x-2 lg:space-x-3">
             <button
               onClick={handleLoginClick}
-              className="text-xl font-medium text-gray-300 hover:text-white transition-colors duration-200 px-3 py-1.5"
+              className="text-base lg:text-lg xl:text-xl font-medium text-gray-300 hover:text-white transition-colors duration-200 px-2 lg:px-3 py-1 lg:py-1.5"
             >
               Login
             </button>
             
             <button
               onClick={handleSignupClick}
-              className="bg-white/90 backdrop-blur-sm text-black text-xl font-medium px-4 py-1.5 rounded-full hover:bg-white transition-all duration-200"
+              className="bg-white/90 backdrop-blur-sm text-black text-base lg:text-lg xl:text-xl font-medium px-3 lg:px-4 py-1 lg:py-1.5 rounded-full hover:bg-white transition-all duration-200"
             >
               Sign up
             </button>
           </div>
 
-          {/* Mobile Menu Button - Minimal */}
+          {/* Mobile Menu Button - Responsive */}
           <button
             onClick={toggleMobileMenu}
-            className="p-2 text-gray-300 transition-colors duration-200 md:hidden hover:text-white"
+            className="p-1.5 sm:p-2 text-gray-300 transition-colors duration-200 md:hidden hover:text-white"
           >
             {isMobileMenuOpen ? (
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             ) : (
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             )}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay - Clean */}
+      {/* Mobile Menu Overlay - Responsive */}
       <div
         className={`md:hidden fixed inset-0 z-40 transition-opacity duration-200 ${
           isMobileMenuOpen
@@ -255,20 +259,20 @@ const Navigation = memo(({ onOpenAuthModal }) => {
           onClick={toggleMobileMenu}
         />
 
-        {/* Mobile Menu Panel - More transparent */}
+        {/* Mobile Menu Panel - Responsive width */}
         <div
-          className={`absolute top-14 right-0 w-64 bg-black/30 backdrop-blur-xl border-l border-white/20 h-screen transform transition-transform duration-200 ${
+          className={`absolute top-12 sm:top-14 right-0 w-64 sm:w-72 bg-black/30 backdrop-blur-xl border-l border-white/20 h-screen transform transition-transform duration-200 ${
             isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="p-4 space-y-4">
-            {/* Mobile Navigation Links */}
-            <nav className="space-y-2">
+          <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+            {/* Mobile Navigation Links - Responsive text */}
+            <nav className="space-y-1.5 sm:space-y-2">
               {navItems.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => scrollToSection(item.id)}
-                  className={`block w-full text-left text-sm font-medium py-2 px-3 rounded transition-colors duration-200 ${
+                  className={`block w-full text-left text-sm sm:text-base font-medium py-2 sm:py-2.5 px-3 rounded transition-colors duration-200 ${
                     isActive(item.name)
                       ? "text-white bg-white/10"
                       : "text-gray-300 hover:text-white hover:bg-white/5"
@@ -279,17 +283,18 @@ const Navigation = memo(({ onOpenAuthModal }) => {
               ))}
             </nav>
 
-            <div className="pt-4 space-y-2 border-t border-gray-700/50">
+            {/* Mobile Auth Buttons - Responsive */}
+            <div className="pt-3 sm:pt-4 space-y-2 border-t border-gray-700/50">
               <button
                 onClick={handleLoginClick}
-                className="block w-full px-3 py-2 text-sm font-medium text-center text-gray-400 transition-colors duration-200 rounded hover:text-orange-300 hover:bg-gray-800/30"
+                className="block w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-center text-gray-400 transition-colors duration-200 rounded hover:text-orange-300 hover:bg-gray-800/30"
               >
                 Login
               </button>
 
               <button
                 onClick={handleSignupClick}
-                className="block w-full px-3 py-2 text-sm font-medium text-center text-white transition-colors duration-200 bg-orange-500 rounded hover:bg-orange-600"
+                className="block w-full px-3 py-2 sm:py-2.5 text-sm sm:text-base font-medium text-center text-white transition-colors duration-200 bg-orange-500 rounded hover:bg-orange-600"
               >
                 Sign up
               </button>
