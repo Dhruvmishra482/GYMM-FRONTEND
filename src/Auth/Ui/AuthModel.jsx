@@ -287,6 +287,10 @@ const SignupForm = lazy(() =>
         onTabChange,
         inputStyle,
         smallInputStyle,
+        showSignupPassword,
+        setShowSignupPassword,
+        showSignupConfirmPassword,
+        setShowSignupConfirmPassword,
       }) => (
         <form onSubmit={handleSignup}>
           {/* Name Fields */}
@@ -394,14 +398,37 @@ const SignupForm = lazy(() =>
             >
               Password
             </label>
-            <input
-              type="password"
-              value={signupPassword}
-              onChange={(e) => setSignupPassword(e.target.value)}
-              style={inputStyle}
-              placeholder="Create a password"
-              required
-            />
+
+            <div style={{ position: "relative" }}>
+              <input
+                type={showSignupPassword ? "text" : "password"}
+                value={signupPassword}
+                onChange={(e) => setSignupPassword(e.target.value)}
+                style={{
+                  ...inputStyle,
+                  paddingRight: "48px",
+                }}
+                placeholder="Create a password"
+                required
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowSignupPassword(!showSignupPassword)}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#6b7280",
+                }}
+              >
+                {showSignupPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           {/* Confirm Password */}
@@ -417,14 +444,43 @@ const SignupForm = lazy(() =>
             >
               Confirm Password
             </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              style={inputStyle}
-              placeholder="Confirm your password"
-              required
-            />
+
+            <div style={{ position: "relative" }}>
+              <input
+                type={showSignupConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{
+                  ...inputStyle,
+                  paddingRight: "48px",
+                }}
+                placeholder="Confirm your password"
+                required
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowSignupConfirmPassword(!showSignupConfirmPassword)
+                }
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#6b7280",
+                }}
+              >
+                {showSignupConfirmPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Email Updates Checkbox */}
@@ -744,6 +800,9 @@ const AuthModal = memo(
     const [signupPassword, setSignupPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [emailUpdates, setEmailUpdates] = useState(false);
+    const [showSignupPassword, setShowSignupPassword] = useState(false);
+    const [showSignupConfirmPassword, setShowSignupConfirmPassword] =
+      useState(false);
 
     // OTP state
     const [otp, setOtp] = useState("");
@@ -1318,6 +1377,12 @@ const AuthModal = memo(
                       onTabChange={handleTabChange}
                       inputStyle={inputStyle}
                       smallInputStyle={smallInputStyle}
+                      showSignupPassword={showSignupPassword}
+                      setShowSignupPassword={setShowSignupPassword}
+                      showSignupConfirmPassword={showSignupConfirmPassword}
+                      setShowSignupConfirmPassword={
+                        setShowSignupConfirmPassword
+                      }
                     />
                   </Suspense>
                 )}
