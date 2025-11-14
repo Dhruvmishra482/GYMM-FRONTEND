@@ -332,6 +332,9 @@ import SlotBookingPage from "./Basic/Features/CrowdManagement/Logic/SlotBookingP
 import CrowdManagementPage from "./Basic/Features/CrowdManagement/Logic/CrowdManagementPage";
 import ProfileModal from "./Basic/Features/ProfileDropDown/Ui/ProfileModal";
 import EditMemberModal from "./Basic/Features/MemberCrud/Ui/EditMemberModal";
+import WorkoutPlanPage from "./Advance/Features/Aiworkout/logic/WorkoutPlanPage";
+
+import DietPlanPage from "./Advance/Features/AiDietPlan/logic/DietPlanPage";
 import React, { useState } from "react";
 
 const App = () => {
@@ -583,6 +586,22 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route 
+  path="/workout-plans" 
+  element={
+    <ProtectedRoute allowedRoles={["owner"]}>
+      <WorkoutPlanPage />
+    </ProtectedRoute>
+  } 
+/>
+<Route 
+  path="/diet-plans" 
+  element={
+    <ProtectedRoute allowedRoles={["owner"]}>
+      <DietPlanPage />
+    </ProtectedRoute>
+  } 
+/>
         </Routes>
       )}
     </>

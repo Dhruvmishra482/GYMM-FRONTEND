@@ -222,7 +222,7 @@ const PricingPage = memo(() => {
             highlight: true,
           },
           {
-            name: "Basic AI workout recommendations",
+            name: "Basic  workout recommendations",
             included: true,
             highlight: true,
           },
