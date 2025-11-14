@@ -1,3 +1,4 @@
+// src/components/BasicAnalyticsReports.jsx - Fully Responsive Version
 import React, { useState, useMemo, useRef, useEffect, useCallback, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { hasFeatureAccess } from '../../../../utils/planUtils';
@@ -8,10 +9,9 @@ import {
 } from 'lucide-react';
 
 // ============================================
-// CUSTOM HOOKS
+// CUSTOM HOOKS (APIs unchanged)
 // ============================================
 
-// Web Worker for heavy analytics calculations
 const useAnalyticsWorker = () => {
   const workerRef = useRef(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -150,7 +150,6 @@ const useAnalyticsWorker = () => {
   return { calculateAnalytics, isProcessing };
 };
 
-// Custom hook for profile management
 const useProfileManagement = (user, profileProps, navigate) => {
   const profileRef = useRef(null);
   const [localProfileOpen, setLocalProfileOpen] = useState(false);
@@ -217,7 +216,6 @@ const useProfileManagement = (user, profileProps, navigate) => {
   };
 };
 
-// Custom hook for time management
 const useCurrentTime = () => {
   const getCurrentTime = useCallback(() => {
     const now = new Date();
@@ -241,12 +239,12 @@ const useCurrentTime = () => {
 };
 
 // ============================================
-// MEMOIZED CHART COMPONENTS
+// RESPONSIVE CHART COMPONENTS
 // ============================================
 
 const LineChart = memo(({ data }) => (
-  <div className="relative h-48 rounded-lg bg-gradient-to-br from-blue-50 to-white">
-    <svg className="w-full h-full" viewBox="0 0 500 200">
+  <div className="relative h-32 sm:h-40 md:h-48 rounded-lg bg-gradient-to-br from-blue-50 to-white">
+    <svg className="w-full h-full" viewBox="0 0 500 200" preserveAspectRatio="xMidYMid meet">
       {[0, 1, 2, 3, 4].map((val) => (
         <line 
           key={val}
@@ -300,7 +298,7 @@ const LineChart = memo(({ data }) => (
           x={70 + (index * 60)} 
           y="190" 
           fill="#9CA3AF" 
-          fontSize="11" 
+          fontSize="10" 
           textAnchor="middle"
         >
           {item.month}
@@ -316,8 +314,8 @@ const BarChart = memo(({ data }) => {
   const maxValue = Math.max(...data.map(d => d.value), 1);
   
   return (
-    <div className="relative h-48 rounded-lg bg-gradient-to-br from-purple-50 to-white">
-      <svg className="w-full h-full" viewBox="0 0 500 200">
+    <div className="relative h-32 sm:h-40 md:h-48 rounded-lg bg-gradient-to-br from-purple-50 to-white">
+      <svg className="w-full h-full" viewBox="0 0 500 200" preserveAspectRatio="xMidYMid meet">
         {[0, 0.5, 1, 1.5, 2].map((val) => (
           <line 
             key={val}
@@ -371,7 +369,7 @@ const BarChart = memo(({ data }) => {
                 x={x + barWidth/2} 
                 y="190" 
                 fill="#9CA3AF" 
-                fontSize="11" 
+                fontSize="10" 
                 textAnchor="middle"
               >
                 {item.name}
@@ -391,7 +389,7 @@ const DonutChart = memo(({ data, title }) => {
   
   if (total === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-gray-500 rounded-lg bg-gradient-to-br from-gray-50 to-white">
+      <div className="flex items-center justify-center h-48 sm:h-56 md:h-64 text-sm sm:text-base text-gray-500 rounded-lg bg-gradient-to-br from-gray-50 to-white">
         No data available
       </div>
     );
@@ -405,50 +403,158 @@ const DonutChart = memo(({ data, title }) => {
     '36-45': '#10B981', '45+': '#EF4444'
   };
 
+  // Responsive SVG sizes
+  const svgSize = {
+    mobile: { size: 160, cx: 80, cy: 80, r: 60, strokeWidth: 28 },
+    tablet: { size: 180, cx: 90, cy: 90, r: 68, strokeWidth: 30 },
+    desktop: { size: 200, cx: 100, cy: 100, r: 75, strokeWidth: 32 }
+  };
+
   return (
-    <div className="relative flex items-center justify-center h-48 rounded-lg bg-gradient-to-br from-gray-50 to-white">
-      <svg width="180" height="180" className="transform -rotate-90">
-        <circle cx="90" cy="90" r="60" fill="none" stroke="#F3F4F6" strokeWidth="30" />
-        {data.map((item, index) => {
-          const percentage = (item.value / total) * 100;
-          const angle = (percentage / 100) * 360;
-          const strokeDasharray = `${(angle / 360) * 377} 377`;
-          const strokeDashoffset = -currentAngle * (377 / 360);
-          currentAngle += angle;
-          
-          return (
-            <circle
-              key={index}
-              cx="90"
-              cy="90"
-              r="60"
-              fill="none"
-              stroke={colors[item.name] || '#8B5CF6'}
-              strokeWidth="30"
-              strokeDasharray={strokeDasharray}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-all duration-1000"
-            />
-          );
-        })}
-      </svg>
-      
-      <div className="absolute text-center transform rotate-0">
-        <div className="text-2xl font-bold text-gray-900">{total}</div>
-        <div className="text-sm text-gray-500">Total</div>
+    <div className="relative flex flex-col items-center justify-center h-48 sm:h-56 md:h-64 rounded-lg bg-gradient-to-br from-gray-50 to-white py-4 sm:py-6">
+      {/* Donut Chart SVG - Mobile */}
+      <div className="relative flex items-center justify-center mb-3 sm:mb-4 md:hidden">
+        <svg width={svgSize.mobile.size} height={svgSize.mobile.size} className="transform -rotate-90">
+          <circle 
+            cx={svgSize.mobile.cx} 
+            cy={svgSize.mobile.cy} 
+            r={svgSize.mobile.r} 
+            fill="none" 
+            stroke="#F3F4F6" 
+            strokeWidth={svgSize.mobile.strokeWidth} 
+          />
+          {data.map((item, index) => {
+            const percentage = (item.value / total) * 100;
+            const angle = (percentage / 100) * 360;
+            const circumference = 2 * Math.PI * svgSize.mobile.r;
+            const strokeDasharray = `${(angle / 360) * circumference} ${circumference}`;
+            const strokeDashoffset = -currentAngle * (circumference / 360);
+            currentAngle += angle;
+            
+            return (
+              <circle
+                key={index}
+                cx={svgSize.mobile.cx}
+                cy={svgSize.mobile.cy}
+                r={svgSize.mobile.r}
+                fill="none"
+                stroke={colors[item.name] || '#8B5CF6'}
+                strokeWidth={svgSize.mobile.strokeWidth}
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-1000"
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute text-center">
+          <div className="text-3xl font-bold text-gray-900">{total}</div>
+          <div className="text-sm text-gray-500">Total</div>
+        </div>
+      </div>
+
+      {/* Donut Chart SVG - Tablet */}
+      <div className="relative items-center justify-center mb-4 hidden md:flex lg:hidden">
+        <svg width={svgSize.tablet.size} height={svgSize.tablet.size} className="transform -rotate-90">
+          <circle 
+            cx={svgSize.tablet.cx} 
+            cy={svgSize.tablet.cy} 
+            r={svgSize.tablet.r} 
+            fill="none" 
+            stroke="#F3F4F6" 
+            strokeWidth={svgSize.tablet.strokeWidth} 
+          />
+          {(() => {
+            let angle = 0;
+            return data.map((item, index) => {
+              const percentage = (item.value / total) * 100;
+              const segmentAngle = (percentage / 100) * 360;
+              const circumference = 2 * Math.PI * svgSize.tablet.r;
+              const strokeDasharray = `${(segmentAngle / 360) * circumference} ${circumference}`;
+              const strokeDashoffset = -angle * (circumference / 360);
+              angle += segmentAngle;
+              
+              return (
+                <circle
+                  key={index}
+                  cx={svgSize.tablet.cx}
+                  cy={svgSize.tablet.cy}
+                  r={svgSize.tablet.r}
+                  fill="none"
+                  stroke={colors[item.name] || '#8B5CF6'}
+                  strokeWidth={svgSize.tablet.strokeWidth}
+                  strokeDasharray={strokeDasharray}
+                  strokeDashoffset={strokeDashoffset}
+                  className="transition-all duration-1000"
+                />
+              );
+            });
+          })()}
+        </svg>
+        <div className="absolute text-center">
+          <div className="text-4xl font-bold text-gray-900">{total}</div>
+          <div className="text-base text-gray-500">Total</div>
+        </div>
+      </div>
+
+      {/* Donut Chart SVG - Desktop */}
+      <div className="relative items-center justify-center mb-4 hidden lg:flex">
+        <svg width={svgSize.desktop.size} height={svgSize.desktop.size} className="transform -rotate-90">
+          <circle 
+            cx={svgSize.desktop.cx} 
+            cy={svgSize.desktop.cy} 
+            r={svgSize.desktop.r} 
+            fill="none" 
+            stroke="#F3F4F6" 
+            strokeWidth={svgSize.desktop.strokeWidth} 
+          />
+          {(() => {
+            let angle = 0;
+            return data.map((item, index) => {
+              const percentage = (item.value / total) * 100;
+              const segmentAngle = (percentage / 100) * 360;
+              const circumference = 2 * Math.PI * svgSize.desktop.r;
+              const strokeDasharray = `${(segmentAngle / 360) * circumference} ${circumference}`;
+              const strokeDashoffset = -angle * (circumference / 360);
+              angle += segmentAngle;
+              
+              return (
+                <circle
+                  key={index}
+                  cx={svgSize.desktop.cx}
+                  cy={svgSize.desktop.cy}
+                  r={svgSize.desktop.r}
+                  fill="none"
+                  stroke={colors[item.name] || '#8B5CF6'}
+                  strokeWidth={svgSize.desktop.strokeWidth}
+                  strokeDasharray={strokeDasharray}
+                  strokeDashoffset={strokeDashoffset}
+                  className="transition-all duration-1000"
+                />
+              );
+            });
+          })()}
+        </svg>
+        <div className="absolute text-center">
+          <div className="text-5xl font-bold text-gray-900">{total}</div>
+          <div className="text-base text-gray-500">Total</div>
+        </div>
       </div>
       
-      <div className="absolute bottom-2 left-2 right-2">
-        <div className="flex flex-wrap justify-center gap-2 text-xs">
-          {data.slice(0, 3).map((item, index) => {
+      {/* Legend - Below Chart */}
+      <div className="w-full px-2 sm:px-4">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-5">
+          {data.map((item, index) => {
             const percentage = Math.round((item.value / total) * 100);
             return (
-              <div key={index} className="flex items-center gap-1">
+              <div key={index} className="flex items-center gap-1.5 sm:gap-2">
                 <div 
-                  className="w-2 h-2 rounded-full" 
+                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 rounded-full flex-shrink-0" 
                   style={{ backgroundColor: colors[item.name] || '#8B5CF6' }}
                 />
-                <span className="text-gray-600">{item.name} {percentage}%</span>
+                <span className="text-xs sm:text-sm md:text-base text-gray-700 font-medium whitespace-nowrap">
+                  {item.name} {percentage}%
+                </span>
               </div>
             );
           })}
@@ -459,8 +565,9 @@ const DonutChart = memo(({ data, title }) => {
 });
 
 DonutChart.displayName = 'DonutChart';
+
 // ============================================
-// MEMOIZED STAT CARD COMPONENTS
+// RESPONSIVE STAT CARD
 // ============================================
 
 const StatCard = memo(({ 
@@ -472,35 +579,35 @@ const StatCard = memo(({
   gradient,
   iconGradient 
 }) => (
-  <div className={`relative p-6 transition-all duration-300 border shadow-md rounded-xl bg-gradient-to-br ${gradient} hover:shadow-lg hover:scale-105`}>
-    <div className="flex items-start justify-between mb-4">
+  <div className={`relative p-3 sm:p-4 md:p-6 transition-all duration-300 border shadow-md rounded-xl bg-gradient-to-br ${gradient} hover:shadow-lg hover:scale-105`}>
+    <div className="flex items-start justify-between mb-2 sm:mb-4">
       <div>
-        <h3 className="mb-1 text-sm font-medium text-gray-600">{title}</h3>
+        <h3 className="mb-1 text-xs sm:text-sm font-medium text-gray-600">{title}</h3>
       </div>
-      <div className={`p-3 shadow-md rounded-xl bg-gradient-to-br ${iconGradient}`}>
-        <Icon className="w-6 h-6 text-white" />
+      <div className={`p-2 sm:p-3 shadow-md rounded-xl bg-gradient-to-br ${iconGradient}`}>
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
       </div>
     </div>
     
-    <div className="mb-3">
-      <div className={`mb-2 text-4xl font-bold text-transparent bg-gradient-to-r ${iconGradient.replace('to-br', 'to-r')} bg-clip-text`}>
+    <div className="mb-2 sm:mb-3">
+      <div className={`mb-1 sm:mb-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-transparent bg-gradient-to-r ${iconGradient.replace('to-br', 'to-r')} bg-clip-text`}>
         {value}
       </div>
       {trend && (
-        <div className={`text-sm font-medium ${trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+        <div className={`text-xs sm:text-sm font-medium ${trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
           {trend}
         </div>
       )}
     </div>
     
-    <div className="text-sm text-gray-500">{subtitle}</div>
+    <div className="text-xs sm:text-sm text-gray-500">{subtitle}</div>
   </div>
 ));
 
 StatCard.displayName = 'StatCard';
 
 // ============================================
-// MEMOIZED HEADER COMPONENTS
+// RESPONSIVE HEADER COMPONENTS
 // ============================================
 
 const ProfileDropdown = memo(({ 
@@ -519,9 +626,9 @@ const ProfileDropdown = memo(({
   <div className="relative z-50" ref={profileRef}>
     <button
       onClick={() => setProfileOpen(!profileOpen)}
-      className="flex items-center gap-3 p-2 transition-all duration-200 rounded-lg hover:bg-blue-100 group"
+      className="flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 transition-all duration-200 rounded-lg hover:bg-blue-100 group"
     >
-      <div className="w-8 h-8 overflow-hidden transition-colors border-2 border-blue-200 rounded-full group-hover:border-blue-400">
+      <div className="w-7 h-7 sm:w-8 sm:h-8 overflow-hidden transition-colors border-2 border-blue-200 rounded-full group-hover:border-blue-400">
         {user?.profileImage ? (
           <img
             src={user.profileImage}
@@ -544,7 +651,7 @@ const ProfileDropdown = memo(({
           />
         ) : null}
         <div
-          className={`w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm ${
+          className={`w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-xs sm:text-sm ${
             user?.profileImage || gymLogo ? "hidden" : "flex"
           }`}
         >
@@ -552,17 +659,17 @@ const ProfileDropdown = memo(({
         </div>
       </div>
       <ChevronDown
-        className={`w-4 h-4 text-gray-600 transition-transform ${
+        className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-600 transition-transform ${
           profileOpen ? "rotate-180" : ""
         }`}
       />
     </button>
 
     {profileOpen && (
-      <div className="absolute right-0 z-50 w-56 mt-2 overflow-hidden duration-200 bg-white border border-gray-200 rounded-lg shadow-xl top-full animate-in slide-in-from-top-2">
-        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 overflow-hidden border-2 border-blue-200 rounded-full">
+      <div className="absolute right-0 z-50 w-48 sm:w-56 mt-2 overflow-hidden duration-200 bg-white border border-gray-200 rounded-lg shadow-xl top-full animate-in slide-in-from-top-2">
+        <div className="p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 overflow-hidden border-2 border-blue-200 rounded-full">
               {user?.profileImage ? (
                 <img
                   src={user.profileImage}
@@ -585,22 +692,22 @@ const ProfileDropdown = memo(({
                 />
               ) : null}
               <div
-                className={`w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium ${
+                className={`w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm ${
                   user?.profileImage || gymLogo ? "hidden" : "flex"
                 }`}
               >
                 {getOwnerInitials()}
               </div>
             </div>
-            <div>
-              <div className="font-medium text-gray-900">
+            <div className="overflow-hidden">
+              <div className="text-sm font-medium text-gray-900 truncate">
                 {getOwnerDisplayName()}
               </div>
-              <div className="text-sm text-gray-500 truncate">
+              <div className="text-xs text-gray-500 truncate">
                 Owner of {gymName}
               </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${
+              <div className="flex items-center gap-1 sm:gap-2 mt-1">
+                <span className={`px-1 sm:px-1.5 py-0.5 text-[10px] sm:text-xs font-medium rounded ${
                   userSubscriptionPlan === 'ENTERPRISE' ? 'bg-purple-100 text-purple-700' :
                   userSubscriptionPlan === 'ADVANCED' ? 'bg-orange-100 text-orange-700' :
                   userSubscriptionPlan === 'BASIC' ? 'bg-blue-100 text-blue-700' :
@@ -613,61 +720,61 @@ const ProfileDropdown = memo(({
           </div>
         </div>
 
-        <div className="py-2">
+        <div className="py-1 sm:py-2">
           <Link
             to="/dashboard"
-            className="flex items-center gap-3 px-4 py-2 text-gray-700 transition-colors hover:bg-blue-50"
+            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-blue-50"
           >
-            <Users className="w-4 h-4" />
+            <Users className="w-3 h-3 sm:w-4 sm:h-4" />
             Members Dashboard
           </Link>
           <Link
             to="/my-profile"
-            className="flex items-center gap-3 px-4 py-2 text-gray-700 transition-colors hover:bg-blue-50"
+            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-blue-50"
           >
-            <User className="w-4 h-4" />
+            <User className="w-3 h-3 sm:w-4 sm:h-4" />
             My Profile
           </Link>
           
           {hasFeatureAccess(userSubscriptionPlan, 'dueMembers') && (
             <Link
               to="/due-members"
-              className="flex items-center gap-3 px-4 py-2 text-gray-700 transition-colors hover:bg-blue-50"
+              className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-blue-50"
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
               Due Members
             </Link>
           )}
 
           <Link
             to="/my-subscription"
-            className="flex items-center gap-3 px-4 py-2 text-gray-700 transition-colors hover:bg-blue-50"
+            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-blue-50"
           >
-            <Crown className="w-4 h-4" />
+            <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
             My Subscription
           </Link>
           
           <Link
             to="/my-analytics"
-            className="flex items-center gap-3 px-4 py-2 text-blue-600 transition-colors border-r-2 border-blue-500 bg-blue-50"
+            className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-blue-600 transition-colors border-r-2 border-blue-500 bg-blue-50"
           >
-            <BarChart3 className="w-4 h-4" />
+            <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
             My Analytics (Current)
           </Link>
           
           <button
             onClick={() => navigate("/contact")}
-            className="flex items-center w-full gap-3 px-4 py-2 text-gray-700 transition-colors hover:bg-blue-50"
+            className="flex items-center w-full gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-700 transition-colors hover:bg-blue-50"
           >
-            <Mail className="w-4 h-4" />
+            <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
             Contact Us
           </button>
-          <div className="my-2 border-t border-gray-100"></div>
+          <div className="my-1 sm:my-2 border-t border-gray-100"></div>
           <button
             onClick={handleLogout}
-            className="flex items-center w-full gap-3 px-4 py-2 text-red-600 transition-colors hover:bg-red-50"
+            className="flex items-center w-full gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-red-600 transition-colors hover:bg-red-50"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
             Logout
           </button>
         </div>
@@ -689,30 +796,31 @@ const DashboardHeader = memo(({
   navigate
 }) => (
   <div className="sticky top-0 z-40 border-b border-blue-100 shadow-lg bg-gradient-to-r from-white via-blue-50 to-white">
-    <div className="px-6 py-4 mx-auto max-w-7xl">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg">
+    <div className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 mx-auto max-w-7xl">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
+        {/* Logo Section - Responsive */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+          <div className="rounded-lg flex-shrink-0">
             {gymLogo ? (
               <img 
                 src={gymLogo} 
                 alt="Gym Logo" 
-                className="object-cover w-10 h-10 rounded"
+                className="object-cover w-8 h-8 sm:w-10 sm:h-10 rounded"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'block';
                 }}
               />
             ) : null}
-            <Crown className={`w-6 h-6 text-white ${gymLogo ? 'hidden' : ''}`} />
+            <Crown className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${gymLogo ? 'hidden' : ''}`} />
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text">
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text truncate">
               {gymName}
             </h1>
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-gray-600">Gym Management</p>
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+            <div className="flex items-center gap-1 sm:gap-2">
+              <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 hidden sm:block">Gym Management</p>
+              <span className={`px-1 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs font-medium rounded-full ${
                 userSubscriptionPlan === 'ENTERPRISE' ? 'bg-purple-100 text-purple-700' :
                 userSubscriptionPlan === 'ADVANCED' ? 'bg-orange-100 text-orange-700' :
                 userSubscriptionPlan === 'BASIC' ? 'bg-blue-100 text-blue-700' :
@@ -724,30 +832,41 @@ const DashboardHeader = memo(({
           </div>
         </div>
 
-        <div className="flex-1 max-w-lg mx-8">
-          <div className="relative group">
-            <BarChart3 className="absolute w-5 h-5 text-blue-500 transition-colors -translate-y-1/2 left-3 top-1/2 group-hover:text-purple-500" />
-            <div className="w-full py-2 pl-10 pr-4 text-center text-gray-700 transition-all bg-white border border-blue-200 rounded-lg shadow-sm">
+        {/* Center Title - Hidden on mobile, visible on tablet+ */}
+        <div className="flex-1 hidden md:flex max-w-xs lg:max-w-lg mx-2 lg:mx-8">
+          <div className="relative group w-full">
+            <BarChart3 className="absolute w-4 h-4 lg:w-5 lg:h-5 text-blue-500 transition-colors -translate-y-1/2 left-2 lg:left-3 top-1/2 group-hover:text-purple-500" />
+            <div className="w-full py-1.5 lg:py-2 pl-8 lg:pl-10 pr-2 lg:pr-4 text-center text-xs lg:text-sm text-gray-700 transition-all bg-white border border-blue-200 rounded-lg shadow-sm">
               <span className="font-medium">Analytics Dashboard</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Action Buttons - Responsive */}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
           <button
             onClick={handleRefreshAnalytics}
-            className="p-2 text-gray-600 transition-all duration-200 rounded-lg hover:text-blue-600 hover:bg-blue-100 hover:scale-105"
+            className="p-1.5 sm:p-2 text-gray-600 transition-all duration-200 rounded-lg hover:text-blue-600 hover:bg-blue-100 hover:scale-105"
             title="Refresh Analytics"
           >
-            <RefreshCw className="w-5 h-5" />
+            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={handleAddMember}
-            className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-all duration-200 rounded-lg shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105"
+            className="hidden sm:flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-white transition-all duration-200 rounded-lg shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105"
+          >
+            <Plus className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="hidden lg:inline">Add Member</span>
+            <span className="lg:hidden">Add</span>
+          </button>
+
+          {/* Mobile Add Button */}
+          <button
+            onClick={handleAddMember}
+            className="sm:hidden p-1.5 text-white transition-all duration-200 rounded-lg shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             <Plus className="w-4 h-4" />
-            Add Member
           </button>
 
           <ProfileDropdown 
@@ -767,29 +886,29 @@ const DashboardHeader = memo(({
 DashboardHeader.displayName = 'DashboardHeader';
 
 // ============================================
-// PLACEHOLDER STATE COMPONENT
+// RESPONSIVE PLACEHOLDER STATE
 // ============================================
 
 const PlaceholderState = memo(({ navigate, ...headerProps }) => (
   <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
     <DashboardHeader {...headerProps} navigate={navigate} />
     
-    <div className="p-6">
+    <div className="p-3 sm:p-4 md:p-6">
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="max-w-md text-center">
-          <div className="p-8 border border-blue-100 rounded-lg shadow-md bg-gradient-to-br from-white to-blue-50">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600">
-              <BarChart3 className="w-8 h-8 text-white" />
+        <div className="max-w-md text-center px-4">
+          <div className="p-4 sm:p-6 md:p-8 border border-blue-100 rounded-lg shadow-md bg-gradient-to-br from-white to-blue-50">
+            <div className="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600">
+              <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
             
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">Analytics Dashboard</h2>
-            <p className="mb-6 text-gray-600">
+            <h2 className="mb-2 text-lg sm:text-xl font-semibold text-gray-900">Analytics Dashboard</h2>
+            <p className="mb-4 sm:mb-6 text-sm sm:text-base text-gray-600">
               Active subscription required to access your analytics dashboard
             </p>
             
-            <div className="mb-6">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">What you'll get with analytics:</h3>
-              <ul className="space-y-1 text-sm text-left text-gray-600">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="mb-2 sm:mb-3 text-xs sm:text-sm font-semibold text-gray-700">What you'll get with analytics:</h3>
+              <ul className="space-y-0.5 sm:space-y-1 text-xs sm:text-sm text-left text-gray-600">
                 <li>• Real-time member growth tracking</li>
                 <li>• Revenue analytics and trends</li>
                 <li>• Member retention insights</li>
@@ -801,7 +920,7 @@ const PlaceholderState = memo(({ navigate, ...headerProps }) => (
             
             <button 
               onClick={() => navigate('/my-subscription')}
-              className="w-full px-4 py-2 font-medium text-white transition-all duration-200 rounded-lg shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105"
+              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base font-medium text-white transition-all duration-200 rounded-lg shadow-md bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105"
             >
               Upgrade Now
             </button>
@@ -815,7 +934,7 @@ const PlaceholderState = memo(({ navigate, ...headerProps }) => (
 PlaceholderState.displayName = 'PlaceholderState';
 
 // ============================================
-// MAIN COMPONENT
+// MAIN COMPONENT - FULLY RESPONSIVE
 // ============================================
 
 const BasicAnalyticsReports = ({ 
@@ -886,7 +1005,6 @@ const BasicAnalyticsReports = ({
       };
     }
 
-    // For array data, return empty state (would use Web Worker in real scenario)
     const memberArray = Array.isArray(membersData) ? membersData : [];
     if (memberArray.length === 0) {
       return {
@@ -899,7 +1017,6 @@ const BasicAnalyticsReports = ({
       };
     }
 
-    // In production, would use: await calculateAnalytics(memberArray, selectedTimeRange);
     return {
       totalMembers: memberArray.length,
       activeMembers: memberArray.filter(m => m.paymentStatus?.toLowerCase() === 'paid').length,
@@ -1061,18 +1178,18 @@ const BasicAnalyticsReports = ({
         navigate={navigate}
       />
 
-      <div className="p-6">
-        {/* Title Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+      <div className="p-3 sm:p-4 md:p-6">
+        {/* Title Section - Responsive */}
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text">
+              <h1 className="mb-1 sm:mb-2 text-xl sm:text-2xl md:text-3xl font-bold text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text">
                 Analytics Dashboard
               </h1>
-              <p className="text-lg text-gray-600">Real-time insights for {gymName}</p>
-              <div className="flex items-center mt-3 space-x-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <p className="text-sm sm:text-base md:text-lg text-gray-600">Real-time insights for {gymName}</p>
+              <div className="flex items-center mt-2 sm:mt-3 space-x-2 sm:space-x-4 text-xs sm:text-sm">
+                <div className="flex items-center space-x-1 sm:space-x-2">
+                  <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="font-medium text-green-600">Live Data</span>
                 </div>
                 <span className="text-gray-500">
@@ -1080,76 +1197,77 @@ const BasicAnalyticsReports = ({
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
               <select
                 value={selectedTimeRange}
                 onChange={(e) => setSelectedTimeRange(e.target.value)}
-                className="px-4 py-2 text-sm transition-shadow bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:shadow-md"
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm transition-shadow bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:shadow-md"
               >
                 <option value="7">Last 7 Days</option>
                 <option value="30">Last 30 Days</option>
               </select>
               <button 
                 onClick={handleRefreshAnalytics}
-                className="flex items-center px-4 py-2 space-x-2 font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:shadow-md"
+                className="flex items-center px-3 sm:px-4 py-1.5 sm:py-2 space-x-1 sm:space-x-2 text-xs sm:text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:shadow-md"
               >
-                <RefreshCw className="w-4 h-4" />
-                <span>Refresh</span>
+                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-6 mb-6">
+        {/* Primary Stats Cards - Responsive Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
           {statCardsData.map((stat, index) => (
             <StatCard key={index} {...stat} />
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        {/* Secondary Stats Cards - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
           {secondaryStatsData.map((stat, index) => (
             <StatCard key={index} {...stat} />
           ))}
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-2 gap-6 mb-8">
-          <div className="p-6 border border-blue-100 shadow-md rounded-xl bg-gradient-to-br from-white to-blue-50">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">Member Growth Trend</h3>
-            <p className="mb-6 text-sm text-gray-600">Monthly new member registrations</p>
+        {/* Charts Section - Responsive Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6 md:mb-8">
+          <div className="p-4 sm:p-5 md:p-6 border border-blue-100 shadow-md rounded-xl bg-gradient-to-br from-white to-blue-50">
+            <h3 className="mb-1 text-sm sm:text-base md:text-lg font-semibold text-gray-900">Member Growth Trend</h3>
+            <p className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-gray-600">Monthly new member registrations</p>
             <LineChart data={monthlyGrowthData} />
           </div>
 
-          <div className="p-6 border border-purple-100 shadow-md rounded-xl bg-gradient-to-br from-white to-purple-50">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">Membership Plan Distribution</h3>
-            <p className="mb-6 text-sm text-gray-600">Popular subscription plans</p>
+          <div className="p-4 sm:p-5 md:p-6 border border-purple-100 shadow-md rounded-xl bg-gradient-to-br from-white to-purple-50">
+            <h3 className="mb-1 text-sm sm:text-base md:text-lg font-semibold text-gray-900">Membership Plan Distribution</h3>
+            <p className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-gray-600">Popular subscription plans</p>
             <BarChart data={planChartData} />
           </div>
 
-          <div className="p-6 border border-green-100 shadow-md rounded-xl bg-gradient-to-br from-white to-green-50">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">Age Group Distribution</h3>
-            <p className="mb-6 text-sm text-gray-600">Member demographics by age</p>
+          <div className="p-4 sm:p-5 md:p-6 border border-green-100 shadow-md rounded-xl bg-gradient-to-br from-white to-green-50">
+            <h3 className="mb-1 text-sm sm:text-base md:text-lg font-semibold text-gray-900">Age Group Distribution</h3>
+            <p className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-gray-600">Member demographics by age</p>
             <DonutChart data={ageGroupData} title="Age Groups" />
           </div>
 
-          <div className="p-6 border border-orange-100 shadow-md rounded-xl bg-gradient-to-br from-white to-orange-50">
-            <h3 className="mb-1 text-lg font-semibold text-gray-900">Payment Method Distribution</h3>
-            <p className="mb-6 text-sm text-gray-600">Preferred payment methods</p>
+          <div className="p-4 sm:p-5 md:p-6 border border-orange-100 shadow-md rounded-xl bg-gradient-to-br from-white to-orange-50">
+            <h3 className="mb-1 text-sm sm:text-base md:text-lg font-semibold text-gray-900">Payment Method Distribution</h3>
+            <p className="mb-3 sm:mb-4 md:mb-6 text-xs sm:text-sm text-gray-600">Preferred payment methods</p>
             <DonutChart data={paymentMethodData} title="Payment Methods" />
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-6 text-center border border-blue-100 shadow-md rounded-xl bg-gradient-to-r from-blue-50 via-white to-purple-50">
-          <div className="flex items-center justify-center mb-2 space-x-2">
-            <Crown className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Analytics Dashboard for {gymName}</h3>
+        {/* Footer - Responsive */}
+        <div className="p-4 sm:p-5 md:p-6 text-center border border-blue-100 shadow-md rounded-xl bg-gradient-to-r from-blue-50 via-white to-purple-50">
+          <div className="flex flex-col sm:flex-row items-center justify-center mb-2 space-y-1 sm:space-y-0 sm:space-x-2">
+            <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">Analytics Dashboard for {gymName}</h3>
           </div>
-          <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600">
             <span>Last updated: {new Date().toLocaleDateString('en-GB')} at {currentTime}</span>
             <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="font-medium text-green-600">Live</span>
             </div>
           </div>
