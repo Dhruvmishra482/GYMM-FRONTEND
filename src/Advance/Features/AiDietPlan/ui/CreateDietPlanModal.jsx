@@ -1,7 +1,7 @@
 // src/Advance/Features/AiDietPlan/Ui/CreateDietPlanModal.jsx
 import React, { useState } from 'react';
 import { X, Plus, Minus, Loader2, Save } from 'lucide-react';
-import useDietPlanStore from '../Store/useDietPlanStore';
+import useDietPlanStore from '../store/useDietPlanStore';
 
 const CreateDietPlanModal = ({ isOpen, onClose, onSuccess }) => {
   const { createDietPlan, loading } = useDietPlanStore();

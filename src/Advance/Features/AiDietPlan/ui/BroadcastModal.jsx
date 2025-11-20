@@ -1,7 +1,7 @@
 // src/Advance/Features/AiDietPlan/Ui/BroadcastModal.jsx
 import React, { useState } from 'react';
 import { X, Send, Loader2, Users, CheckCircle, XCircle, Eye } from 'lucide-react';
-import useDietPlanStore from '../Store/useDietPlanStore';
+import useDietPlanStore from '../store/useDietPlanStore';
 
 const BroadcastModal = ({ isOpen, onClose, plan, onSuccess }) => {
   const { broadcastDietPlan, previewDietPlanMessage, loading } = useDietPlanStore();
