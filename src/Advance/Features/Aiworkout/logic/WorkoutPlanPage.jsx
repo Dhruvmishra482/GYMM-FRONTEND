@@ -1,7 +1,7 @@
 // src/Advance/Features/AiWorkoutPlan/Logic/WorkoutPlanPage.jsx
 import React, { useEffect, useState } from 'react';
 import useWorkoutPlanStore from '../store/useWorkoutPlanStore';
-import WorkoutPlanPageUI from '../Ui/WorkoutPlanPageUI';
+import WorkoutPlanPageUI from '../ui/WorkoutPlanPageUI';
 
 const WorkoutPlanPage = () => {
   // State from Zustand store
