@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-import { usePasswordResetStore } from '../Store/AuthStore';
-import ForgotPasswordUI from '../Ui/ForgotPassword';
+// ForgotPasswordPage.jsx - COMPLETE VERSION
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { usePasswordResetStore } from "../Store/AuthStore";
+import ForgotPasswordUI from "../Ui/ForgotPassword";
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
 
-  const { 
-    forgotPassword, 
-    isLoading, 
-    error, 
-    success, 
-    message, 
-    resetState, 
-    clearError 
+  const {
+    forgotPassword,
+    isLoading,
+    error,
+    success,
+    message,
+    resetState,
+    clearError,
   } = usePasswordResetStore();
 
   // Reset state when component mounts
   useEffect(() => {
     resetState();
-    return () => resetState(); // Cleanup on unmount
+    return () => resetState();
   }, [resetState]);
 
   // Clear error when user starts typing
@@ -33,27 +33,25 @@ const ForgotPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       return;
     }
 
     try {
       const result = await forgotPassword(email.trim());
-      
+
       if (!result.success) {
-        // Error is handled by the store
-        console.log('Failed to send reset link:', result.message);
+        console.log("Failed to send reset link:", result.message);
       }
-      // Success state is handled by the store and UI will update accordingly
     } catch (err) {
-      console.error('Unexpected error:', err);
+      console.error("Unexpected error:", err);
     }
   };
 
   const handleBackToLogin = () => {
     resetState();
-    navigate('/login');
+    navigate("/");
   };
 
   const handleResendEmail = async () => {
@@ -63,17 +61,39 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <ForgotPasswordUI
-      email={email}
-      setEmail={setEmail}
-      onSubmit={handleSubmit}
-      onBackToLogin={handleBackToLogin}
-      onResendEmail={handleResendEmail}
-      isLoading={isLoading}
-      error={error}
-      success={success}
-      message={message}
-    />
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(to bottom right, #f8fafc, #e0f2fe)",
+        padding: "20px",
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: "white",
+          borderRadius: "12px",
+          padding: "32px",
+          width: "100%",
+          maxWidth: "400px",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+        }}
+      >
+        <ForgotPasswordUI
+          email={email}
+          setEmail={setEmail}
+          onSubmit={handleSubmit}
+          onBackToLogin={handleBackToLogin}
+          onResendEmail={handleResendEmail}
+          isLoading={isLoading}
+          error={error}
+          success={success}
+          message={message}
+        />
+      </div>
+    </div>
   );
 };
 
