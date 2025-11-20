@@ -1,6 +1,6 @@
 // src/Advance/Features/AiDietPlan/Logic/DietPlanPage.jsx
 import React, { useEffect, useState } from 'react';
-import useDietPlanStore from '../Store/useDietPlanStore';
+import useDietPlanStore from '../store/useDietPlanStore';
 import DietPlanPageUI from '../ui/DietPlanPageUI';
 
 const DietPlanPage = () => {
