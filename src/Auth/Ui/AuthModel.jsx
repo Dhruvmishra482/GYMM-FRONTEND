@@ -1,4 +1,4 @@
-// AuthModal.jsx - COMPLETE VERSION with Login, Signup, OTP & Forgot Password
+// AuthModal.jsx - PRODUCTION READY VERSION
 import React, {
   useState,
   useEffect,
@@ -66,9 +66,6 @@ const LoginForm = lazy(() =>
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck="false"
-              // readOnly={false}
-              // onFocus={(e) => e.stopPropagation()}
-              // onClick={(e) => e.stopPropagation()}
             />
           </div>
 
@@ -95,9 +92,6 @@ const LoginForm = lazy(() =>
                 }}
                 placeholder="Enter your password"
                 autoComplete="current-password"
-                readOnly={false}
-                onFocus={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
               />
               <button
                 type="button"
@@ -822,7 +816,6 @@ const AuthModal = memo(
     const [showResetPassword, setShowResetPassword] = useState(false);
     const [showResetConfirmPassword, setShowResetConfirmPassword] =
       useState(false);
-    //                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Correct!
     const [resetValidationErrors, setResetValidationErrors] = useState([]);
 
     // Store hooks
@@ -847,6 +840,7 @@ const AuthModal = memo(
       resetState: resetPasswordState,
       clearError: clearResetError,
     } = usePasswordResetStore();
+
     // ========================================
     // MEMOIZED STYLES
     // ========================================
@@ -877,9 +871,9 @@ const AuthModal = memo(
         fontSize: "14px",
         outline: "none",
         transition: "border-color 0.2s ease",
-        color: "#111827", // ADD THIS
-        backgroundColor: "#ffffff", // ADD THIS
-        WebkitTextFillColor: "#111827", // ADD THIS
+        color: "#111827",
+        backgroundColor: "#ffffff",
+        WebkitTextFillColor: "#111827",
         WebkitBoxShadow: "0 0 0 1000px white inset",
       }),
       []
@@ -899,7 +893,6 @@ const AuthModal = memo(
 
     const handleBackdropClick = useCallback(
       (e) => {
-        // Only close if clicking the backdrop itself, not children
         if (e.target === e.currentTarget) {
           onClose();
         }
@@ -941,6 +934,7 @@ const AuthModal = memo(
         e.preventDefault();
 
         if (!forgotEmail.trim()) {
+          toast.error("Please enter your email");
           return;
         }
 
@@ -952,6 +946,7 @@ const AuthModal = memo(
           }
         } catch (err) {
           console.error("Unexpected error:", err);
+          toast.error("An unexpected error occurred. Please try again.");
         }
       },
       [forgotEmail, forgotPassword]
@@ -960,8 +955,14 @@ const AuthModal = memo(
     const handleLogin = useCallback(
       async (e) => {
         e.preventDefault();
+
+        if (!email.trim() || !password) {
+          toast.error("Please enter email and password");
+          return;
+        }
+
         try {
-          const success = await login(email, password);
+          const success = await login(email.trim(), password);
           if (success) {
             onClose();
             navigate("/dashboard");
@@ -969,7 +970,8 @@ const AuthModal = memo(
             toast.error("Invalid email or password!");
           }
         } catch (err) {
-          toast.error("Something went wrong!");
+          console.error("Login error:", err);
+          toast.error(err.message || "Something went wrong!");
         }
       },
       [email, password, login, onClose, navigate]
@@ -978,19 +980,26 @@ const AuthModal = memo(
     const handleSignup = useCallback(
       async (e) => {
         e.preventDefault();
+
         if (
-          !firstName ||
-          !lastName ||
-          !mobile ||
-          !signupEmail ||
+          !firstName.trim() ||
+          !lastName.trim() ||
+          !mobile.trim() ||
+          !signupEmail.trim() ||
           !signupPassword ||
           !confirmPassword
         ) {
           toast.error("Please fill all fields");
           return;
         }
+
         if (signupPassword !== confirmPassword) {
           toast.error("Passwords don't match");
+          return;
+        }
+
+        if (signupPassword.length < 6) {
+          toast.error("Password must be at least 6 characters");
           return;
         }
 
@@ -1015,6 +1024,7 @@ const AuthModal = memo(
             toast.success("OTP sent to your email!");
           }
         } catch (err) {
+          console.error("Signup error:", err);
           toast.error(err.message || "Something went wrong!");
         } finally {
           setIsSubmitting(false);
@@ -1034,6 +1044,7 @@ const AuthModal = memo(
     const handleOTPVerification = useCallback(
       async (e) => {
         e.preventDefault();
+
         if (!otp || otp.length !== 6) {
           toast.error("Please enter a valid 6-digit OTP");
           return;
@@ -1067,6 +1078,7 @@ const AuthModal = memo(
             setOtp("");
           }
         } catch (err) {
+          console.error("OTP verification error:", err);
           toast.error(err.message || "Invalid OTP. Please try again!");
         } finally {
           setIsSubmitting(false);
@@ -1107,6 +1119,7 @@ const AuthModal = memo(
         }
 
         if (!resetToken) {
+          toast.error("Invalid reset token");
           console.error("No reset token provided");
           return;
         }
@@ -1126,6 +1139,7 @@ const AuthModal = memo(
           }
         } catch (err) {
           console.error("Error during password reset:", err);
+          toast.error("An unexpected error occurred. Please try again.");
           setResetValidationErrors([
             { msg: "An unexpected error occurred. Please try again." },
           ]);

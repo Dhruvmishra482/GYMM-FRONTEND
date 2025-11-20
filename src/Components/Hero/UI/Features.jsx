@@ -1,5 +1,13 @@
 // Features.jsx - Optimized with Lazy Loading + Advanced Memoization (Fixed)
-import React, { useState, useEffect, useRef, useCallback, useMemo, memo, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+  Suspense,
+} from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Users,
@@ -32,168 +40,205 @@ const FeatureCardSkeleton = memo(() => (
     </div>
   </div>
 ));
-FeatureCardSkeleton.displayName = 'FeatureCardSkeleton';
+FeatureCardSkeleton.displayName = "FeatureCardSkeleton";
 
-// Lazy-loaded feature card component
-const LazyFeatureCard = memo(({ feature, index, isVisible, hoveredCard, onCardHover, onCardLeave }) => {
-  const Icon = feature.icon;
-  const isHovered = hoveredCard === feature.id;
+// Lazy-loaded feature card component - Modern Clean Design
+const LazyFeatureCard = memo(
+  ({ feature, index, isVisible, hoveredCard, onCardHover, onCardLeave }) => {
+    const isHovered = hoveredCard === feature.id;
 
-  return (
-    <div
-      className={`relative group cursor-pointer transition-all duration-700 transform ${
-        isVisible
-          ? "translate-y-0 opacity-100"
-          : "translate-y-20 opacity-0"
-      }`}
-      style={{
-        transitionDelay: `${index * 150}ms`,
-      }}
-      onMouseEnter={() => onCardHover(feature.id)}
-      onMouseLeave={onCardLeave}
-    >
-      {/* Main Card */}
+    return (
       <div
-        className={`
-        relative h-full p-8 rounded-3xl border transition-all duration-700 transform
-        ${
-          isHovered
-            ? `scale-105 border-${feature.glowColor}-400/50 shadow-2xl shadow-${feature.glowColor}-500/25`
-            : "border-slate-700/30 hover:border-slate-600/50"
-        }
-        bg-gradient-to-br from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-xl
-      `}
+        className={`relative group cursor-pointer transition-all duration-700 transform w-full ${
+          isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
+        } ${!feature.showOnMobile ? "hidden md:block" : ""}`}
+        style={{
+          transitionDelay: `${index * 150}ms`,
+        }}
+        onMouseEnter={() => onCardHover(feature.id)}
+        onMouseLeave={onCardLeave}
       >
-        {/* Animated Background */}
+        {/* Modern Clean Card - No Boxes */}
         <div
           className={`
-          absolute inset-0 rounded-3xl opacity-0 transition-all duration-700
-          bg-gradient-to-br ${feature.color}
-          ${isHovered ? "opacity-10" : ""}
-        `}
-        />
-
-        {/* Glow Effect */}
-        <div
-          className={`
-          absolute -inset-1 rounded-3xl blur-xl transition-all duration-700
-          bg-gradient-to-br ${feature.color}
-          ${isHovered ? "opacity-30" : "opacity-0"}
-        `}
-        />
-
-        {/* Content */}
-        <div className="relative z-10">
-          {/* Stats Badge */}
+            relative h-full p-8 rounded-3xl border transition-all duration-700
+            bg-gradient-to-br from-slate-900/50 via-slate-800/30 to-slate-900/50 backdrop-blur-xl
+            ${
+              isHovered
+                ? "border-orange-400/50 shadow-2xl shadow-orange-500/20"
+                : "border-slate-700/30"
+            }
+          `}
+        >
+          {/* Subtle Glow Effect on Hover */}
           <div
             className={`
-            inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-bold mb-6
-            bg-gradient-to-r ${feature.color} text-white
-            transform transition-all duration-500
-            ${isHovered ? "scale-110 animate-pulse" : ""}
-          `}
-          >
-            <div className="w-2 h-2 bg-white rounded-full animate-ping" />
-            <span>{feature.stats}</span>
-          </div>
+          absolute -inset-4 rounded-3xl blur-2xl transition-all duration-700
+          bg-gradient-to-br ${feature.color}
+          ${isHovered ? "opacity-20" : "opacity-0"}
+        `}
+          />
 
-          {/* Icon */}
-          <div
-            className={`
-            relative mb-6 transform transition-all duration-700
-            ${isHovered ? "scale-125 rotate-12" : ""}
-          `}
-          >
+          {/* Content */}
+          <div className="relative z-10 py-8">
+            {/* Stats Badge - Floating */}
             <div
               className={`
-              w-20 h-20 rounded-2xl flex items-center justify-center
-              bg-gradient-to-br ${feature.color} shadow-lg
-              transform transition-all duration-500
-              ${isHovered ? "rotate-12 shadow-2xl" : ""}
-            `}
+            inline-flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-bold mb-6
+            bg-gradient-to-r ${feature.color} text-white shadow-lg
+            transform transition-all duration-500
+            ${isHovered ? "scale-110 shadow-2xl" : ""}
+          `}
             >
-              <Icon className="w-10 h-10 text-white" />
-              {isHovered && (
-                <div className="absolute inset-0 bg-white/20 rounded-2xl animate-pulse" />
-              )}
+              <div className="w-2 h-2 bg-white rounded-full animate-ping" />
+              <span>{feature.stats}</span>
             </div>
 
-            {/* Icon glow */}
+            {/* Image placeholder - Full Width with Gradient Overlay */}
+            {feature.image && (
+              <div className="relative mb-8 overflow-hidden rounded-2xl">
+                <img
+                  src={feature.image}
+                  alt={feature.title}
+                  className="w-full h-56 object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div
+                  className={`absolute inset-0 bg-gradient-to-t ${feature.color} opacity-20`}
+                />
+              </div>
+            )}
+
+            {/* Title with Gradient Underline */}
+            <div className="mb-6">
+              <h3
+                className={`
+              text-4xl font-black mb-3 transition-all duration-500
+              ${isHovered ? "text-white" : "text-slate-100"}
+            `}
+              >
+                {feature.title}
+              </h3>
+
+              {/* Animated Gradient Line */}
+              <div
+                className={`
+                h-1 rounded-full transition-all duration-500 bg-gradient-to-r ${
+                  feature.color
+                }
+                ${isHovered ? "w-24" : "w-16"}
+              `}
+              />
+            </div>
+
             <div
               className={`
-              absolute inset-0 rounded-2xl blur-lg transition-all duration-500
-              bg-gradient-to-br ${feature.color}
-              ${isHovered ? "opacity-50 scale-150" : "opacity-0"}
-            `}
-            />
-          </div>
-
-          {/* Title */}
-          <h3
-            className={`
-            text-3xl font-black mb-2 transition-all duration-500
-            ${isHovered ? "text-white scale-105" : "text-slate-200"}
+            text-base font-semibold mb-5 transition-all duration-500
+            ${isHovered ? "text-slate-200" : "text-slate-400"}
           `}
-          >
-            {feature.title}
-          </h3>
+            >
+              {feature.subtitle}
+            </div>
 
-          <div
-            className={`
-            text-sm font-semibold mb-4 transition-all duration-500
-            bg-gradient-to-r ${
-              feature.color
-            } bg-clip-text text-transparent
-            ${isHovered ? "scale-105" : ""}
-          `}
-          >
-            {feature.subtitle}
-          </div>
-
-          <p
-            className={`
-            text-slate-300 mb-6 leading-relaxed transition-all duration-500
+            <p
+              className={`
+            text-slate-300 text-lg mb-8 leading-relaxed transition-all duration-500
             ${isHovered ? "text-slate-100" : ""}
           `}
-          >
-            {feature.description}
-          </p>
+            >
+              {feature.description}
+            </p>
 
-          {/* Feature List */}
-          <ul
-            className={`
-            space-y-3 transform transition-all duration-700
-            ${isHovered ? "translate-x-2" : ""}
-          `}
-          >
-            {feature.details.map((detail, detailIndex) => (
-              <li
-                key={detailIndex}
-                className={`
-                  flex items-center text-sm transition-all duration-500
-                  ${isHovered ? "text-white" : "text-slate-400"}
-                `}
-                style={{
-                  transitionDelay: `${detailIndex * 100}ms`,
-                }}
-              >
-                <div
+            {/* Feature List - Clean Minimal Style */}
+            <ul className="space-y-4">
+              {feature.details.map((detail, detailIndex) => (
+                <li
+                  key={detailIndex}
                   className={`
-                  w-3 h-3 rounded-full mr-3 transition-all duration-500
-                  bg-gradient-to-r ${feature.color}
-                  ${isHovered ? "scale-150 animate-pulse" : ""}
+                  flex items-start transition-all duration-500
+                  ${isHovered ? "translate-x-2" : ""}
                 `}
-                />
-                <span className="font-medium">{detail}</span>
-              </li>
-            ))}
-          </ul>
+                  style={{
+                    transitionDelay: `${detailIndex * 100}ms`,
+                  }}
+                >
+                  {/* Simple Checkmark Style */}
+                  <svg
+                    className={`w-6 h-6 mr-3 mt-0.5 flex-shrink-0 transition-all duration-500 ${
+                      isHovered ? "scale-110" : ""
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <defs>
+                      <linearGradient
+                        id={`gradient-${feature.id}-${detailIndex}`}
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                      >
+                        <stop
+                          offset="0%"
+                          className={
+                            feature.color.includes("cyan")
+                              ? "text-cyan-400"
+                              : feature.color.includes("purple")
+                              ? "text-purple-400"
+                              : feature.color.includes("emerald")
+                              ? "text-emerald-400"
+                              : feature.color.includes("orange")
+                              ? "text-orange-400"
+                              : feature.color.includes("yellow")
+                              ? "text-yellow-400"
+                              : "text-green-400"
+                          }
+                          stopColor="currentColor"
+                        />
+                        <stop
+                          offset="100%"
+                          className={
+                            feature.color.includes("cyan")
+                              ? "text-purple-600"
+                              : feature.color.includes("purple")
+                              ? "text-red-500"
+                              : feature.color.includes("emerald")
+                              ? "text-blue-500"
+                              : feature.color.includes("orange")
+                              ? "text-pink-500"
+                              : feature.color.includes("yellow")
+                              ? "text-red-500"
+                              : "text-teal-500"
+                          }
+                          stopColor="currentColor"
+                        />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M5 13l4 4L19 7"
+                      stroke={`url(#gradient-${feature.id}-${detailIndex})`}
+                    />
+                  </svg>
+                  <span
+                    className={`text-base font-medium transition-all duration-500 ${
+                      isHovered ? "text-white" : "text-slate-300"
+                    }`}
+                  >
+                    {detail}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-  );
-});
-LazyFeatureCard.displayName = 'LazyFeatureCard';
+    );
+  }
+);
+LazyFeatureCard.displayName = "LazyFeatureCard";
 
 const Features = memo(() => {
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -205,124 +250,138 @@ const Features = memo(() => {
 
   // Get current location - memoized
   const location = useLocation();
-  const showCTA = useMemo(() => location.pathname === "/features", [location.pathname]);
+  const showCTA = useMemo(
+    () => location.pathname === "/features",
+    [location.pathname]
+  );
 
-  // Memoized features data
-  const features = useMemo(() => [
-    {
-      id: 1,
-      icon: Shield,
-      title: "Smart Authentication",
-      subtitle: "AI-Powered Security",
-      description:
-        "Next-gen biometric authentication with quantum encryption and behavioral analysis",
-      stats: "99.9% Security",
-      details: [
-        "Biometric facial recognition",
-        "Quantum encryption",
-        "AI behavioral analysis",
-        "Zero-trust architecture",
-      ],
-      color: "from-cyan-400 via-blue-500 to-purple-600",
-      glowColor: "cyan",
-    },
-    {
-      id: 2,
-      icon: BarChart3,
-      title: "Holographic Dashboard",
-      subtitle: "3D Data Visualization",
-      description:
-        "Immersive 3D dashboards with real-time holographic data projections and AR integration",
-      stats: "Real-time Analytics",
-      details: [
-        "3D data visualization",
-        "AR integration",
-        "Predictive analytics",
-        "Voice commands",
-      ],
-      color: "from-purple-400 via-pink-500 to-red-500",
-      glowColor: "purple",
-    },
-    {
-      id: 3,
-      icon: Users,
-      title: "Neural Member Profiles",
-      subtitle: "AI-Driven Insights",
-      description:
-        "Deep learning algorithms create comprehensive member DNA with predictive modeling",
-      stats: "10K+ Members",
-      details: [
-        "AI personality mapping",
-        "Predictive health insights",
-        "Genomic integration",
-        "Behavioral patterns",
-      ],
-      color: "from-emerald-400 via-teal-500 to-blue-500",
-      glowColor: "emerald",
-    },
-    {
-      id: 4,
-      icon: Calendar,
-      title: "Quantum Scheduling",
-      subtitle: "Time Manipulation",
-      description:
-        "Quantum computing optimizes schedules across multiple dimensions and realities",
-      stats: "Infinite Capacity",
-      details: [
-        "Quantum optimization",
-        "Multi-dimensional booking",
-        "Time-travel scheduling",
-        "Parallel universe sync",
-      ],
-      color: "from-orange-400 via-red-500 to-pink-500",
-      glowColor: "orange",
-    },
-    {
-      id: 5,
-      icon: CreditCard,
-      title: "Blockchain Payments",
-      subtitle: "Crypto Evolution",
-      description:
-        "Revolutionary DeFi integration with smart contracts and multi-chain compatibility",
-      stats: "Zero Fees",
-      details: [
-        "Smart contracts",
-        "Multi-chain support",
-        "NFT memberships",
-        "Yield farming rewards",
-      ],
-      color: "from-yellow-400 via-orange-500 to-red-500",
-      glowColor: "yellow",
-    },
-    {
-      id: 6,
-      icon: Apple,
-      title: "DNA Nutrition AI",
-      subtitle: "Genetic Optimization",
-      description:
-        "Personalized nutrition based on genetic markers, microbiome analysis, and cosmic alignment",
-      stats: "Perfect Health",
-      details: [
-        "Genetic meal planning",
-        "Microbiome analysis",
-        "Cosmic nutrition sync",
-        "Molecular gastronomy",
-      ],
-      color: "from-green-400 via-emerald-500 to-teal-500",
-      glowColor: "green",
-    },
-  ], []);
+  // Memoized features data with responsive visibility
+  const features = useMemo(
+    () => [
+      {
+        id: 1,
+        title: "Smart WhatsApp Automation",
+        subtitle: "Automated Engagement",
+        description:
+          "Automated fee reminders, renewal alerts, QR payment links, and bulk messaging to keep your members engaged and payments on track.",
+        stats: "100% Automation",
+        details: [
+          "Automated fee reminders",
+          "Renewal alerts & notifications",
+          "QR payment links",
+          "Bulk messaging campaigns",
+        ],
+        color: "from-cyan-400 via-blue-500 to-purple-600",
+        glowColor: "cyan",
+        image: "", // Add your image path here
+        showOnMobile: true,
+      },
+      {
+        id: 2,
+        title: "AI Workout Plans",
+        subtitle: "Personalized Training",
+        description:
+          "Personalized workout routines powered by AI that adapt to member progress, goals, and fitness levels for maximum results.",
+        stats: "Smart Training",
+        details: [
+          "AI-powered workout generation",
+          "Progress-based adaptation",
+          "Goal-oriented programs",
+          "Real-time adjustments",
+        ],
+        color: "from-purple-400 via-pink-500 to-red-500",
+        glowColor: "purple",
+        image: "", // Add your image path here
+        showOnMobile: true,
+      },
+      {
+        id: 3,
+        title: "AI Crowd Prediction",
+        subtitle: "Smart Analytics",
+        description:
+          "Smart analytics predict peak hours and member flow, helping optimize staff scheduling and equipment availability.",
+        stats: "Peak Optimization",
+        details: [
+          "Peak hour predictions",
+          "Member flow analytics",
+          "Staff optimization",
+          "Equipment planning",
+        ],
+        color: "from-emerald-400 via-teal-500 to-blue-500",
+        glowColor: "emerald",
+        image: "", // Add your image path here
+        showOnMobile: true,
+      },
+      {
+        id: 4,
+        title: "AI-Driven Retention System",
+        subtitle: "Member Engagement",
+        description:
+          "Predict member churn before it happens and automatically trigger re-engagement campaigns to boost retention by up to 40%.",
+        stats: "40% Retention Boost",
+        details: [
+          "Churn prediction",
+          "Auto re-engagement campaigns",
+          "Behavioral analysis",
+          "Retention insights",
+        ],
+        color: "from-orange-400 via-red-500 to-pink-500",
+        glowColor: "orange",
+        image: "", // Add your image path here
+        showOnMobile: false,
+      },
+      {
+        id: 5,
+        title: "Predictive Fee Tracking",
+        subtitle: "Revenue Intelligence",
+        description:
+          "AI-powered insights forecast revenue, identify payment patterns, and send smart reminders to ensure timely fee collection.",
+        stats: "Smart Revenue",
+        details: [
+          "Revenue forecasting",
+          "Payment pattern analysis",
+          "Smart reminders",
+          "Fee collection optimization",
+        ],
+        color: "from-yellow-400 via-orange-500 to-red-500",
+        glowColor: "yellow",
+        image: "", // Add your image path here
+        showOnMobile: false,
+      },
+      {
+        id: 6,
+        title: "AI Diet Plans",
+        subtitle: "Nutrition Intelligence",
+        description:
+          "Generate customized nutrition plans tailored to each member's goals, dietary preferences, and progress tracking.",
+        stats: "Personalized Nutrition",
+        details: [
+          "Custom meal plans",
+          "Dietary preference matching",
+          "Progress-based adjustments",
+          "Nutritional goal tracking",
+        ],
+        color: "from-green-400 via-emerald-500 to-teal-500",
+        glowColor: "green",
+        image: "", // Add your image path here
+        showOnMobile: false,
+      },
+    ],
+    []
+  );
 
   // Memoized floating orbs
-  const floatingOrbs = useMemo(() => 
-    Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      animationDelay: `${i * 0.5}s`,
-      animationDuration: `${3 + Math.random() * 4}s`,
-    }))
-  , []);
+  const floatingOrbs = useMemo(
+    () =>
+      Array.from({ length: 15 }, (_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDelay: `${i * 0.5}s`,
+        animationDuration: `${3 + Math.random() * 4}s`,
+      })),
+    []
+  );
 
   // Memoized callbacks
   const handleMouseMove = useCallback((e) => {
@@ -342,9 +401,12 @@ const Features = memo(() => {
   }, []);
 
   // Memoized mouse glow style
-  const mouseGlowStyle = useMemo(() => ({
-    background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,165,0,0.15) 0%, transparent 50%)`,
-  }), [mousePos.x, mousePos.y]);
+  const mouseGlowStyle = useMemo(
+    () => ({
+      background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,165,0,0.15) 0%, transparent 50%)`,
+    }),
+    [mousePos.x, mousePos.y]
+  );
 
   // Intersection observer for lazy loading cards
   useEffect(() => {
@@ -353,11 +415,11 @@ const Features = memo(() => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const cardId = parseInt(entry.target.dataset.cardId);
-            setVisibleCards(prev => new Set([...prev, cardId]));
+            setVisibleCards((prev) => new Set([...prev, cardId]));
           }
         });
       },
-      { threshold: 0.1, rootMargin: '50px' }
+      { threshold: 0.1, rootMargin: "50px" }
     );
 
     const mainObserver = new IntersectionObserver(
@@ -371,10 +433,11 @@ const Features = memo(() => {
 
     if (containerRef.current) {
       mainObserver.observe(containerRef.current);
-      
+
       // Observe individual cards for lazy loading
-      const cardElements = containerRef.current.querySelectorAll('[data-card-id]');
-      cardElements.forEach(card => observer.observe(card));
+      const cardElements =
+        containerRef.current.querySelectorAll("[data-card-id]");
+      cardElements.forEach((card) => observer.observe(card));
     }
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -393,10 +456,7 @@ const Features = memo(() => {
       {/* Animated Background */}
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-teal-900/20" />
-        <div
-          className="absolute inset-0 opacity-30"
-          style={mouseGlowStyle}
-        />
+        <div className="absolute inset-0 opacity-30" style={mouseGlowStyle} />
         {/* Floating orbs - Lazy loaded and memoized */}
         {floatingOrbs.map((orb) => (
           <div
@@ -407,7 +467,9 @@ const Features = memo(() => {
               top: orb.top,
               animationDelay: orb.animationDelay,
               animationDuration: orb.animationDuration,
-              transform: `translateY(${Math.sin(scrollY * 0.001 + orb.id) * 20}px)`,
+              transform: `translateY(${
+                Math.sin(scrollY * 0.001 + orb.id) * 20
+              }px)`,
             }}
           />
         ))}
@@ -457,15 +519,16 @@ const Features = memo(() => {
         </div>
       </section>
 
-      {/* Revolutionary Features Grid - Lazy Loaded */}
-      <section
-        ref={containerRef}
-        className="relative z-10 sm:px-6 lg:px-8"
-      >
+      {/* Revolutionary Features Grid - Lazy Loaded with Responsive Design */}
+      <section ref={containerRef} className="relative z-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 items-stretch">
             {features.map((feature, index) => (
-              <div key={feature.id} data-card-id={feature.id}>
+              <div
+                key={feature.id}
+                data-card-id={feature.id}
+                className="min-h-[600px] flex"
+              >
                 {visibleCards.has(feature.id) ? (
                   <LazyFeatureCard
                     feature={feature}
@@ -544,6 +607,6 @@ const Features = memo(() => {
 });
 
 // Display name for debugging
-Features.displayName = 'Features';
+Features.displayName = "Features";
 
 export default Features;

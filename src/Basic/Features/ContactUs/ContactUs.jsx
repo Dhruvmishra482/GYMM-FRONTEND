@@ -325,6 +325,7 @@ const ContactUs = () => {
     setErrors(validation.errors);
     return validation.isValid;
   }, [formData]);
+
   const handleSubmit = useCallback(
     async (e) => {
       e.preventDefault();
@@ -332,8 +333,18 @@ const ContactUs = () => {
       // Reset status
       setSubmitStatus(null);
 
+      // ✅ ADDED: Check rate limit before submission
+      const rateLimitCheck = contactFormService.checkRateLimit();
+      if (rateLimitCheck.isRateLimited) {
+        toast.error(
+          `Please wait ${rateLimitCheck.remainingMinutes} more minute(s) before submitting again.`
+        );
+        return;
+      }
+
       // Validate form
       if (!validateForm()) {
+        toast.error("Please fix the errors in the form");
         return;
       }
 
@@ -355,16 +366,20 @@ const ContactUs = () => {
             }),
         };
 
+        console.log("🔄 Submitting contact form...");
+
         const result = await contactFormService.submitContactForm(
           submissionData
         );
 
+        console.log("✅ Contact form submitted successfully:", result);
+
         setSubmitStatus("success");
         toast.success(
-          "Contact form submitted successfully! We'll get back to you within 24 hours."
+          "Message sent successfully! We'll get back to you within 24 hours."
         );
 
-        // Reset form only if user is not logged in (to avoid clearing pre-filled data)
+        // Reset form only if user is not logged in
         if (!isLoggedIn) {
           setFormData({
             name: "",
@@ -386,9 +401,10 @@ const ContactUs = () => {
           }));
         }
 
-        console.log("Contact form submitted successfully:", result);
+        // Scroll to top to show success message
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err) {
-        console.error("Contact form submission error:", err);
+        console.error("❌ Contact form submission error:", err);
         setSubmitStatus("error");
         setErrors({ submit: err.message });
         toast.error(err.message || "Failed to send message. Please try again.");

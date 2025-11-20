@@ -54,7 +54,9 @@ import EditMemberModal from "./Basic/Features/MemberCrud/Ui/EditMemberModal";
 import WorkoutPlanPage from "./Advance/Features/Aiworkout/logic/WorkoutPlanPage";
 
 import DietPlanPage from "./Advance/Features/AiDietPlan/logic/DietPlanPage";
-import React, { useState } from "react";
+import { useAuthStore } from "./Auth/Store/AuthStore";
+import { ToastContainer } from "react-toastify";
+// import React, { useState } from "react";
 
 const App = () => {
   // ========================================
@@ -378,22 +380,22 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route 
-  path="/workout-plans" 
-  element={
-    <ProtectedRoute allowedRoles={["owner"]}>
-      <WorkoutPlanPage />
-    </ProtectedRoute>
-  } 
-/>
-<Route 
-  path="/diet-plans" 
-  element={
-    <ProtectedRoute allowedRoles={["owner"]}>
-      <DietPlanPage />
-    </ProtectedRoute>
-  } 
-/>
+          <Route
+            path="/workout-plans"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <WorkoutPlanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/diet-plans"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <DietPlanPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       )}
 

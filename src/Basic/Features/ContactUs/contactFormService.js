@@ -1,29 +1,38 @@
-// services/contactService.js
-
+// contactFormService.js - PRODUCTION READY VERSION
 import axiosInstance from "../../../axios.config";
 
 export const contactFormService = {
   // Submit contact form
   submitContactForm: async (contactData) => {
     try {
+      console.log("🔄 Starting contact form submission...");
+
       // Clean and validate the data
       const cleanedData = {
-        name: contactData.name?.trim() || '',
-        email: contactData.email?.trim().toLowerCase() || '',
-        phone: contactData.phone?.trim() || '',
-        subject: contactData.subject?.trim() || '',
-        inquiry: contactData.inquiry || 'general',
-        message: contactData.message?.trim() || '',
-        gymName: contactData.gymName?.trim() || '',
-        ownerName: contactData.ownerName?.trim() || '',
+        name: contactData.name?.trim() || "",
+        email: contactData.email?.trim().toLowerCase() || "",
+        phone: contactData.phone?.trim() || "",
+        subject: contactData.subject?.trim() || "",
+        inquiry: contactData.inquiry || "general",
+        message: contactData.message?.trim() || "",
+        gymName: contactData.gymName?.trim() || "",
+        ownerName: contactData.ownerName?.trim() || "",
       };
+
+      // Add user context if provided
+      if (contactData.userContext) {
+        cleanedData.userContext = contactData.userContext;
+      }
 
       // Frontend validation
       if (!cleanedData.name || cleanedData.name.length < 2) {
         throw new Error("Name must be at least 2 characters long");
       }
 
-      if (!cleanedData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanedData.email)) {
+      if (
+        !cleanedData.email ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanedData.email)
+      ) {
         throw new Error("Please provide a valid email address");
       }
 
@@ -35,68 +44,110 @@ export const contactFormService = {
         throw new Error("Message must be at least 10 characters long");
       }
 
-      if (cleanedData.phone && cleanedData.phone.length > 0 && cleanedData.phone.length < 10) {
+      if (
+        cleanedData.phone &&
+        cleanedData.phone.length > 0 &&
+        cleanedData.phone.length < 10
+      ) {
         throw new Error("Please provide a valid phone number");
       }
 
       // Remove empty optional fields
-      Object.keys(cleanedData).forEach(key => {
-        if (!cleanedData[key] || cleanedData[key] === '') {
+      Object.keys(cleanedData).forEach((key) => {
+        if (!cleanedData[key] || cleanedData[key] === "") {
           delete cleanedData[key];
         }
       });
 
-      console.log("Submitting contact form:", cleanedData);
-
-      const response = await axiosInstance.post("/contact", cleanedData, {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        timeout: 15000, // 15 seconds timeout
-        withCredentials: true // Include cookies for potential user auth
+      console.log("📤 Submitting contact form with data:", {
+        name: cleanedData.name,
+        email: cleanedData.email,
+        subject: cleanedData.subject,
+        inquiry: cleanedData.inquiry,
       });
 
-      console.log("Contact form response:", response.data);
-      return response.data;
+      const response = await axiosInstance.post("/contact", cleanedData, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 30000, // 30 seconds timeout for production
+        withCredentials: true,
+      });
+``
+      console.log("✅ Contact form submitted successfully:", response.data);
 
+      // Set rate limit timestamp on successful submission
+      contactFormService.setRateLimitTimestamp();
+
+      return response.data;
     } catch (err) {
-      console.error("Contact form submission error:", err.response?.data || err.message);
-      
-      // Handle different types of errors
-      if (err.code === 'ECONNABORTED') {
-        throw new Error("Request timeout. Please check your internet connection and try again.");
+      console.error("❌ Contact form submission error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        code: err.code,
+      });
+
+      // Handle timeout
+      if (err.code === "ECONNABORTED") {
+        throw new Error(
+          "Request timeout. Please check your internet connection and try again."
+        );
       }
-      
+
+      // Handle network errors
+      if (err.code === "ERR_NETWORK") {
+        throw new Error(
+          "Network error. Please check your internet connection."
+        );
+      }
+
+      // Handle rate limiting
       if (err.response?.status === 429) {
-        throw new Error("Too many submissions. Please wait a few minutes before trying again.");
+        throw new Error(
+          "Too many submissions. Please wait a few minutes before trying again."
+        );
       }
-      
+
+      // Handle validation errors
       if (err.response?.status === 400) {
-        const errorMessage = err.response.data?.errors?.[0]?.msg || 
-                           err.response.data?.message || 
-                           "Please check your form data and try again.";
+        const errorMessage =
+          err.response.data?.errors?.[0]?.msg ||
+          err.response.data?.message ||
+          "Please check your form data and try again.";
         throw new Error(errorMessage);
       }
-      
+
+      // Handle payload too large
       if (err.response?.status === 413) {
-        throw new Error("Message too large. Please shorten your message and try again.");
+        throw new Error(
+          "Message too large. Please shorten your message and try again."
+        );
       }
-      
+
+      // Handle server errors
       if (err.response?.status >= 500) {
-        throw new Error("Server error. Please try again later or contact us directly.");
+        throw new Error(
+          "Server error. Please try again later or contact us directly at govind@fittracker.in"
+        );
       }
-      
+
+      // Handle no internet connection
       if (!navigator.onLine) {
-        throw new Error("No internet connection. Please check your connection and try again.");
+        throw new Error(
+          "No internet connection. Please check your connection and try again."
+        );
       }
-      
+
       // If it's already a custom error message, use it
       if (err.message && !err.response) {
         throw err;
       }
-      
-      throw new Error("Failed to send message. Please try again or contact us directly.");
+
+      throw new Error(
+        "Failed to send message. Please try again or contact us directly at govind@fittracker.in"
+      );
     }
   },
 
@@ -119,13 +170,12 @@ export const contactFormService = {
 
     // Phone validation (optional but if provided should be valid)
     if (formData.phone && formData.phone.trim().length > 0) {
-      const cleanPhone = formData.phone.replace(/\s+/g, '').replace(/[-()+]/g, '');
+      const cleanPhone = formData.phone
+        .replace(/\s+/g, "")
+        .replace(/[-()+]/g, "");
       if (cleanPhone.length < 10 || cleanPhone.length > 15) {
         errors.phone = "Please provide a valid phone number (10-15 digits)";
       }
-      // if (!/^[\+]?[\d\s\-\(\)]+$/.test(formData.phone)) {
-      //   errors.phone = "Phone number can only contain numbers, spaces, +, -, (, )";
-      // }
     }
 
     // Subject validation
@@ -143,7 +193,13 @@ export const contactFormService = {
     }
 
     // Inquiry type validation
-    const validInquiryTypes = ['general', 'sales', 'support', 'demo', 'partnership'];
+    const validInquiryTypes = [
+      "general",
+      "sales",
+      "support",
+      "demo",
+      "partnership",
+    ];
     if (formData.inquiry && !validInquiryTypes.includes(formData.inquiry)) {
       errors.inquiry = "Please select a valid inquiry type";
     }
@@ -159,92 +215,106 @@ export const contactFormService = {
 
     return {
       isValid: Object.keys(errors).length === 0,
-      errors
+      errors,
     };
   },
 
   // Check if user is rate limited
   checkRateLimit: () => {
-    const lastSubmission = localStorage.getItem('lastContactSubmission');
+    const lastSubmission = localStorage.getItem("lastContactSubmission");
     if (lastSubmission) {
       const timeDiff = Date.now() - parseInt(lastSubmission);
       const rateLimit = 15 * 60 * 1000; // 15 minutes in milliseconds
-      
+
       if (timeDiff < rateLimit) {
         const remainingTime = Math.ceil((rateLimit - timeDiff) / 60000); // minutes
         return {
           isRateLimited: true,
-          remainingMinutes: remainingTime
+          remainingMinutes: remainingTime,
         };
       }
     }
-    
+
     return {
       isRateLimited: false,
-      remainingMinutes: 0
+      remainingMinutes: 0,
     };
   },
 
   // Set rate limit timestamp
   setRateLimitTimestamp: () => {
-    localStorage.setItem('lastContactSubmission', Date.now().toString());
+    localStorage.setItem("lastContactSubmission", Date.now().toString());
   },
 
   // Format phone number for display
   formatPhoneNumber: (phone) => {
-    if (!phone) return '';
-    
+    if (!phone) return "";
+
     // Remove all non-digits
-    const cleaned = phone.replace(/\D/g, '');
-    
+    const cleaned = phone.replace(/\D/g, "");
+
     // Format based on length
     if (cleaned.length === 10) {
-      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-    } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
-      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
+        6
+      )}`;
+    } else if (cleaned.length === 11 && cleaned.startsWith("1")) {
+      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(
+        4,
+        7
+      )}-${cleaned.slice(7)}`;
     }
-    
+
     return phone; // Return original if can't format
   },
 
   // Get inquiry type display name
   getInquiryDisplayName: (inquiryType) => {
     const inquiryTypes = {
-      general: 'General Inquiry',
-      sales: 'Sales & Pricing',
-      support: 'Technical Support',
-      demo: 'Request Demo',
-      partnership: 'Partnership'
+      general: "General Inquiry",
+      sales: "Sales & Pricing",
+      support: "Technical Support",
+      demo: "Request Demo",
+      partnership: "Partnership",
     };
-    
-    return inquiryTypes[inquiryType] || 'General Inquiry';
+
+    return inquiryTypes[inquiryType] || "General Inquiry";
   },
 
   // Clean form data for display
   cleanFormData: (formData) => {
     const cleaned = {};
-    
-    Object.keys(formData).forEach(key => {
-      if (typeof formData[key] === 'string') {
+
+    Object.keys(formData).forEach((key) => {
+      if (typeof formData[key] === "string") {
         cleaned[key] = formData[key].trim();
       } else {
         cleaned[key] = formData[key];
       }
     });
-    
+
     return cleaned;
   },
 
   // Check if form has unsaved changes
   hasUnsavedChanges: (formData, initialData = {}) => {
-    const keys = ['name', 'email', 'phone', 'subject', 'message', 'gymName', 'ownerName', 'inquiry'];
-    
-    return keys.some(key => {
-      const currentValue = formData[key]?.trim() || '';
-      const initialValue = initialData[key]?.trim() || '';
+    const keys = [
+      "name",
+      "email",
+      "phone",
+      "subject",
+      "message",
+      "gymName",
+      "ownerName",
+      "inquiry",
+    ];
+
+    return keys.some((key) => {
+      const currentValue = formData[key]?.trim() || "";
+      const initialValue = initialData[key]?.trim() || "";
       return currentValue !== initialValue;
     });
-  }
+  },
 };
 
 // Named export for individual functions if needed
@@ -256,7 +326,7 @@ export const {
   formatPhoneNumber,
   getInquiryDisplayName,
   cleanFormData,
-  hasUnsavedChanges
+  hasUnsavedChanges,
 } = contactFormService;
 
 // Default export
