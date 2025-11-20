@@ -446,7 +446,7 @@ const SignupForm = lazy(() =>
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 style={{
                   ...inputStyle,
-                  paddingRight: "48px",
+                  paddingRight: "47px",
                 }}
                 placeholder="Confirm your password"
                 required
