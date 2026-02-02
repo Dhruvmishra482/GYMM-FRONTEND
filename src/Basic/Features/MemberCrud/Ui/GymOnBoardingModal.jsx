@@ -1,5 +1,15 @@
-import React, { useState, useRef, useCallback, useMemo, memo } from 'react';
-import { Crown, Upload, X, Camera, Dumbbell, Sparkles, CheckCircle } from 'lucide-react';
+import React, { useState, useRef, useCallback, useMemo, memo } from "react";
+import {
+  Crown,
+  Upload,
+  X,
+  Camera,
+  Dumbbell,
+  Sparkles,
+  CheckCircle,
+} from "lucide-react";
+
+import LogoImg from "/logo.png?url";
 
 // ============================================
 // CUSTOM HOOKS
@@ -51,7 +61,7 @@ const useImageCompression = () => {
       });
     `;
 
-    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const blob = new Blob([workerCode], { type: "application/javascript" });
     workerRef.current = new Worker(URL.createObjectURL(blob));
 
     return () => {
@@ -64,24 +74,24 @@ const useImageCompression = () => {
   const compressImage = useCallback((dataUrl, maxSize = 800) => {
     return new Promise((resolve, reject) => {
       if (!workerRef.current) {
-        reject(new Error('Worker not initialized'));
+        reject(new Error("Worker not initialized"));
         return;
       }
 
       const handleMessage = (e) => {
-        if (e.data.type === 'IMAGE_COMPRESSED') {
-          workerRef.current.removeEventListener('message', handleMessage);
+        if (e.data.type === "IMAGE_COMPRESSED") {
+          workerRef.current.removeEventListener("message", handleMessage);
           resolve(e.data.data);
-        } else if (e.data.type === 'IMAGE_ERROR') {
-          workerRef.current.removeEventListener('message', handleMessage);
+        } else if (e.data.type === "IMAGE_ERROR") {
+          workerRef.current.removeEventListener("message", handleMessage);
           reject(new Error(e.data.error));
         }
       };
 
-      workerRef.current.addEventListener('message', handleMessage);
+      workerRef.current.addEventListener("message", handleMessage);
       workerRef.current.postMessage({
-        type: 'COMPRESS_IMAGE',
-        data: { dataUrl, maxSize }
+        type: "COMPRESS_IMAGE",
+        data: { dataUrl, maxSize },
       });
     });
   }, []);
@@ -103,64 +113,77 @@ const AnimatedBackground = memo(() => (
   </div>
 ));
 
-AnimatedBackground.displayName = 'AnimatedBackground';
+AnimatedBackground.displayName = "AnimatedBackground";
 
 const ModalHeader = memo(({ ownerName }) => (
   <div className="relative p-4 text-white bg-white sm:p-6">
     <div className="flex items-center gap-2 mb-2 sm:gap-3">
-      <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500">
-        <Crown className="w-4 h-4 text-white sm:w-6 sm:h-6" />
+      <div className="p-1.5 sm:p-2 rounded-lg ">
+        {/* <Crown className="w-4 h-4 text-white sm:w-6 sm:h-6" /> */}
+        <img
+          src={LogoImg}
+          alt="FitTracker Logo"
+          className="w-6 h-6 sm:w-8 sm:h-8"
+        />
       </div>
       <div>
         <h1 className="text-lg font-bold text-transparent sm:text-xl bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 bg-clip-text">
-          IRON THRONE
+          FitTracker
         </h1>
         <p className="text-xs text-gray-600 sm:text-sm">Gym Management Setup</p>
       </div>
     </div>
-    <p className="text-xs text-gray-600 sm:text-sm">Hi {ownerName}! Let's set up your gym</p>
+    <p className="text-xs text-gray-600 sm:text-sm">
+      Hi {ownerName}! Let's set up your gym
+    </p>
   </div>
 ));
 
-ModalHeader.displayName = 'ModalHeader';
+ModalHeader.displayName = "ModalHeader";
 
 const ProgressBar = memo(({ step, totalSteps = 2 }) => (
   <div className="h-1 bg-gray-200">
-    <div 
+    <div
       className="h-full transition-all duration-700 ease-out bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500"
       style={{ width: `${(step / totalSteps) * 100}%` }}
     ></div>
   </div>
 ));
 
-ProgressBar.displayName = 'ProgressBar';
+ProgressBar.displayName = "ProgressBar";
 
 const GymNamePreview = memo(({ gymName }) => {
   if (!gymName) return null;
 
   return (
     <div className="p-3 border border-pink-200 sm:p-4 rounded-xl bg-gradient-to-r from-orange-50 via-pink-50 to-purple-50">
-      <p className="mb-2 text-xs font-medium text-gray-600 sm:text-sm">Preview:</p>
+      <p className="mb-2 text-xs font-medium text-gray-600 sm:text-sm">
+        Preview:
+      </p>
       <div className="flex items-center gap-2 font-semibold text-gray-800">
-        <Crown className="w-4 h-4 text-purple-500 sm:w-5 sm:h-5" />
+        <img
+          src={LogoImg}
+          alt="FitTracker Logo"
+          className="w-6 h-6 sm:w-8 sm:h-8"
+        />
         <span className="text-sm sm:text-base">{gymName}</span>
       </div>
     </div>
   );
 });
 
-GymNamePreview.displayName = 'GymNamePreview';
+GymNamePreview.displayName = "GymNamePreview";
 
 const LogoUploadArea = memo(({ logoPreview, onUploadClick }) => (
-  <div 
+  <div
     onClick={onUploadClick}
     className="p-4 text-center transition-all bg-white border-2 border-gray-300 border-dashed cursor-pointer sm:p-6 rounded-xl hover:border-pink-400 hover:bg-gradient-to-br hover:from-orange-50 hover:via-pink-50 hover:to-purple-50"
   >
     {logoPreview ? (
       <div className="space-y-2 sm:space-y-3">
-        <img 
-          src={logoPreview} 
-          alt="Gym Logo Preview" 
+        <img
+          src={logoPreview}
+          alt="Gym Logo Preview"
           className="object-cover w-16 h-16 mx-auto border-4 border-white shadow-lg sm:w-20 sm:h-20 rounded-xl"
         />
         <p className="text-xs text-gray-600 sm:text-sm">Click to change logo</p>
@@ -169,7 +192,9 @@ const LogoUploadArea = memo(({ logoPreview, onUploadClick }) => (
       <div className="space-y-2">
         <Upload className="w-8 h-8 mx-auto text-gray-400 sm:w-10 sm:h-10" />
         <div>
-          <p className="text-sm font-medium text-gray-700">Click to upload logo</p>
+          <p className="text-sm font-medium text-gray-700">
+            Click to upload logo
+          </p>
           <p className="text-xs text-gray-500">PNG, JPG, GIF up to 2MB</p>
         </div>
       </div>
@@ -177,32 +202,41 @@ const LogoUploadArea = memo(({ logoPreview, onUploadClick }) => (
   </div>
 ));
 
-LogoUploadArea.displayName = 'LogoUploadArea';
+LogoUploadArea.displayName = "LogoUploadArea";
 
 const DashboardPreview = memo(({ gymName, logoPreview }) => (
   <div className="p-3 border border-gray-200 sm:p-4 rounded-xl bg-gradient-to-r from-orange-50 via-pink-50 to-purple-50">
-    <p className="mb-2 text-xs font-medium text-gray-600 sm:mb-3 sm:text-sm">Dashboard Preview:</p>
+    <p className="mb-2 text-xs font-medium text-gray-600 sm:mb-3 sm:text-sm">
+      Dashboard Preview:
+    </p>
     <div className="flex items-center gap-2 sm:gap-3">
       {logoPreview ? (
-        <img 
-          src={logoPreview} 
-          alt="Logo" 
+        <img
+          src={logoPreview}
+          alt="Logo"
           className="object-cover w-8 h-8 border-2 border-pink-200 rounded-lg sm:w-10 sm:h-10"
         />
       ) : (
-        <div className="flex items-center justify-center w-8 h-8 rounded-lg sm:w-10 sm:h-10 bg-gradient-to-br from-orange-400 via-pink-500 to-purple-500">
-          <Crown className="w-4 h-4 text-white sm:w-5 sm:h-5" />
+        <div className="p-1.5 sm:p-2 rounded-lg ">
+          {/* <Crown className="w-4 h-4 text-white sm:w-6 sm:h-6" /> */}
+          <img
+            src={LogoImg}
+            alt="FitTracker Logo"
+            className="w-6 h-6 sm:w-8 sm:h-8"
+          />
         </div>
       )}
       <div>
-        <div className="text-sm font-bold text-gray-800 sm:text-base">{gymName}</div>
+        <div className="text-sm font-bold text-gray-800 sm:text-base">
+          {gymName}
+        </div>
         <div className="text-xs text-gray-600 sm:text-sm">Gym Management</div>
       </div>
     </div>
   </div>
 ));
 
-DashboardPreview.displayName = 'DashboardPreview';
+DashboardPreview.displayName = "DashboardPreview";
 
 const CompletionScreen = memo(({ gymName }) => (
   <div className="relative w-full max-w-sm p-6 mx-4 text-center bg-white shadow-2xl sm:max-w-md sm:p-8 rounded-3xl">
@@ -210,7 +244,9 @@ const CompletionScreen = memo(({ gymName }) => (
       <CheckCircle className="w-16 h-16 mx-auto text-green-500 sm:w-20 sm:h-20 animate-bounce" />
       <div className="absolute inset-0 w-16 h-16 mx-auto rounded-full sm:w-20 sm:h-20 bg-green-400/20 animate-ping"></div>
     </div>
-    <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">Setup Complete!</h2>
+    <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
+      Setup Complete!
+    </h2>
     <p className="mb-4 text-sm text-gray-600 sm:text-base">
       Welcome to your {gymName} gym management dashboard!
     </p>
@@ -220,7 +256,7 @@ const CompletionScreen = memo(({ gymName }) => (
   </div>
 ));
 
-CompletionScreen.displayName = 'CompletionScreen';
+CompletionScreen.displayName = "CompletionScreen";
 
 // ============================================
 // MAIN COMPONENT
@@ -228,7 +264,7 @@ CompletionScreen.displayName = 'CompletionScreen';
 
 const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
   const [step, setStep] = useState(1);
-  const [gymName, setGymName] = useState('');
+  const [gymName, setGymName] = useState("");
   const [gymLogo, setGymLogo] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -238,43 +274,46 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
 
   const { compressImage } = useImageCompression();
 
-  const handleLogoChange = useCallback(async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const handleLogoChange = useCallback(
+    async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file');
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Please select an image smaller than 2MB');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const base64String = e.target.result;
-        
-        // Compress image using Web Worker
-        const compressed = await compressImage(base64String, 800);
-        
-        setGymLogo(compressed.dataUrl);
-        setLogoPreview(compressed.dataUrl);
-      } catch (error) {
-        console.error('Image compression error:', error);
-        // Fallback to uncompressed image
-        setGymLogo(e.target.result);
-        setLogoPreview(e.target.result);
+      if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image file");
+        return;
       }
-    };
-    reader.readAsDataURL(file);
-  }, [compressImage]);
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Please select an image smaller than 2MB");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64String = e.target.result;
+
+          // Compress image using Web Worker
+          const compressed = await compressImage(base64String, 800);
+
+          setGymLogo(compressed.dataUrl);
+          setLogoPreview(compressed.dataUrl);
+        } catch (error) {
+          console.error("Image compression error:", error);
+          // Fallback to uncompressed image
+          setGymLogo(e.target.result);
+          setLogoPreview(e.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    },
+    [compressImage],
+  );
 
   const handleNext = useCallback(() => {
     if (step === 1 && gymName.trim().length < 3) {
-      alert('Please enter a gym name with at least 3 characters');
+      alert("Please enter a gym name with at least 3 characters");
       return;
     }
     setStep(2);
@@ -286,24 +325,23 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
 
   const handleComplete = useCallback(async () => {
     if (!gymName.trim()) {
-      alert('Please enter your gym name');
+      alert("Please enter your gym name");
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       await onComplete({ gymName: gymName.trim(), gymLogo });
-      
+
       setIsCompleted(true);
-      
+
       setTimeout(() => {
         setIsCompleted(false);
       }, 1500);
-      
     } catch (error) {
-      console.error('Onboarding error:', error);
-      alert(error.message || 'Failed to complete setup. Please try again.');
+      console.error("Onboarding error:", error);
+      alert(error.message || "Failed to complete setup. Please try again.");
       setIsLoading(false);
     }
   }, [gymName, gymLogo, onComplete]);
@@ -317,16 +355,16 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
   }, []);
 
   // Memoized validation
-  const isStep1Valid = useMemo(() => 
-    gymName.trim() && gymName.trim().length >= 3,
-    [gymName]
+  const isStep1Valid = useMemo(
+    () => gymName.trim() && gymName.trim().length >= 3,
+    [gymName],
   );
 
   if (!isOpen) return null;
 
   if (isCompleted) {
     return (
-      <div 
+      <div
         ref={containerRef}
         className="relative flex items-center justify-center min-h-screen py-24 pb-20 overflow-hidden bg-black"
       >
@@ -337,14 +375,13 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative flex items-center justify-center min-h-screen py-24 pb-20 overflow-hidden bg-black"
     >
       <AnimatedBackground />
 
       <div className="relative w-full max-w-sm mx-4 overflow-hidden bg-white shadow-2xl sm:max-w-md lg:max-w-lg rounded-2xl sm:rounded-3xl">
-        
         <ModalHeader ownerName={ownerName} />
         <ProgressBar step={step} />
 
@@ -352,11 +389,19 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
           {step === 1 && (
             <div className="space-y-4 sm:space-y-6">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 mb-3 sm:w-16 sm:h-16 sm:mb-4 bg-gradient-to-br from-orange-400 via-pink-500 to-purple-500 rounded-2xl">
-                  <Dumbbell className="w-6 h-6 text-white sm:w-8 sm:h-8" />
-                </div>
-                <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">What's your gym name?</h2>
-                <p className="text-sm text-gray-600 sm:text-base">This will appear throughout your dashboard</p>
+                {/* <div className="inline-flex  items-center justify-center w-12 h-12 mb-3 sm:w-16 sm:h-16 sm:mb-4  rounded-2xl">
+                  <img
+                    src={LogoImg}
+                    alt="FitTracker Logo"
+                    className="w-6 h-6 sm:w-8 sm:h-8"
+                  />
+                </div> */}
+                <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
+                  What's your gym name?
+                </h2>
+                <p className="text-sm text-gray-600 sm:text-base">
+                  This will appear throughout your dashboard
+                </p>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
@@ -368,7 +413,7 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
                   className="w-full px-3 py-3 text-base font-medium text-center transition-all bg-white border-2 border-gray-200 sm:px-4 sm:py-4 sm:text-lg rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 focus:outline-none"
                   autoFocus
                 />
-                
+
                 <GymNamePreview gymName={gymName} />
               </div>
 
@@ -378,7 +423,6 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
                 className="flex items-center justify-center w-full gap-2 py-3 sm:py-4 font-semibold text-white transition-all duration-300 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500 rounded-xl hover:from-orange-500 hover:via-pink-600 hover:to-purple-600 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-xl"
               >
                 <span className="text-sm sm:text-base">Continue</span>
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           )}
@@ -389,13 +433,17 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
                 <div className="inline-flex items-center justify-center w-12 h-12 mb-3 sm:w-16 sm:h-16 sm:mb-4 bg-gradient-to-br from-orange-400 via-pink-500 to-purple-500 rounded-2xl">
                   <Camera className="w-6 h-6 text-white sm:w-8 sm:h-8" />
                 </div>
-                <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">Upload your gym logo</h2>
-                <p className="text-sm text-gray-600 sm:text-base">Make your gym stand out with a custom logo (optional)</p>
+                <h2 className="mb-2 text-xl font-bold text-gray-800 sm:text-2xl">
+                  Upload your gym logo
+                </h2>
+                <p className="text-sm text-gray-600 sm:text-base">
+                  Make your gym stand out with a custom logo (optional)
+                </p>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
-                <LogoUploadArea 
-                  logoPreview={logoPreview} 
+                <LogoUploadArea
+                  logoPreview={logoPreview}
                   onUploadClick={handleUploadClick}
                 />
 
@@ -443,4 +491,4 @@ const GymOnboardingModal = ({ isOpen, onComplete, ownerName }) => {
   );
 };
 
-export default memo(GymOnboardingModal); 
+export default memo(GymOnboardingModal);

@@ -1178,13 +1178,7 @@ const AddMemberForm = ({
           ))}
         </div>
 
-        {/* Auto-calculation Info */}
-        <InfoCard
-          icon={Lock}
-          title="Smart Date Calculation"
-          description="Next due date is automatically calculated based on joining date and selected plan duration"
-          gradient="to-amber-50 border-amber-100"
-        />
+       
       </div>
     </div>
   );

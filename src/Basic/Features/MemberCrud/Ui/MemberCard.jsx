@@ -256,7 +256,7 @@ const SearchScreen = memo(({
             </div>
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-2 animate-fade-in">
-            IRON THRONE
+            FitTracker
           </h1>
           <p className="text-orange-300/70 text-sm font-medium tracking-wide">
             ELITE GYM DOMINION
@@ -319,7 +319,7 @@ const CardFront = memo(({ memberData }) => {
           <div className="flex justify-between items-start">
             <div>
               <h3 className="text-orange-300 text-sm font-bold tracking-wide">
-                IRON THRONE
+                FitTracker
               </h3>
               <p className="text-orange-400/80 text-xs">ELITE MEMBER</p>
             </div>

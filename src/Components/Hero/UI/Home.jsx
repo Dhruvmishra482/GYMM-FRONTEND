@@ -1,105 +1,49 @@
-// src/components/Hero/Home.jsx - Optimized Version
-import React, { 
-  useState, 
-  useEffect, 
-  useRef, 
-  useCallback, 
-  useMemo, 
-  memo
+// src/components/Hero/Home.jsx - With Right Side Image
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
 } from "react";
-import {
-  Play,
-  Rocket,
-  Zap,
-  Sparkles,
-  Target,
-  Dumbbell,
-  TrendingUp,
-} from "lucide-react";
-
-// Optimized: Direct memo components without lazy loading for critical above-fold content
-const AnimatedParticle = memo(({ particle, scrollY }) => (
-  <div
-    className="absolute w-1 h-1 rounded-full bg-gradient-to-r from-orange-400 to-pink-400 animate-ping opacity-30"
-    style={{
-      left: particle.left,
-      top: particle.top,
-      animationDelay: particle.animationDelay,
-      animationDuration: particle.animationDuration,
-      transform: `translateY(${
-        Math.sin(scrollY * 0.001 + particle.index) * 20
-      }px) translateX(${Math.cos(scrollY * 0.002 + particle.index) * 15}px)`,
-      willChange: 'transform',
-    }}
-  />
-));
-AnimatedParticle.displayName = 'AnimatedParticle';
+import { Play, Rocket, Zap, Sparkles, Target } from "lucide-react";
+// Import your background image
+import heroBackground from "../../Images/ChatGPT Image Jan 10, 2026, 01_03_57 AM.png"; // Update path to your Image 2
 
 const FeaturePill = memo(({ feature, index }) => {
   const Icon = feature.icon;
   return (
     <div
       className="relative group"
-      style={{ animationDelay: `${index * 200}ms` }}
+      style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-20 rounded-full blur-xl group-hover:opacity-30 transition-all duration-300`} />
-      <div className="relative flex items-center px-6 py-3 space-x-2 transition-all duration-300 transform border rounded-full bg-gray-900/50 backdrop-blur-xl border-gray-700/50 hover:border-orange-400/50 hover:-translate-y-1">
-        <Icon className="w-4 h-4 text-orange-400" />
-        <span className={`text-sm font-semibold bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent`}>
+      <div className="relative flex items-center px-4 sm:px-6 py-3 space-x-2 transition-all duration-300 transform border rounded-full bg-black/30 backdrop-blur-md border-orange-500/30 hover:border-orange-400 hover:bg-orange-500/10">
+        <Icon className="w-5 h-5 text-orange-400" />
+        <span className="text-sm font-semibold text-orange-300">
           {feature.text}
         </span>
       </div>
     </div>
   );
 });
-FeaturePill.displayName = 'FeaturePill';
 
-const StatCard = memo(({ stat }) => (
-  <div className="relative group">
-    <div className={`absolute inset-0 bg-gradient-to-r ${stat.gradient} opacity-20 rounded-2xl blur-xl group-hover:opacity-30 transition-all duration-300`} />
-    <div className="relative p-8 transition-all duration-300 transform border bg-gray-900/50 backdrop-blur-xl rounded-2xl border-gray-700/50 hover:border-orange-400/50 hover:-translate-y-2">
-      <h3 className={`text-4xl font-black mb-2 bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
-        {stat.title}
-      </h3>
-      <p className="font-semibold text-gray-300">{stat.subtitle}</p>
-    </div>
-  </div>
-));
-StatCard.displayName = 'StatCard';
+FeaturePill.displayName = "FeaturePill";
 
 const Home = memo(({ onOpenAuthModal }) => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(null);
-  const [showParticles, setShowParticles] = useState(false);
-  
+
   const containerRef = useRef(null);
-  const rafRef = useRef(null);
-
-  // Optimized: Throttled mouse move with RAF
-  const handleMouseMove = useCallback((e) => {
-    if (rafRef.current) return;
-    
-    rafRef.current = requestAnimationFrame(() => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-      rafRef.current = null;
-    });
-  }, []);
-
-  // Optimized: Passive scroll listener with RAF throttling
-  const handleScroll = useCallback(() => {
-    if (rafRef.current) return;
-    
-    rafRef.current = requestAnimationFrame(() => {
-      setScrollY(window.scrollY);
-      rafRef.current = null;
-    });
-  }, []);
 
   const handleGetStartedClick = useCallback(() => {
     onOpenAuthModal?.("signup");
   }, [onOpenAuthModal]);
+
+  const handleWatchDemoClick = useCallback(() => {
+    // Add your demo video logic here
+    console.log("Watch Demo clicked");
+  }, []);
 
   const handleMouseEnter = useCallback((type) => {
     setIsHovered(type);
@@ -109,18 +53,14 @@ const Home = memo(({ onOpenAuthModal }) => {
     setIsHovered(null);
   }, []);
 
-  // Optimized: Single effect with proper cleanup
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          // Delay particles for better initial render
-          const timer = setTimeout(() => setShowParticles(true), 800);
-          return () => clearTimeout(timer);
         }
       },
-      { threshold: 0.1, rootMargin: '50px' }
+      { threshold: 0.1 }
     );
 
     const currentRef = containerRef.current;
@@ -131,192 +71,208 @@ const Home = memo(({ onOpenAuthModal }) => {
     // Immediate visibility for hero section
     setIsVisible(true);
 
-    // Passive listeners for better scroll performance
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("scroll", handleScroll);
       if (currentRef) observer.unobserve(currentRef);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [handleMouseMove, handleScroll]);
+  }, []);
 
-  // Optimized: Reduced particles for better performance
-  const particles = useMemo(() => 
-    Array.from({ length: 12 }, (_, i) => ({
-      id: `p-${i}`,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      animationDelay: `${Math.random() * 4}s`,
-      animationDuration: `${2 + Math.random() * 3}s`,
-      index: i,
-    }))
-  , []);
-
-  const featurePills = useMemo(() => [
-    { icon: Target, text: "Smart Analytics", gradient: "from-orange-400 to-pink-400" },
-    { icon: Dumbbell, text: "Equipment AI", gradient: "from-cyan-400 to-blue-400" },
-    { icon: TrendingUp, text: "Growth Insights", gradient: "from-purple-400 to-pink-400" },
-  ], []);
-
-  const statsData = useMemo(() => [
-    { title: "10+", subtitle: "Active Gyms", gradient: "from-orange-400 to-pink-400" },
-    { title: "99.9%", subtitle: "Uptime", gradient: "from-cyan-400 to-blue-400" },
-    { title: "24/7", subtitle: "Support", gradient: "from-purple-400 to-pink-400" },
-  ], []);
-
-  // Optimized: CSS variable for GPU acceleration
-  const mouseGlowStyle = useMemo(() => ({
-    background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,135,0,0.15) 0%, transparent 50%)`,
-    willChange: 'background',
-  }), [mousePos.x, mousePos.y]);
+  const featurePills = useMemo(
+    () => [
+      { icon: Target, text: "Smart Analytics" },
+      { icon: Sparkles, text: "Equipment AI" },
+    ],
+    []
+  );
 
   return (
     <section
       ref={containerRef}
-      className="relative flex items-center justify-center min-h-screen py-24 pb-20 overflow-hidden bg-black"
+      className="relative flex items-center min-h-screen overflow-hidden bg-black px-4 sm:px-6"
     >
-      {/* Optimized: Static background blobs with GPU acceleration */}
+      {/* Background with gradient blobs - keeping original */}
       <div className="absolute inset-0">
-        <div className="absolute rounded-full top-20 left-10 w-72 h-72 bg-gradient-to-br from-orange-500/20 to-pink-500/20 blur-3xl animate-pulse will-change-transform" />
-        <div className="absolute delay-1000 rounded-full top-40 right-20 w-96 h-96 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 blur-3xl animate-pulse will-change-transform" />
-        <div className="absolute rounded-full bottom-20 left-1/3 w-80 h-80 bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl animate-pulse delay-2000 will-change-transform" />
+        <div className="absolute rounded-full top-12 sm:top-20 left-4 sm:left-10 w-48 sm:w-72 h-48 sm:h-72 bg-gradient-to-br from-orange-500/20 to-pink-500/20 blur-3xl animate-pulse" />
+        <div className="absolute delay-1000 rounded-full top-28 sm:top-40 right-6 sm:right-20 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 blur-3xl animate-pulse" />
+        <div className="absolute rounded-full bottom-12 sm:bottom-20 left-1/4 sm:left-1/3 w-56 sm:w-80 h-56 sm:h-80 bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl animate-pulse delay-2000" />
       </div>
 
-      {/* Mouse Interactive Glow */}
-      <div
-        className="absolute inset-0 transition-all duration-1000 pointer-events-none opacity-30"
-        style={mouseGlowStyle}
-      />
-
-      {/* Optimized: Conditional particle rendering */}
-      {showParticles && (
-        <div className="absolute inset-0 pointer-events-none">
-          {particles.map((particle) => (
-            <AnimatedParticle key={particle.id} particle={particle} scrollY={scrollY} />
-          ))}
-        </div>
-      )}
+      {/* Subtle animated particles */}
+      <div className="absolute inset-0 pointer-events-none opacity-30 hidden sm:block">
+        <div
+          className="absolute w-1 h-1 rounded-full animate-ping top-20 left-1/4 bg-orange-400"
+          style={{ animationDuration: "3s" }}
+        />
+        <div
+          className="absolute w-1 h-1 rounded-full animate-ping top-40 right-1/3 bg-cyan-400"
+          style={{ animationDuration: "4s", animationDelay: "1s" }}
+        />
+        <div
+          className="absolute w-1 h-1 rounded-full animate-ping bottom-32 left-1/3 bg-pink-400"
+          style={{ animationDuration: "5s", animationDelay: "2s" }}
+        />
+      </div>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-6xl px-6 mx-auto text-center">
-        {/* Hero Badge */}
-        <div
-          className={`inline-flex items-center space-x-2 bg-gradient-to-r from-orange-600/20 to-pink-600/20 backdrop-blur-sm border border-orange-500/30 rounded-full px-6 py-3 mb-8 transform transition-all duration-1000 ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-          }`}
-        >
-          <Sparkles className="w-5 h-5 text-orange-400" />
-          <span className="font-semibold text-orange-300">
-            Revolutionary Gym Management
-          </span>
-          <Zap className="w-5 h-5 text-pink-400" />
-        </div>
-
-        {/* Main Title */}
-        <h1
-          className={`text-6xl md:text-8xl lg:text-9xl font-black mb-6 leading-tight transform transition-all duration-1000 delay-300 ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
-          }`}
-        >
-          <span className="text-transparent bg-gradient-to-r from-orange-400 via-yellow-400 to-pink-400 bg-clip-text">
-            FitTracker
-          </span>
-        </h1>
-
-        {/* Subtitle */}
-        <div
-          className={`max-w-4xl mx-auto mb-8 transform transition-all duration-1000 delay-500 ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
-          }`}
-        >
-          <p className="mb-4 text-xl text-gray-300">
-            Experience the{" "}
-            <span className="font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
-              next evolution
-            </span>{" "}
-            of gym management with
-          </p>
-          <p className="text-2xl font-bold">
-            <span className="text-transparent bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text">
-              AI-powered systems
-            </span>{" "}
-            <span className="text-gray-300">that seem like magic</span>
-          </p>
-        </div>
-
-        {/* Feature Pills */}
-        <div
-          className={`flex flex-wrap justify-center gap-4 mb-12 transform transition-all duration-1000 delay-700 ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
-          }`}
-        >
-          {featurePills.map((feature, index) => (
-            <FeaturePill key={index} feature={feature} index={index} />
-          ))}
-        </div>
-
-        {/* CTA Buttons */}
-        <div
-          className={`flex flex-col sm:flex-row gap-6 justify-center transform transition-all duration-1000 delay-900 ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
-          }`}
-        >
-          <button
-            className="relative px-12 py-4 text-lg font-bold text-white transition-all transform rounded-full group bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/25"
-            onMouseEnter={() => handleMouseEnter("primary")}
-            onMouseLeave={handleMouseLeave}
-            onClick={handleGetStartedClick}
-          >
-            <div className="absolute inset-0 transition-opacity rounded-full opacity-0 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600 group-hover:opacity-100 blur-xl" />
-            <div className="relative flex items-center justify-center space-x-3">
-              <Play
-                className={`w-5 h-5 transition-all duration-300 ${
-                  isHovered === "primary" ? "animate-bounce" : ""
-                }`}
-              />
-              <span>GET STARTED</span>
-              <Rocket
-                className={`w-5 h-5 transition-all duration-300 ${
-                  isHovered === "primary" ? "animate-spin" : ""
-                }`}
-              />
+      <div className="relative z-10 w-full max-w-7xl px-4 sm:px-6 mx-auto">
+        <div className="grid items-center grid-cols-1 gap-12 lg:grid-cols-2">
+          {/* Left Column - Text Content */}
+          <div className="space-y-8">
+            {/* Hero Badge */}
+            <div
+              className={`inline-flex items-center space-x-2 bg-gradient-to-r from-orange-600/20 to-pink-600/20 backdrop-blur-sm border border-orange-500/40 rounded-full px-5 py-2.5 transform transition-all duration-1000 ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-10 opacity-0"
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-orange-400" />
+              <span className="text-sm font-semibold text-orange-300">
+                Revolutionary Gym Management
+              </span>
+              <Zap className="w-4 h-4 text-pink-400" />
             </div>
-          </button>
 
-          <button
-            className="relative px-12 py-4 text-lg font-bold text-gray-300 transition-all bg-transparent border-2 border-gray-600 rounded-full group hover:border-purple-400 hover:text-purple-300 backdrop-blur-sm"
-            onMouseEnter={() => handleMouseEnter("secondary")}
-            onMouseLeave={handleMouseLeave}
-          >
-            <span className="relative flex items-center justify-center space-x-3">
-              <Sparkles
-                className={`w-5 h-5 transition-all duration-300 ${
-                  isHovered === "secondary" ? "animate-spin" : ""
+            {/* Main Title */}
+            <h1
+              className={`text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-tight transform transition-all duration-1000 delay-200 ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
+              <span className="text-transparent bg-gradient-to-r from-orange-400 via-yellow-400 to-pink-500 bg-clip-text">
+                FitTracker
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <div
+              className={`space-y-3 transform transition-all duration-1000 delay-400 ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
+              <p className="text-lg md:text-xl text-gray-300">
+                Experience the{" "}
+                <span className="font-bold text-transparent bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text">
+                  next evolution
+                </span>{" "}
+                of gym management with
+              </p>
+              <p className="text-xl md:text-2xl font-bold">
+                <span className="text-transparent bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text">
+                  AI-powered systems
+                </span>{" "}
+                <span className="text-gray-200">that seem like magic</span>
+              </p>
+            </div>
+
+            {/* Feature Pills */}
+            <div
+              className={`flex flex-wrap gap-3 transform transition-all duration-1000 delay-600 ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
+              {featurePills.map((feature, index) => (
+                <FeaturePill key={index} feature={feature} index={index} />
+              ))}
+            </div>
+
+            {/* CTA Buttons */}
+            <div
+              className={`flex flex-col sm:flex-row gap-4 transform transition-all duration-1000 delay-800 ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-20 opacity-0"
+              }`}
+            >
+              {/* Get Started Button */}
+              <button
+                className="relative w-full sm:w-auto px-6 sm:px-10 py-4 text-base font-bold text-white transition-all transform rounded-full group bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/30"
+                onMouseEnter={() => handleMouseEnter("primary")}
+                onMouseLeave={handleMouseLeave}
+                onClick={handleGetStartedClick}
+              >
+                <div className="absolute inset-0 transition-opacity rounded-full opacity-0 bg-gradient-to-r from-orange-600 via-pink-600 to-purple-600 group-hover:opacity-100 blur-xl" />
+                <div className="relative flex items-center justify-center space-x-2">
+                  <Play
+                    className={`w-5 h-5 transition-all duration-300 ${
+                      isHovered === "primary" ? "scale-110" : ""
+                    }`}
+                  />
+                  <span>GET STARTED</span>
+                  <Rocket
+                    className={`w-5 h-5 transition-all duration-300 ${
+                      isHovered === "primary" ? "translate-x-1" : ""
+                    }`}
+                  />
+                </div>
+              </button>
+
+              {/* Watch Demo Button */}
+              <button
+                className="relative w-full sm:w-auto px-6 sm:px-10 py-4 text-base font-bold text-gray-200 transition-all transform bg-black/40 border-2 border-gray-500/50 rounded-full group hover:border-white/80 hover:bg-black/60 backdrop-blur-md hover:text-white"
+                onMouseEnter={() => handleMouseEnter("secondary")}
+                onMouseLeave={handleMouseLeave}
+                onClick={handleWatchDemoClick}
+              >
+                <span className="relative flex items-center justify-center space-x-2">
+                  <Sparkles
+                    className={`w-5 h-5 transition-all duration-300 ${
+                      isHovered === "secondary" ? "rotate-180" : ""
+                    }`}
+                  />
+                  <span>WATCH DEMO</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column - Image */}
+          <div className="relative hidden lg:block">
+            <div className="relative">
+              {/* Background glow effects */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div
+                  className="absolute w-64 h-64 rounded-full -top-10 -right-10 bg-cyan-500/20 blur-3xl animate-pulse"
+                  style={{ animationDuration: "4s" }}
+                />
+                <div
+                  className="absolute w-48 h-48 rounded-full bottom-10 -left-10 bg-purple-500/20 blur-3xl animate-pulse"
+                  style={{ animationDuration: "5s", animationDelay: "1s" }}
+                />
+              </div>
+
+              {/* Image Container with Animation */}
+              <div
+                className={`relative transform pt-10 transition-all duration-1000 delay-1000 ${
+                  isVisible
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-20 opacity-0"
                 }`}
-              />
-              <span>WATCH DEMO</span>
-            </span>
-          </button>
-        </div>
-
-        {/* Stats Section */}
-        <div
-          className={`mt-20 grid md:grid-cols-3 gap-8 transform transition-all duration-1000 delay-1100 ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
-          }`}
-        >
-          {statsData.map((stat, index) => (
-            <StatCard key={index} stat={stat} />
-          ))}
+              >
+                {/* Replace src with your heroBackground import */}
+                <img
+                  src={heroBackground}
+                  alt="FitTracker Dashboard"
+                  className="relative z-10 w-full max-w-[420px] sm:scale-110 md:scale-125 lg:scale-150 rounded-2xl mx-auto"
+                />
+              
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
     </section>
   );
 });
 
-Home.displayName = 'Home';
+Home.displayName = "Home";
 
 export default Home;

@@ -14,7 +14,7 @@ const axiosInstance = axios.create({
 // const axiosInstance = axios.create({
 //   baseURL:
 //     import.meta.env.MODE === "development"
-//       ? "http://localhost:4000/api/v1"
+//       ? "http://localhost:4000/api/v1"  
 //       : "https://api.fittracker.in/api/v1",
 //   withCredentials: true,
 //   timeout: 60000, // ✅ Increased to 60 seconds for email operations

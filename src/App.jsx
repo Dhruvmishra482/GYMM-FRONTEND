@@ -54,6 +54,7 @@ import EditMemberModal from "./Basic/Features/MemberCrud/Ui/EditMemberModal";
 import WorkoutPlanPage from "./Advance/Features/Aiworkout/logic/WorkoutPlanPage";
 
 import DietPlanPage from "./Advance/Features/AiDietPlan/logic/DietPlanPage";
+import SubscriptionRequired from "./Basic/Features/SubscriptionSystem/Logic/SubscriptionRequiredPage";
 import { useAuthStore } from "./Auth/Store/AuthStore";
 import { ToastContainer } from "react-toastify";
 // import React, { useState } from "react";
@@ -62,7 +63,14 @@ const App = () => {
   // ========================================
   // STATE & HOOKS
   // ========================================
-  const { user, loading, checkAuth, isInitialized } = useAuthStore();
+  const {
+    user,
+    loading,
+    checkAuth,
+    isInitialized,
+    refreshSubscription,
+    subscription,
+  } = useAuthStore();
   const location = useLocation();
 
   // Auth Modal State
@@ -345,6 +353,21 @@ const App = () => {
         {/* ========================================
             SUBSCRIPTION ROUTES
             ======================================== */}
+        <Route
+          path="/subscription-required"
+          element={
+            <ProtectedRoute allowedRoles={["owner"]}>
+              <SubscriptionRequired
+                user={user}
+                subscriptionStatus={subscription}
+                onSubscriptionUpdate={async () => {
+                  await refreshSubscription();
+                }}
+              />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/my-subscription"
           element={

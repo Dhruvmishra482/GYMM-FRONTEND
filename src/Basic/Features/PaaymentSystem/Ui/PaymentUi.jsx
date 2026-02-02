@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from "react";
 import { Rocket, Check, ArrowLeft, CreditCard, Shield } from "lucide-react";
+import LogoImg from "/logo.png?url";
 
 // Custom animation hook
 const useFadeIn = (delay = 0) => {
@@ -22,9 +23,11 @@ const PaymentHeader = React.memo(({ onGoBack }) => {
   }, [onGoBack]);
 
   return (
-    <div className={`flex items-center mb-8 transition-opacity duration-500 ${
-      isVisible ? 'opacity-100' : 'opacity-0'
-    }`}>
+    <div
+      className={`flex items-center mb-8 transition-opacity duration-500 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
       <button
         onClick={handleGoBack}
         className="flex items-center text-purple-300 hover:text-white transition-colors mr-4"
@@ -37,13 +40,14 @@ const PaymentHeader = React.memo(({ onGoBack }) => {
   );
 });
 
-PaymentHeader.displayName = 'PaymentHeader';
+PaymentHeader.displayName = "PaymentHeader";
 
 // Memoized Plan Header Component
 const PlanHeader = React.memo(({ plan }) => (
   <div className="flex items-center mb-4">
-    <div className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 p-3 rounded-lg mr-4">
-      <Rocket className="w-8 h-8" />
+    <div className=" p-3 rounded-lg mr-4">
+      <img src={LogoImg} alt="Logo" className="w-8 h-8" />
+
     </div>
     <div>
       <h2 className="text-2xl font-bold">{plan.name}</h2>
@@ -52,7 +56,7 @@ const PlanHeader = React.memo(({ plan }) => (
   </div>
 ));
 
-PlanHeader.displayName = 'PlanHeader';
+PlanHeader.displayName = "PlanHeader";
 
 // Memoized Billing Toggle Component
 const BillingToggle = React.memo(({ selectedBilling, onBillingChange }) => {
@@ -95,7 +99,7 @@ const BillingToggle = React.memo(({ selectedBilling, onBillingChange }) => {
   );
 });
 
-BillingToggle.displayName = 'BillingToggle';
+BillingToggle.displayName = "BillingToggle";
 
 // Memoized Price Display Component
 const PriceDisplay = React.memo(({ currentPrice, selectedBilling, plan }) => (
@@ -112,23 +116,25 @@ const PriceDisplay = React.memo(({ currentPrice, selectedBilling, plan }) => (
   </div>
 ));
 
-PriceDisplay.displayName = 'PriceDisplay';
+PriceDisplay.displayName = "PriceDisplay";
 
 // Memoized Feature Item Component
 const FeatureItem = React.memo(({ feature, index }) => {
   const isVisible = useFadeIn(index * 50);
 
   return (
-    <div className={`flex items-center transition-all duration-300 ${
-      isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
-    }`}>
+    <div
+      className={`flex items-center transition-all duration-300 ${
+        isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+      }`}
+    >
       <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
       <span className="text-gray-300">{feature}</span>
     </div>
   );
 });
 
-FeatureItem.displayName = 'FeatureItem';
+FeatureItem.displayName = "FeatureItem";
 
 // Memoized Features List Component
 const FeaturesList = React.memo(({ features }) => (
@@ -140,25 +146,29 @@ const FeaturesList = React.memo(({ features }) => (
   </div>
 ));
 
-FeaturesList.displayName = 'FeaturesList';
+FeaturesList.displayName = "FeaturesList";
 
 // Memoized User Info Component
 const UserInfo = React.memo(({ user }) => (
   <div className="mb-6 p-4 bg-white/5 rounded-lg">
     <h4 className="font-semibold mb-2">Account Information</h4>
-    <p className="text-gray-300">{user?.firstName} {user?.lastName}</p>
+    <p className="text-gray-300">
+      {user?.firstName} {user?.lastName}
+    </p>
     <p className="text-gray-300">{user?.email}</p>
   </div>
 ));
 
-UserInfo.displayName = 'UserInfo';
+UserInfo.displayName = "UserInfo";
 
 // Memoized Order Summary Component
 const OrderSummary = React.memo(({ plan, selectedBilling, currentPrice }) => (
   <div className="mb-6 p-4 bg-white/5 rounded-lg">
     <h4 className="font-semibold mb-3">Order Summary</h4>
     <div className="flex justify-between items-center mb-2">
-      <span>{plan.name} Plan ({selectedBilling})</span>
+      <span>
+        {plan.name} Plan ({selectedBilling})
+      </span>
       <span>₹{currentPrice?.toLocaleString()}</span>
     </div>
     <div className="flex justify-between items-center font-bold text-lg pt-2 border-t border-white/20">
@@ -168,7 +178,7 @@ const OrderSummary = React.memo(({ plan, selectedBilling, currentPrice }) => (
   </div>
 ));
 
-OrderSummary.displayName = 'OrderSummary';
+OrderSummary.displayName = "OrderSummary";
 
 // Memoized Security Badge Component
 const SecurityBadge = React.memo(() => (
@@ -183,7 +193,7 @@ const SecurityBadge = React.memo(() => (
   </div>
 ));
 
-SecurityBadge.displayName = 'SecurityBadge';
+SecurityBadge.displayName = "SecurityBadge";
 
 // Memoized Error Display Component
 const ErrorDisplay = React.memo(({ error }) => {
@@ -196,7 +206,7 @@ const ErrorDisplay = React.memo(({ error }) => {
   );
 });
 
-ErrorDisplay.displayName = 'ErrorDisplay';
+ErrorDisplay.displayName = "ErrorDisplay";
 
 // Memoized Payment Button Component
 const PaymentButton = React.memo(({ isLoading, currentPrice, onPayment }) => {
@@ -227,80 +237,106 @@ const PaymentButton = React.memo(({ isLoading, currentPrice, onPayment }) => {
   );
 });
 
-PaymentButton.displayName = 'PaymentButton';
+PaymentButton.displayName = "PaymentButton";
 
 // Memoized Payment Methods Component
 const PaymentMethods = React.memo(() => (
   <div className="mt-4 text-center">
     <p className="text-xs text-gray-500 mb-2">Accepted Payment Methods</p>
     <div className="flex justify-center space-x-2 opacity-70">
-      <div className="w-8 h-5 bg-blue-600 rounded text-xs flex items-center justify-center">VISA</div>
-      <div className="w-8 h-5 bg-red-600 rounded text-xs flex items-center justify-center">MC</div>
-      <div className="w-8 h-5 bg-purple-600 rounded text-xs flex items-center justify-center">UPI</div>
-      <div className="w-8 h-5 bg-green-600 rounded text-xs flex items-center justify-center">NB</div>
+      <div className="w-8 h-5 bg-blue-600 rounded text-xs flex items-center justify-center">
+        VISA
+      </div>
+      <div className="w-8 h-5 bg-red-600 rounded text-xs flex items-center justify-center">
+        MC
+      </div>
+      <div className="w-8 h-5 bg-purple-600 rounded text-xs flex items-center justify-center">
+        UPI
+      </div>
+      <div className="w-8 h-5 bg-green-600 rounded text-xs flex items-center justify-center">
+        NB
+      </div>
     </div>
   </div>
 ));
 
-PaymentMethods.displayName = 'PaymentMethods';
+PaymentMethods.displayName = "PaymentMethods";
 
 // Memoized Plan Details Card Component
-const PlanDetailsCard = React.memo(({ 
-  plan, 
-  selectedBilling, 
-  currentPrice, 
-  onBillingChange 
-}) => {
-  const isVisible = useFadeIn(100);
+const PlanDetailsCard = React.memo(
+  ({ plan, selectedBilling, currentPrice, onBillingChange }) => {
+    const isVisible = useFadeIn(100);
 
-  return (
-    <div className={`bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 transition-all duration-500 ${
-      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-    }`}>
-      <PlanHeader plan={plan} />
-      <BillingToggle selectedBilling={selectedBilling} onBillingChange={onBillingChange} />
-      <PriceDisplay currentPrice={currentPrice} selectedBilling={selectedBilling} plan={plan} />
-      <FeaturesList features={plan.features} />
-    </div>
-  );
-});
+    return (
+      <div
+        className={`bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 transition-all duration-500 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}
+      >
+        <PlanHeader plan={plan} />
+        <BillingToggle
+          selectedBilling={selectedBilling}
+          onBillingChange={onBillingChange}
+        />
+        <PriceDisplay
+          currentPrice={currentPrice}
+          selectedBilling={selectedBilling}
+          plan={plan}
+        />
+        <FeaturesList features={plan.features} />
+      </div>
+    );
+  },
+);
 
-PlanDetailsCard.displayName = 'PlanDetailsCard';
+PlanDetailsCard.displayName = "PlanDetailsCard";
 
 // Memoized Payment Section Card Component
-const PaymentSectionCard = React.memo(({ 
-  user, 
-  plan, 
-  selectedBilling, 
-  currentPrice, 
-  error, 
-  isLoading, 
-  onPayment 
-}) => {
-  const isVisible = useFadeIn(200);
+const PaymentSectionCard = React.memo(
+  ({
+    user,
+    plan,
+    selectedBilling,
+    currentPrice,
+    error,
+    isLoading,
+    onPayment,
+  }) => {
+    const isVisible = useFadeIn(200);
 
-  return (
-    <div className={`bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 transition-all duration-500 ${
-      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-    }`}>
-      <h3 className="text-xl font-bold mb-6">Payment Details</h3>
-      <UserInfo user={user} />
-      <OrderSummary plan={plan} selectedBilling={selectedBilling} currentPrice={currentPrice} />
-      <SecurityBadge />
-      <ErrorDisplay error={error} />
-      <PaymentButton isLoading={isLoading} currentPrice={currentPrice} onPayment={onPayment} />
-      
-      <p className="text-xs text-gray-400 mt-4 text-center">
-        By proceeding, you agree to our Terms of Service and Privacy Policy.
-        You can cancel your subscription anytime.
-      </p>
-      
-      <PaymentMethods />
-    </div>
-  );
-});
+    return (
+      <div
+        className={`bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 transition-all duration-500 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        }`}
+      >
+        <h3 className="text-xl font-bold mb-6">Payment Details</h3>
+        <UserInfo user={user} />
+        <OrderSummary
+          plan={plan}
+          selectedBilling={selectedBilling}
+          currentPrice={currentPrice}
+        />
+        <SecurityBadge />
+        <ErrorDisplay error={error} />
+        <PaymentButton
+          isLoading={isLoading}
+          currentPrice={currentPrice}
+          onPayment={onPayment}
+        />
 
-PaymentSectionCard.displayName = 'PaymentSectionCard';
+        <p className="text-xs text-gray-400 mt-4 text-center">
+          By proceeding, you agree to our Terms of Service and Privacy Policy.
+          You can cancel your subscription anytime.
+        </p>
+
+        <PaymentMethods />
+      </div>
+    );
+  },
+);
+
+PaymentSectionCard.displayName = "PaymentSectionCard";
 
 const PaymentUI = ({
   plan,
@@ -312,12 +348,15 @@ const PaymentUI = ({
   error,
   onBillingChange,
   onPayment,
-  onGoBack
+  onGoBack,
 }) => {
   // Memoize handlers
-  const handleBillingChange = useCallback((billing) => {
-    onBillingChange(billing);
-  }, [onBillingChange]);
+  const handleBillingChange = useCallback(
+    (billing) => {
+      onBillingChange(billing);
+    },
+    [onBillingChange],
+  );
 
   const handlePayment = useCallback(() => {
     onPayment();
@@ -328,32 +367,60 @@ const PaymentUI = ({
   }, [onGoBack]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      <div className="container mx-auto px-4 py-8">
-        <PaymentHeader onGoBack={handleGoBack} />
+    <section className="relative flex items-center min-h-screen overflow-hidden bg-black text-white">
+      {/* Background with gradient blobs - matching Home.jsx */}
+      <div className="absolute inset-0">
+        <div className="absolute rounded-full top-20 left-10 w-72 h-72 bg-gradient-to-br from-orange-500/20 to-pink-500/20 blur-3xl animate-pulse" />
+        <div className="absolute delay-1000 rounded-full top-40 right-20 w-96 h-96 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 blur-3xl animate-pulse" />
+        <div className="absolute rounded-full bottom-20 left-1/3 w-80 h-80 bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl animate-pulse delay-2000" />
+      </div>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
-            <PlanDetailsCard
-              plan={plan}
-              selectedBilling={selectedBilling}
-              currentPrice={currentPrice}
-              onBillingChange={handleBillingChange}
-            />
+      {/* Subtle animated particles */}
+      <div className="absolute inset-0 pointer-events-none opacity-30">
+        <div
+          className="absolute w-1 h-1 rounded-full animate-ping top-20 left-1/4 bg-orange-400"
+          style={{ animationDuration: "3s" }}
+        />
+        <div
+          className="absolute w-1 h-1 rounded-full animate-ping top-40 right-1/3 bg-cyan-400"
+          style={{ animationDuration: "4s", animationDelay: "1s" }}
+        />
+        <div
+          className="absolute w-1 h-1 rounded-full animate-ping bottom-32 left-1/3 bg-pink-400"
+          style={{ animationDuration: "5s", animationDelay: "2s" }}
+        />
+      </div>
 
-            <PaymentSectionCard
-              user={user}
-              plan={plan}
-              selectedBilling={selectedBilling}
-              currentPrice={currentPrice}
-              error={error}
-              isLoading={isLoading}
-              onPayment={handlePayment}
-            />
+      {/* Main Content */}
+      <div className="relative z-10 w-full">
+        <div className="container mx-auto px-4 py-8">
+          <PaymentHeader onGoBack={handleGoBack} />
+
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8">
+              <PlanDetailsCard
+                plan={plan}
+                selectedBilling={selectedBilling}
+                currentPrice={currentPrice}
+                onBillingChange={handleBillingChange}
+              />
+
+              <PaymentSectionCard
+                user={user}
+                plan={plan}
+                selectedBilling={selectedBilling}
+                currentPrice={currentPrice}
+                error={error}
+                isLoading={isLoading}
+                onPayment={handlePayment}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
+    </section>
   );
 };
 

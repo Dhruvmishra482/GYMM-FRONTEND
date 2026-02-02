@@ -53,7 +53,7 @@ const AnimatedNumber = lazy(() =>
 
       return count;
     }),
-  })
+  }),
 );
 
 // Loading skeletons for better UX
@@ -84,7 +84,13 @@ const PricingCardSkeleton = memo(() => (
 ));
 PricingCardSkeleton.displayName = "PricingCardSkeleton";
 
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../../Auth/Store/AuthStore";
+
 const PricingPage = memo(() => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+
   const [billingPeriod, setBillingPeriod] = useState("monthly");
   const [hoveredCard, setHoveredCard] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -103,7 +109,7 @@ const PricingPage = memo(() => {
       { key: "half-yearly", label: "6 Months", suffix: "/6mo", popular: true },
       { key: "yearly", label: "1 Year", suffix: "/yr", popular: false },
     ],
-    []
+    [],
   );
 
   // Memoized pricing configuration
@@ -128,7 +134,7 @@ const PricingPage = memo(() => {
         yearly: { price: 9990, savings: 1998 },
       },
     }),
-    []
+    [],
   );
 
   // Memoized plans data with comingSoon flag
@@ -352,7 +358,7 @@ const PricingPage = memo(() => {
         comingSoon: true,
       },
     ],
-    []
+    [],
   );
 
   // Memoized features data
@@ -377,7 +383,7 @@ const PricingPage = memo(() => {
           "Send fee reminders, direct QR payment links, daily progress updates, and re-activation campaigns – all through WhatsApp automation.",
       },
     ],
-    []
+    [],
   );
 
   // Memoized mouse glow style
@@ -385,7 +391,7 @@ const PricingPage = memo(() => {
     () => ({
       background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.1), transparent 40%)`,
     }),
-    [mousePos.x, mousePos.y]
+    [mousePos.x, mousePos.y],
   );
 
   // Memoized callbacks with useTransition for heavy operations
@@ -455,7 +461,8 @@ const PricingPage = memo(() => {
           );
           border-radius: 12px;
           border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2),
+          box-shadow:
+            0 2px 4px rgba(0, 0, 0, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -468,7 +475,8 @@ const PricingPage = memo(() => {
             rgba(236, 72, 153, 1) 100%
           );
           transform: scaleY(1.1);
-          box-shadow: 0 4px 8px rgba(249, 115, 22, 0.3),
+          box-shadow:
+            0 4px 8px rgba(249, 115, 22, 0.3),
             0 0 12px rgba(236, 72, 153, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
@@ -731,7 +739,7 @@ const PricingPage = memo(() => {
                             <span className="ml-2 text-lg text-white/60">
                               {
                                 billingOptions.find(
-                                  (opt) => opt.key === billingPeriod
+                                  (opt) => opt.key === billingPeriod,
                                 )?.suffix
                               }
                             </span>
@@ -875,6 +883,24 @@ const PricingPage = memo(() => {
                       </div>
 
                       <button
+                        onClick={() => {
+                          // If user is logged in -> show subscription required page
+                          if (user) {
+                            navigate("/subscription-required", {
+                              state: { plan: plan.name },
+                            });
+                            return;
+                          }
+
+                          // If user not logged in -> redirect them to sign up route for the selected plan
+                          const planToRoute = {
+                            Basic: "/signup/basic",
+                            Advanced: "/signup/advanced",
+                            Enterprise: "/signup/enterprise",
+                          };
+
+                          navigate(planToRoute[plan.name] || "/signup");
+                        }}
                         className={`group w-full py-4 px-6 rounded-xl font-bold text-base transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden mt-auto ${
                           plan.popular
                             ? "bg-gradient-to-r from-orange-400 to-pink-500 text-black hover:from-orange-500 hover:to-pink-600 shadow-xl shadow-orange-500/30"

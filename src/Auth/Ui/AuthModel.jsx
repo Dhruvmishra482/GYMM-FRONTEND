@@ -253,9 +253,9 @@ const LoginForm = lazy(() =>
             </button>
           </div>
         </form>
-      )
+      ),
     ),
-  })
+  }),
 );
 
 const SignupForm = lazy(() =>
@@ -538,9 +538,9 @@ const SignupForm = lazy(() =>
             </button>
           </div>
         </form>
-      )
+      ),
     ),
-  })
+  }),
 );
 
 const OTPForm = lazy(() =>
@@ -617,15 +617,19 @@ const OTPForm = lazy(() =>
                 >
                   Enter OTP
                 </label>
+
                 <input
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   value={otp}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, "");
-                    if (value.length <= 6) {
-                      setOtp(value);
-                    }
+                    if (value.length <= 6) setOtp(value);
                   }}
+                  placeholder="000000"
+                  maxLength={6}
+                  autoFocus
                   style={{
                     width: "100%",
                     padding: "12px",
@@ -633,12 +637,17 @@ const OTPForm = lazy(() =>
                     borderRadius: "8px",
                     fontSize: "24px",
                     textAlign: "center",
-                    letterSpacing: "8px",
-                    outline: "none",
+                    letterSpacing: "4px",
+                    fontFamily: "monospace",
+                    color: "#111827",
+                    backgroundColor: "#fff",
+                    WebkitTextFillColor: "#111827",
+                    WebkitBoxShadow: "0 0 0 1000px #ffffff inset",
+                    caretColor: "#111827",
+                    position: "relative",
+                    zIndex: 2,
+                    appearance: "none",
                   }}
-                  placeholder="000000"
-                  maxLength={6}
-                  required
                 />
               </div>
 
@@ -709,9 +718,9 @@ const OTPForm = lazy(() =>
             </form>
           </div>
         );
-      }
+      },
     ),
-  })
+  }),
 );
 
 // ========================================
@@ -859,7 +868,7 @@ const AuthModal = memo(
         zIndex: 1000,
         padding: "16px",
       }),
-      []
+      [],
     );
 
     const inputStyle = useMemo(
@@ -876,7 +885,7 @@ const AuthModal = memo(
         WebkitTextFillColor: "#111827",
         WebkitBoxShadow: "0 0 0 1000px white inset",
       }),
-      []
+      [],
     );
 
     const smallInputStyle = useMemo(
@@ -884,7 +893,7 @@ const AuthModal = memo(
         ...inputStyle,
         width: "100%",
       }),
-      [inputStyle]
+      [inputStyle],
     );
 
     // ========================================
@@ -897,7 +906,7 @@ const AuthModal = memo(
           onClose();
         }
       },
-      [onClose]
+      [onClose],
     );
 
     const handleTabChange = useCallback((tab) => {
@@ -949,7 +958,7 @@ const AuthModal = memo(
           toast.error("An unexpected error occurred. Please try again.");
         }
       },
-      [forgotEmail, forgotPassword]
+      [forgotEmail, forgotPassword],
     );
 
     const handleLogin = useCallback(
@@ -974,7 +983,7 @@ const AuthModal = memo(
           toast.error(err.message || "Something went wrong!");
         }
       },
-      [email, password, login, onClose, navigate]
+      [email, password, login, onClose, navigate],
     );
 
     const handleSignup = useCallback(
@@ -1038,7 +1047,7 @@ const AuthModal = memo(
         signupPassword,
         confirmPassword,
         emailUpdates,
-      ]
+      ],
     );
 
     const handleOTPVerification = useCallback(
@@ -1084,7 +1093,7 @@ const AuthModal = memo(
           setIsSubmitting(false);
         }
       },
-      [otp, userData]
+      [otp, userData],
     );
 
     // Validation function for reset password
@@ -1128,7 +1137,7 @@ const AuthModal = memo(
           const result = await resetPassword(
             resetToken,
             resetFormData.newPassword,
-            resetFormData.confirmPassword
+            resetFormData.confirmPassword,
           );
 
           if (!result.success) {
@@ -1145,7 +1154,7 @@ const AuthModal = memo(
           ]);
         }
       },
-      [resetToken, resetFormData, resetPassword, validateResetForm]
+      [resetToken, resetFormData, resetPassword, validateResetForm],
     );
 
     // Handle back to login from reset password
@@ -1420,7 +1429,7 @@ const AuthModal = memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 // Display name for debugging

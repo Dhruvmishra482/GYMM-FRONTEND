@@ -476,7 +476,7 @@ const Features = memo(() => {
       </div>
 
       {/* Mind-blowing Hero */}
-      <section className="relative z-10 px-4 pb-20 sm:px-6 lg:px-8">
+      <section className="relative z-10 pt-20 px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto text-center max-w-7xl">
           <div className="relative">
             <div className="relative z-10">

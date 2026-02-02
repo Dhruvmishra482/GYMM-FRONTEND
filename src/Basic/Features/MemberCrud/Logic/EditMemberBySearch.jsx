@@ -239,7 +239,7 @@ const EditMemberBySearch = () => {
             <div className="relative">
               <Crown className="mx-auto w-20 h-20 text-amber-500 mb-6 animate-pulse" />
               <h1 className="text-7xl font-bold bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent mb-4 tracking-wider font-serif">
-                IRON THRONE
+                FitTracker
               </h1>
               <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-300 to-gray-500 bg-clip-text text-transparent font-serif">
                 WARRIOR REGISTRY
