@@ -1178,6 +1178,9 @@ import {
   Mail,
   MapPin,
   Menu,
+  Speaker, // For Bulk Announcement
+  Dumbbell, // For AI Workout
+  Utensils, // For AI Diet Plan
 } from "lucide-react";
 
 const StatCard = memo(
@@ -1406,7 +1409,10 @@ const MemberList = ({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setIsProfileOpen(false);
+        // Defer closing to avoid immediate re-closing if the click also opened it
+        setTimeout(() => {
+          setIsProfileOpen(false);
+        }, 0); 
       }
     };
 
@@ -1742,6 +1748,33 @@ const MemberList = ({
                           Due Members
                         </Link>
                       )}
+
+                      {/* New: AI Workout Plans */}
+                      <Link
+                        to="/workout-plans"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-blue-50"
+                      >
+                        <Dumbbell className="w-4 h-4" />
+                        AI Workout Plans
+                      </Link>
+
+                      {/* New: AI Diet Plans */}
+                      <Link
+                        to="/diet-plans"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-blue-50"
+                      >
+                        <Utensils className="w-4 h-4" />
+                        AI Diet Plans
+                      </Link>
+
+                      {/* New: Bulk Announcements */}
+                      <Link
+                        to="/announcements"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-blue-50"
+                      >
+                        <Speaker className="w-4 h-4" />
+                        Bulk Announcements
+                      </Link>
 
                       <Link
                         to="/my-subscription"

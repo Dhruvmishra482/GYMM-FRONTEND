@@ -1,33 +1,11 @@
 // src/Advance/Features/AiWorkoutPlan/Service/workoutPlanService.js
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
-// Create axios instance with credentials
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Response interceptor for error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+import axiosInstance from "../../../../axios.config";
 
 const workoutPlanService = {
   // Create new workout plan
   createWorkoutPlan: async (data) => {
     try {
-      const response = await api.post('/v1/workout-plan/create', data);
+      const response = await axiosInstance.post('/workout-plan/create', data);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -47,7 +25,7 @@ const workoutPlanService = {
         queryParams.append('status', status);
       }
       
-      const response = await api.get(`/v1/workout-plan/all?${queryParams}`);
+      const response = await axiosInstance.get(`/workout-plan/all?${queryParams}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -57,7 +35,7 @@ const workoutPlanService = {
   // Get single workout plan by ID
   getWorkoutPlanById: async (planId) => {
     try {
-      const response = await api.get(`/v1/workout-plan/${planId}`);
+      const response = await axiosInstance.get(`/workout-plan/${planId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -67,7 +45,7 @@ const workoutPlanService = {
   // Update workout plan
   updateWorkoutPlan: async (planId, data) => {
     try {
-      const response = await api.put(`/v1/workout-plan/${planId}`, data);
+      const response = await axiosInstance.put(`/workout-plan/${planId}`, data);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -77,7 +55,7 @@ const workoutPlanService = {
   // Delete workout plan
   deleteWorkoutPlan: async (planId) => {
     try {
-      const response = await api.delete(`/v1/workout-plan/${planId}`);
+      const response = await axiosInstance.delete(`/workout-plan/${planId}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -87,7 +65,7 @@ const workoutPlanService = {
   // Broadcast workout plan to members
   broadcastWorkoutPlan: async (planId, filters = {}) => {
     try {
-      const response = await api.post(`/v1/workout-plan/${planId}/broadcast`, filters);
+      const response = await axiosInstance.post(`/workout-plan/${planId}/broadcast`, filters);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -97,7 +75,7 @@ const workoutPlanService = {
   // Get workout plan statistics
   getWorkoutPlanStats: async (planId) => {
     try {
-      const response = await api.get(`/v1/workout-plan/${planId}/stats`);
+      const response = await axiosInstance.get(`/workout-plan/${planId}/stats`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -107,7 +85,7 @@ const workoutPlanService = {
   // Preview workout plan message
   previewWorkoutPlanMessage: async (planId) => {
     try {
-      const response = await api.get(`/v1/workout-plan/${planId}/preview`);
+      const response = await axiosInstance.get(`/workout-plan/${planId}/preview`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;

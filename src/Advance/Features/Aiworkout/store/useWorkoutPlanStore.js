@@ -22,6 +22,7 @@ const useWorkoutPlanStore = create((set, get) => ({
   // Actions
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
+  clearError: () => set({ error: null }),
   setFilters: (filters) => set({ filters }),
 
   // Fetch all workout plans

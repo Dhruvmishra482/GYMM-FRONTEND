@@ -1,214 +1,97 @@
-// src/Advance/Features/AiWorkoutPlan/Ui/WorkoutPlanCard.jsx
-import React, { useState } from 'react';
-import {
-  Send,
-  Edit2,
-  Trash2,
-  Eye,
-  Calendar,
-  Target,
-  Clock,
-  TrendingUp,
-  MoreVertical,
-  Dumbbell,
-  Activity,
-} from 'lucide-react';
-import { format } from 'date-fns';
+// WorkoutPlanCard.jsx
+import React from 'react';
+import { Edit, Trash2, Eye, Send, Award, Target, CalendarDays, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const WorkoutPlanCard = ({ plan, onBroadcast, onEdit, onPreview, onDelete }) => {
-  const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
-  const getStatusColor = (status) => {
+  // Determine status color
+  const getStatusClasses = (status) => {
     switch (status) {
       case 'Active':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-green-500/20 text-green-300 border-green-400';
       case 'Draft':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-400';
       case 'Archived':
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-red-500/20 text-red-300 border-red-400';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-gray-500/20 text-gray-300 border-gray-400';
     }
   };
 
-  const getDifficultyColor = (level) => {
-    switch (level) {
-      case 'Beginner':
-        return 'bg-green-100 text-green-700';
-      case 'Intermediate':
-        return 'bg-orange-100 text-orange-700';
-      case 'Advanced':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
+  const handleDetailsClick = () => {
+    // Navigate to a detail page if one exists, or just open the edit modal
+    onEdit(plan); // For now, clicking details opens edit modal
   };
-
-  const getPlanTypeIcon = (type) => {
-    switch (type) {
-      case 'Strength Training':
-        return '🏋️';
-      case 'Cardio Focus':
-        return '🏃';
-      case 'Weight Loss':
-        return '⚖️';
-      case 'Muscle Building':
-        return '💪';
-      case 'Endurance':
-        return '🚴';
-      case 'General Fitness':
-        return '🎯';
-      default:
-        return '📋';
-    }
-  };
-
-  const successRate =
-    plan.broadcastDetails?.totalMembersSent > 0
-      ? (
-          (plan.broadcastDetails.successfulDeliveries /
-            plan.broadcastDetails.totalMembersSent) *
-          100
-        ).toFixed(1)
-      : 0;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">
-      {/* Header */}
-      <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-3xl">{getPlanTypeIcon(plan.planType)}</span>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                plan.status
-              )}`}
-            >
-              {plan.status}
-            </span>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(
-                plan.difficultyLevel
-              )}`}
-            >
-              {plan.difficultyLevel}
-            </span>
-          </div>
-          
-          {/* Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1 hover:bg-white rounded-lg transition-colors"
-            >
-              <MoreVertical className="w-5 h-5 text-gray-600" />
-            </button>
-            
-            {showMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
-                <button
-                  onClick={() => {
-                    onEdit();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                >
-                  <Edit2 className="w-4 h-4" />
-                  Edit Plan
-                </button>
-                <button
-                  onClick={() => {
-                    onPreview();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                >
-                  <Eye className="w-4 h-4" />
-                  Preview Message
-                </button>
-                <button
-                  onClick={() => {
-                    onDelete();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 rounded-b-lg"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Plan
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <h3 className="text-xl font-bold text-gray-800 mb-1 line-clamp-1">
-          {plan.planTitle}
-        </h3>
-        <p className="text-sm text-gray-600">{plan.planType}</p>
+    <div 
+      className="relative z-10 p-1 bg-gradient-to-br from-indigo-800 to-purple-900 rounded-3xl shadow-2xl hover:shadow-indigo-500/40 transition-all duration-300 ease-in-out transform hover:-translate-y-2 hover:scale-105 group cursor-pointer"
+      onClick={handleDetailsClick} // Make the whole card clickable for details/edit
+    >
+      {/* Background Glow */}
+      <div className="absolute inset-0 rounded-3xl opacity-20 group-hover:opacity-60 transition-opacity duration-300" 
+           style={{ background: 'radial-gradient(circle at center, rgba(129, 140, 248, 0.3) 0%, transparent 70%)' }}>
       </div>
 
-      {/* Content */}
-      <div className="p-6 space-y-4">
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Target className="w-4 h-4 text-blue-600" />
-            <span className="truncate">{plan.targetAudience}</span>
+      <div className="relative bg-gray-900/90 backdrop-blur-md rounded-2xl p-6 flex flex-col h-full border border-indigo-700/50">
+        <div className="flex-grow">
+          {/* Plan Title and Status */}
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 group-hover:from-blue-200 group-hover:to-purple-200 transition-colors duration-300">
+              {plan.planTitle}
+            </h3>
+            <span className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusClasses(plan.status)}`}>
+              {plan.status}
+            </span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Clock className="w-4 h-4 text-orange-600" />
-            <span>{plan.planDuration}</span>
+
+          {/* Key Details */}
+          <div className="text-sm text-indigo-200 space-y-2 mb-4">
+            <p className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" />Plan Type: <span className="font-medium text-white">{plan.planType}</span></p>
+            <p className="flex items-center gap-2"><Award className="w-4 h-4 text-blue-400" />Level: <span className="font-medium text-white">{plan.difficultyLevel}</span></p>
+            <p className="flex items-center gap-2"><Target className="w-4 h-4 text-green-400" />Audience: <span className="font-medium text-white">{plan.targetAudience}</span></p>
+            <p className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-orange-400" />Duration: <span className="font-medium text-white">{plan.planDuration}</span></p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Dumbbell className="w-4 h-4 text-purple-600" />
-            <span>{plan.workoutsPerWeek} days/week</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Activity className="w-4 h-4 text-green-600" />
-            <span>{plan.difficultyLevel}</span>
-          </div>
+
+          {/* Instructions Snippet */}
+          <p className="text-indigo-300 text-sm line-clamp-3 mb-5">
+            {plan.generalInstructions || "No specific instructions provided for this plan yet."}
+          </p>
         </div>
 
-        {/* Broadcast Stats */}
-        {plan.broadcastDetails?.totalMembersSent > 0 && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-gray-700 uppercase">
-                Broadcast Stats
-              </span>
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-2xl font-bold text-gray-800">
-                  {plan.broadcastDetails.successfulDeliveries}
-                </p>
-                <p className="text-xs text-gray-600">Sent Successfully</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-blue-600">
-                  {successRate}%
-                </p>
-                <p className="text-xs text-gray-600">Success Rate</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Dates */}
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Calendar className="w-4 h-4" />
-          <span>Created {format(new Date(plan.createdAt), 'MMM dd, yyyy')}</span>
+        {/* Action Buttons */}
+        <div className="pt-4 border-t border-indigo-700/50 flex justify-around items-center gap-3">
+          <button
+            onClick={(e) => { e.stopPropagation(); onBroadcast(plan); }} // Stop propagation to prevent card click
+            className="p-3 bg-blue-600/30 text-blue-300 rounded-full hover:bg-blue-500/50 hover:text-white transition-all duration-300 transform hover:scale-110 shadow-md"
+            title="Broadcast Plan"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onPreview(plan); }} // Stop propagation
+            className="p-3 bg-purple-600/30 text-purple-300 rounded-full hover:bg-purple-500/50 hover:text-white transition-all duration-300 transform hover:scale-110 shadow-md"
+            title="Preview Plan"
+          >
+            <Eye className="w-5 h-5" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(plan); }} // Stop propagation
+            className="p-3 bg-yellow-600/30 text-yellow-300 rounded-full hover:bg-yellow-500/50 hover:text-white transition-all duration-300 transform hover:scale-110 shadow-md"
+            title="Edit Plan"
+          >
+            <Edit className="w-5 h-5" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(plan._id); }} // Stop propagation
+            className="p-3 bg-red-600/30 text-red-300 rounded-full hover:bg-red-500/50 hover:text-white transition-all duration-300 transform hover:scale-110 shadow-md"
+            title="Delete Plan"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
         </div>
-
-        {/* Action Button */}
-        <button
-          onClick={onBroadcast}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium"
-        >
-          <Send className="w-4 h-4" />
-          Send to Members
-        </button>
       </div>
     </div>
   );

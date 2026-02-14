@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 
 // React Router Imports
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 // Core Components
 import Navigation from "./Components/Hero/UI/Navigation";
@@ -51,9 +51,15 @@ import ContactUs from "./Basic/Features/ContactUs/ContactUs";
 // Modals (if you have these)
 import ProfileModal from "./Basic/Features/ProfileDropDown/Ui/ProfileModal";
 import EditMemberModal from "./Basic/Features/MemberCrud/Ui/EditMemberModal";
+
+// Advance Features - Diet Plans
+import DietPlanPage from "./Advance/Features/AiDietPlan/logic/DietPlanPage";
+
+// Advance Features - Workout Plans
 import WorkoutPlanPage from "./Advance/Features/Aiworkout/logic/WorkoutPlanPage";
 
-import DietPlanPage from "./Advance/Features/AiDietPlan/logic/DietPlanPage";
+// Advance Features - Bulk Announcements
+import BulkAnnouncementPage from "./Advance/Features/Bulkannouncement/logic/BulkAnnouncementPage";
 import { useAuthStore } from "./Auth/Store/AuthStore";
 import { ToastContainer } from "react-toastify";
 // import React, { useState } from "react";
@@ -145,6 +151,10 @@ const App = () => {
     "/contact",
     "/pricing",
     "/forgot-password",
+    "/diet-plans",
+    "/workout-plans",
+    "/announcements",
+    "/crowd-dashboard",
   ];
 
   const isEditMemberPath = location.pathname.startsWith("/edit-member");
@@ -355,6 +365,42 @@ const App = () => {
         />
 
         {/* ========================================
+            ADVANCE FEATURES - DIET PLANS
+            ======================================== */}
+        <Route
+          path="/diet-plans"
+          element={
+            <ProtectedRoute allowedRoles={["owner"]}>
+              <DietPlanPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ========================================
+            ADVANCE FEATURES - WORKOUT PLANS
+            ======================================== */}
+        <Route
+          path="/workout-plans"
+          element={
+            <ProtectedRoute allowedRoles={["owner"]}>
+              <WorkoutPlanPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ========================================
+            ADVANCE FEATURES - BULK ANNOUNCEMENTS
+            ======================================== */}
+        <Route
+          path="/announcements"
+          element={
+            <ProtectedRoute allowedRoles={["owner"]}>
+              <BulkAnnouncementPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ========================================
             FALLBACK ROUTES
             ======================================== */}
         <Route path="/unauthorized" element={<div>Unauthorized Access</div>} />
@@ -380,22 +426,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/workout-plans"
-            element={
-              <ProtectedRoute allowedRoles={["owner"]}>
-                <WorkoutPlanPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/diet-plans"
-            element={
-              <ProtectedRoute allowedRoles={["owner"]}>
-                <DietPlanPage />
-              </ProtectedRoute>
-            }
-          />
+
         </Routes>
       )}
 
