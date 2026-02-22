@@ -16,8 +16,16 @@ import {
   ArrowLeft,
   Eye,
   EyeOff,
+  Speaker, // For Bulk Announcement
+  Dumbbell, // For AI Workout
+  Utensils, // For AI Diet Plan
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+
+// Import new feature pages
+import BulkAnnouncementPage from "../../../../Advance/Features/Bulkannouncement/logic/BulkAnnouncementPage";
+import WorkoutPlanPage from "../../../../Advance/Features/Aiworkout/logic/WorkoutPlanPage";
+import DietPlanPage from "../../../../Advance/Features/AiDietPlan/logic/DietPlanPage";
 
 // ==================== CUSTOM HOOKS ====================
 
@@ -503,6 +511,7 @@ const MyProfileUI = ({
   clearSuccess,
   user,
 }) => {
+  const [activeTab, setActiveTab] = useState("personal"); // New state for active tab
   useBodyScrollLock(isEditing);
 
   useEffect(() => {
@@ -568,6 +577,8 @@ const MyProfileUI = ({
     [formData, errors, profile]
   );
 
+  const tabs = [{ id: "personal", label: "Personal Info", icon: User }];
+
   if (isLoading) return <LoadingState />;
   if (!profile && error)
     return <ErrorState error={error} onRefresh={onRefresh} />;
@@ -583,11 +594,13 @@ const MyProfileUI = ({
               <ProfileAvatar profile={profile} user={user} />
               <ProfileInfo fullName={fullName} profile={profile} />
             </div>
-            <ActionButtons
-              isEditing={isEditing}
-              onRefresh={onRefresh}
-              onEditClick={onEditClick}
-            />
+            {activeTab === "personal" && (
+              <ActionButtons
+                isEditing={isEditing}
+                onRefresh={onRefresh}
+                onEditClick={onEditClick}
+              />
+            )}
           </div>
           <ProfileCompletion profileCompletion={profileCompletion} />
         </div>
@@ -597,45 +610,100 @@ const MyProfileUI = ({
         )}
         {error && <Alert type="error" message={error} onClose={clearError} />}
 
+        {/* Tab Navigation */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  ${
+                    activeTab === tab.id
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }
+                  whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 transition-colors
+                `}
+                aria-current={activeTab === tab.id ? "page" : undefined}
+              >
+                <tab.icon className="h-5 w-5" />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Conditional Content Rendering */}
+        {activeTab === "personal" && (
+          <div className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden mb-6 shadow-sm">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <User className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">
+                    Personal Information
+                  </h3>
+                  <p className="text-blue-100 text-xs font-medium">
+                    Manage your personal details
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {inputFields.map((field) => (
+                  <InputField
+                    key={field.name}
+                    {...field}
+                    onChange={onInputChange}
+                    isEditing={isEditing}
+                  />
+                ))}
+              </div>
+              {isEditing && (
+                <EditActions
+                  onSave={onSave}
+                  onCancel={onCancel}
+                  isSaving={isSaving}
+                  hasChanges={hasChanges}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {profile && activeTab === "personal" && <AccountInfo profile={profile} />}
+
+        {/* Contact Us Section */}
         <div className="bg-white border-2 border-gray-200 rounded-lg overflow-hidden mb-6 shadow-sm">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <User className="h-5 w-5 text-white" />
+                <Mail className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">
-                  Personal Information
-                </h3>
-                <p className="text-blue-100 text-xs font-medium">
-                  Manage your personal details
+                <h3 className="text-lg font-bold text-white">Need Help?</h3>
+                <p className="text-purple-100 text-xs font-medium">
+                  Contact our support team
                 </p>
               </div>
             </div>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {inputFields.map((field) => (
-                <InputField
-                  key={field.name}
-                  {...field}
-                  onChange={onInputChange}
-                  isEditing={isEditing}
-                />
-              ))}
-            </div>
-            {isEditing && (
-              <EditActions
-                onSave={onSave}
-                onCancel={onCancel}
-                isSaving={isSaving}
-                hasChanges={hasChanges}
-              />
-            )}
+            <Link
+              to="/contact"
+              className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-md"
+            >
+              <Mail className="h-4 w-4" />
+              Contact Us
+            </Link>
           </div>
         </div>
 
-        {profile && <AccountInfo profile={profile} />}
+
       </div>
     </div>
   );

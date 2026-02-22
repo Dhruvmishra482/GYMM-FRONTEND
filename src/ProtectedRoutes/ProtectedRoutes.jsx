@@ -2,9 +2,10 @@ import { Navigate } from "react-router-dom";
 import { useAuthStore } from "../Auth/Store/AuthStore";
 
 export default function ProtectedRoute({ children, allowedRoles }) {
-  const { user, loading } = useAuthStore();
+  const { user, loading, isInitialized } = useAuthStore();
 
-  if (loading) return <div>Checking authentication...</div>;
+  // Wait for auth bootstrap on hard refresh before redirecting.
+  if (loading || !isInitialized) return <div>Checking authentication...</div>;
 
   if (!user) return <Navigate to="/login" replace />;
 

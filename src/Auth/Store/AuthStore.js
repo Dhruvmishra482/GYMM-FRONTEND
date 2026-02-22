@@ -84,7 +84,7 @@ initializeAuth: () => {
     set({ 
       user: null, 
       subscription: null,
-      isInitialized: true, // No cookies मिले तो initialized mark करें
+      isInitialized: false, // Wait for checkAuth() server validation
       loading: false 
     });
   }
@@ -623,3 +623,4 @@ export const usePasswordResetStore = create((set, get) => ({
     set({ success: false, message: '' });
   }
 }));
+

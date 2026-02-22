@@ -1,281 +1,122 @@
-// src/Advance/Features/AiDietPlan/Ui/BroadcastModal.jsx
-import React, { useState } from 'react';
-import { X, Send, Loader2, Users, CheckCircle, XCircle, Eye } from 'lucide-react';
+// BroadcastModal.jsx (for Diet Plan)
+import React, { useState, useCallback, useMemo } from 'react';
+import ModalContainer from '../../../../Components/Modal/ModalContainer';
 import useDietPlanStore from '../store/useDietPlanStore';
+import { toast } from 'react-hot-toast';
+import { Send, RefreshCcw, AlertCircle } from 'lucide-react'; // Added AlertCircle
 
 const BroadcastModal = ({ isOpen, onClose, plan, onSuccess }) => {
-  const { broadcastDietPlan, previewDietPlanMessage, loading } = useDietPlanStore();
-  
-  const [filters, setFilters] = useState({
-    filterGender: 'All',
-    filterStatus: 'All',
-  });
-  
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewData, setPreviewData] = useState(null);
-  const [broadcastResult, setBroadcastResult] = useState(null);
+  const { broadcastDietPlan, loading } = useDietPlanStore();
+  const [filterGender, setFilterGender] = useState('All');
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState('All');
 
-  const handlePreview = async () => {
-    try {
-      const data = await previewDietPlanMessage(plan._id);
-      setPreviewData(data);
-      setShowPreview(true);
-    } catch (error) {
-      console.error('Preview failed:', error);
-    }
-  };
-
-  const handleBroadcast = async () => {
-    if (!window.confirm('Are you sure you want to send this diet plan to members?')) {
+  const handleBroadcast = useCallback(async () => {
+    if (!plan?._id) {
+      toast.error("No diet plan selected for broadcast.");
       return;
     }
 
+    const filters = {
+      filterGender,
+      filterPaymentStatus,
+    };
+
     try {
-      const result = await broadcastDietPlan(plan._id, filters);
-      setBroadcastResult(result);
-    } catch (error) {
-      console.error('Broadcast failed:', error);
+      const response = await broadcastDietPlan(plan._id, filters);
+      if (response.success) {
+        toast.success(response.message || "Diet plan broadcasted successfully!");
+        onSuccess(response.data);
+        onClose();
+      } else {
+        toast.error(response.message || "Failed to broadcast diet plan.");
+      }
+    } catch (err) {
+      toast.error(err.message || "An error occurred during broadcast.");
     }
-  };
+  }, [plan, filterGender, filterPaymentStatus, broadcastDietPlan, onSuccess, onClose]);
 
-  const handleClose = () => {
-    if (broadcastResult) {
-      onSuccess();
-    }
-    onClose();
-  };
+  const isBroadcasting = loading;
 
-  if (!isOpen) return null;
+  const baseInputClass = "w-full p-3 bg-gray-700/50 border border-emerald-600 rounded-lg text-white placeholder-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 shadow-inner";
+  const labelClass = "block text-sm font-medium text-teal-200 mb-1";
+  const errorClass = "mt-1 text-xs font-medium flex items-center gap-1 text-red-400"; // Added for consistency
+
+  const genderOptions = useMemo(() => ([
+    { value: "All", label: "All Members" },
+    { value: "Male", label: "Male Only" },
+    { value: "Female", label: "Female Only" },
+  ]), []);
+
+  const paymentStatusOptions = useMemo(() => ([
+    { value: "All", label: "All Statuses" },
+    { value: "Paid", label: "Paid Members" },
+    { value: "Pending", label: "Pending Payments" },
+  ]), []);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-6 flex justify-between items-center">
+    <ModalContainer isOpen={isOpen} onClose={onClose} title={`Broadcast: ${plan?.planTitle}`} maxWidth={600} padding={0} backdropBlur={8} backdropOpacity={0.65} borderRadius={16} contentClassName="bg-transparent">
+      <div className="relative z-10 p-6 bg-gray-900/80 backdrop-blur-lg rounded-2xl shadow-xl border border-emerald-700/50 text-white">
+        <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-lime-300 mb-6 pb-3 border-b border-emerald-700/50">
+            Broadcast Diet Plan: <span className="text-white">{plan?.planTitle}</span>
+        </h2>
+        
+        <p className="text-teal-200 mb-6">Select filters to broadcast this diet plan to specific members.</p>
+
+        {/* Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <h2 className="text-2xl font-bold">Broadcast Diet Plan</h2>
-            <p className="text-green-100 text-sm mt-1">{plan.planTitle}</p>
+            <label htmlFor="filterGender" className={labelClass}>
+              Filter by Gender
+            </label>
+            <select
+              id="filterGender"
+              name="filterGender"
+              value={filterGender}
+              onChange={(e) => setFilterGender(e.target.value)}
+              className={baseInputClass}
+              disabled={isBroadcasting}
+            >
+              {genderOptions.map(option => (
+                <option key={option.value} value={option.value} className="bg-gray-800 text-white">{option.label}</option>
+              ))}
+            </select>
           </div>
+
+          <div>
+            <label htmlFor="filterPaymentStatus" className={labelClass}>
+              Filter by Payment Status
+            </label>
+            <select
+              id="filterPaymentStatus"
+              name="filterPaymentStatus"
+              value={filterPaymentStatus}
+              onChange={(e) => setFilterPaymentStatus(e.target.value)}
+              className={baseInputClass}
+              disabled={isBroadcasting}
+            >
+              {paymentStatusOptions.map(option => (
+                <option key={option.value} value={option.value} className="bg-gray-800 text-white">{option.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-6">
           <button
-            onClick={handleClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            onClick={handleBroadcast}
+            disabled={isBroadcasting}
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-lg text-white bg-gradient-to-r from-emerald-600 to-lime-700 hover:from-emerald-700 hover:to-lime-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-300 hover:scale-105 active:scale-95"
           >
-            <X className="w-6 h-6" />
+            {isBroadcasting ? (
+              <RefreshCcw className="animate-spin mr-3 h-5 w-5" />
+            ) : (
+              <Send className="mr-3 h-5 w-5" />
+            )}
+            {isBroadcasting ? 'Broadcasting...' : 'Broadcast Plan'}
           </button>
         </div>
-
-        <div className="p-6">
-          {broadcastResult ? (
-            /* Success Result */
-            <div className="space-y-6">
-              <div className="text-center py-6">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-12 h-12 text-green-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                  Broadcast Completed!
-                </h3>
-                <p className="text-gray-600">
-                  Diet plan has been sent to members
-                </p>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
-                  <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-800">
-                    {broadcastResult.totalMembers}
-                  </p>
-                  <p className="text-sm text-gray-600">Total Members</p>
-                </div>
-
-                <div className="bg-green-50 p-4 rounded-lg text-center border border-green-100">
-                  <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-green-600">
-                    {broadcastResult.successfulDeliveries}
-                  </p>
-                  <p className="text-sm text-gray-600">Successful</p>
-                </div>
-
-                <div className="bg-red-50 p-4 rounded-lg text-center border border-red-100">
-                  <XCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-red-600">
-                    {broadcastResult.failedDeliveries}
-                  </p>
-                  <p className="text-sm text-gray-600">Failed</p>
-                </div>
-              </div>
-
-              {/* Success Rate */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-100">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-700">Success Rate</span>
-                  <span className="text-2xl font-bold text-green-600">
-                    {broadcastResult.successRate}
-                  </span>
-                </div>
-                <div className="mt-2 bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: broadcastResult.successRate }}
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={handleClose}
-                className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg font-medium"
-              >
-                Done
-              </button>
-            </div>
-          ) : showPreview ? (
-            /* Preview */
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                  <Eye className="w-5 h-5 text-blue-600" />
-                  Message Preview
-                </h3>
-                <div className="bg-white p-4 rounded-lg border border-gray-200 whitespace-pre-wrap font-mono text-sm text-gray-700 max-h-96 overflow-y-auto">
-                  {previewData?.message}
-                </div>
-                <div className="mt-3 flex gap-4 text-sm text-gray-600">
-                  <span>📝 {previewData?.characterCount} characters</span>
-                  <span>💬 ~{previewData?.estimatedSMS} SMS</span>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={handleBroadcast}
-                  disabled={loading}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      Confirm & Send
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          ) : (
-            /* Filters & Options */
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-4">
-                  Select Target Audience
-                </h3>
-
-                <div className="space-y-4">
-                  {/* Gender Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Gender Filter
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['All', 'Male', 'Female'].map((gender) => (
-                        <button
-                          key={gender}
-                          onClick={() => setFilters({ ...filters, filterGender: gender })}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            filters.filterGender === gender
-                              ? 'bg-green-600 text-white shadow-md'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {gender}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Payment Status Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Payment Status
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['All', 'Paid', 'Pending'].map((status) => (
-                        <button
-                          key={status}
-                          onClick={() => setFilters({ ...filters, filterStatus: status })}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            filters.filterStatus === status
-                              ? 'bg-green-600 text-white shadow-md'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          {status}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Plan Info */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-                <h4 className="font-semibold text-gray-800 mb-2">Plan Details</h4>
-                <div className="space-y-1 text-sm text-gray-700">
-                  <p><span className="font-medium">Type:</span> {plan.planType}</p>
-                  <p><span className="font-medium">Duration:</span> {plan.planDuration}</p>
-                  <p><span className="font-medium">Target:</span> {plan.targetAudience}</p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={handleClose}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handlePreview}
-                  className="flex-1 px-6 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors font-medium flex items-center justify-center gap-2"
-                >
-                  <Eye className="w-5 h-5" />
-                  Preview
-                </button>
-                <button
-                  onClick={handleBroadcast}
-                  disabled={loading}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5" />
-                      Send Now
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+    </ModalContainer>
   );
 };
 

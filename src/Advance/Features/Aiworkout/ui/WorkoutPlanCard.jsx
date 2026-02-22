@@ -1,214 +1,81 @@
-// src/Advance/Features/AiWorkoutPlan/Ui/WorkoutPlanCard.jsx
-import React, { useState } from 'react';
-import {
-  Send,
-  Edit2,
-  Trash2,
-  Eye,
-  Calendar,
-  Target,
-  Clock,
-  TrendingUp,
-  MoreVertical,
-  Dumbbell,
-  Activity,
-} from 'lucide-react';
-import { format } from 'date-fns';
+// WorkoutPlanCard.jsx
+import React from 'react';
+import { Edit, Trash2, Eye, Send, Award, Target, CalendarDays, Zap } from 'lucide-react';
 
 const WorkoutPlanCard = ({ plan, onBroadcast, onEdit, onPreview, onDelete }) => {
-  const [showMenu, setShowMenu] = useState(false);
-
-  const getStatusColor = (status) => {
+  const getStatusClasses = (status) => {
     switch (status) {
       case 'Active':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-emerald-100 text-emerald-700 border-emerald-300';
       case 'Draft':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-amber-100 text-amber-700 border-amber-300';
       case 'Archived':
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-rose-100 text-rose-700 border-rose-300';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-slate-100 text-slate-700 border-slate-300';
     }
   };
 
-  const getDifficultyColor = (level) => {
-    switch (level) {
-      case 'Beginner':
-        return 'bg-green-100 text-green-700';
-      case 'Intermediate':
-        return 'bg-orange-100 text-orange-700';
-      case 'Advanced':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
+  const handleDetailsClick = () => {
+    onEdit(plan);
   };
-
-  const getPlanTypeIcon = (type) => {
-    switch (type) {
-      case 'Strength Training':
-        return '🏋️';
-      case 'Cardio Focus':
-        return '🏃';
-      case 'Weight Loss':
-        return '⚖️';
-      case 'Muscle Building':
-        return '💪';
-      case 'Endurance':
-        return '🚴';
-      case 'General Fitness':
-        return '🎯';
-      default:
-        return '📋';
-    }
-  };
-
-  const successRate =
-    plan.broadcastDetails?.totalMembersSent > 0
-      ? (
-          (plan.broadcastDetails.successfulDeliveries /
-            plan.broadcastDetails.totalMembersSent) *
-          100
-        ).toFixed(1)
-      : 0;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100">
-      {/* Header */}
-      <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-3xl">{getPlanTypeIcon(plan.planType)}</span>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                plan.status
-              )}`}
-            >
+    <div
+      className="rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 to-indigo-50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+      onClick={handleDetailsClick}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex-grow">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="line-clamp-1 text-2xl font-bold text-slate-900">{plan.planTitle}</h3>
+            <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${getStatusClasses(plan.status)}`}>
               {plan.status}
             </span>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(
-                plan.difficultyLevel
-              )}`}
-            >
-              {plan.difficultyLevel}
-            </span>
           </div>
-          
-          {/* Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1 hover:bg-white rounded-lg transition-colors"
-            >
-              <MoreVertical className="w-5 h-5 text-gray-600" />
-            </button>
-            
-            {showMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
-                <button
-                  onClick={() => {
-                    onEdit();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                >
-                  <Edit2 className="w-4 h-4" />
-                  Edit Plan
-                </button>
-                <button
-                  onClick={() => {
-                    onPreview();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                >
-                  <Eye className="w-4 h-4" />
-                  Preview Message
-                </button>
-                <button
-                  onClick={() => {
-                    onDelete();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 rounded-b-lg"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Plan
-                </button>
-              </div>
-            )}
+
+          <div className="mb-4 space-y-2 text-sm text-slate-700">
+            <p className="flex items-center gap-2"><Zap className="h-4 w-4 text-indigo-600" />Plan Type: <span className="font-medium text-slate-900">{plan.planType}</span></p>
+            <p className="flex items-center gap-2"><Award className="h-4 w-4 text-blue-600" />Level: <span className="font-medium text-slate-900">{plan.difficultyLevel}</span></p>
+            <p className="flex items-center gap-2"><Target className="h-4 w-4 text-emerald-600" />Audience: <span className="font-medium text-slate-900">{plan.targetAudience}</span></p>
+            <p className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-amber-600" />Duration: <span className="font-medium text-slate-900">{plan.planDuration}</span></p>
           </div>
+
+          <p className="mb-5 line-clamp-3 text-sm text-slate-600">
+            {plan.generalInstructions || 'No specific instructions provided for this plan yet.'}
+          </p>
         </div>
 
-        <h3 className="text-xl font-bold text-gray-800 mb-1 line-clamp-1">
-          {plan.planTitle}
-        </h3>
-        <p className="text-sm text-gray-600">{plan.planType}</p>
-      </div>
-
-      {/* Content */}
-      <div className="p-6 space-y-4">
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Target className="w-4 h-4 text-blue-600" />
-            <span className="truncate">{plan.targetAudience}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Clock className="w-4 h-4 text-orange-600" />
-            <span>{plan.planDuration}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Dumbbell className="w-4 h-4 text-purple-600" />
-            <span>{plan.workoutsPerWeek} days/week</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Activity className="w-4 h-4 text-green-600" />
-            <span>{plan.difficultyLevel}</span>
-          </div>
+        <div className="flex items-center justify-around gap-3 border-t border-slate-300 pt-4">
+          <button
+            onClick={(e) => { e.stopPropagation(); onBroadcast(plan); }}
+            className="rounded-full bg-blue-100 p-3 text-blue-700 transition-all duration-200 hover:bg-blue-200"
+            title="Broadcast Plan"
+          >
+            <Send className="h-5 w-5" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onPreview(plan); }}
+            className="rounded-full bg-indigo-100 p-3 text-indigo-700 transition-all duration-200 hover:bg-indigo-200"
+            title="Preview Plan"
+          >
+            <Eye className="h-5 w-5" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(plan); }}
+            className="rounded-full bg-amber-100 p-3 text-amber-700 transition-all duration-200 hover:bg-amber-200"
+            title="Edit Plan"
+          >
+            <Edit className="h-5 w-5" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(plan._id); }}
+            className="rounded-full bg-rose-100 p-3 text-rose-700 transition-all duration-200 hover:bg-rose-200"
+            title="Delete Plan"
+          >
+            <Trash2 className="h-5 w-5" />
+          </button>
         </div>
-
-        {/* Broadcast Stats */}
-        {plan.broadcastDetails?.totalMembersSent > 0 && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-gray-700 uppercase">
-                Broadcast Stats
-              </span>
-              <TrendingUp className="w-4 h-4 text-blue-600" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-2xl font-bold text-gray-800">
-                  {plan.broadcastDetails.successfulDeliveries}
-                </p>
-                <p className="text-xs text-gray-600">Sent Successfully</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-blue-600">
-                  {successRate}%
-                </p>
-                <p className="text-xs text-gray-600">Success Rate</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Dates */}
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Calendar className="w-4 h-4" />
-          <span>Created {format(new Date(plan.createdAt), 'MMM dd, yyyy')}</span>
-        </div>
-
-        {/* Action Button */}
-        <button
-          onClick={onBroadcast}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium"
-        >
-          <Send className="w-4 h-4" />
-          Send to Members
-        </button>
       </div>
     </div>
   );

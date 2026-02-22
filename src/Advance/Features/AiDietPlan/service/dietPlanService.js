@@ -1,118 +1,206 @@
-// src/Advance/Features/AiDietPlan/Service/dietPlanService.js
-import axios from 'axios';
+// dietPlanService.js
+import axiosInstance from "../../../../axios.config";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_TIMEOUT = 30000; // 30 seconds timeout
 
-// Create axios instance with credentials
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const DIET_BASE_URL = "/diet-plan";
 
-// Response interceptor for error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
-const dietPlanService = {
-  // Create new diet plan
-  createDietPlan: async (data) => {
-    try {
-      const response = await api.post('/diet-plan/create', data);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
-    }
-  },
-
-  // Get all diet plans
-  getAllDietPlans: async (params = {}) => {
-    try {
-      const { status, page = 1, limit = 10 } = params;
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-      });
-      
-      if (status && status !== 'All') {
-        queryParams.append('status', status);
+// Create a new diet plan
+export const createDietPlanService = async (planData) => {
+  try {
+    const res = await axiosInstance.post(
+      `${DIET_BASE_URL}/create`,
+      planData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: API_TIMEOUT,
       }
-      
-      const response = await api.get(`/diet-plan/all?${queryParams}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Create diet plan error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please check your internet connection and try again.");
     }
-  },
-
-  // Get single diet plan by ID
-  getDietPlanById: async (planId) => {
-    try {
-      const response = await api.get(`/diet-plan/${planId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
     }
-  },
-
-  // Update diet plan
-  updateDietPlan: async (planId, data) => {
-    try {
-      const response = await api.put(`/diet-plan/${planId}`, data);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
-    }
-  },
-
-  // Delete diet plan
-  deleteDietPlan: async (planId) => {
-    try {
-      const response = await api.delete(`/diet-plan/${planId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
-    }
-  },
-
-  // Broadcast diet plan to members
-  broadcastDietPlan: async (planId, filters = {}) => {
-    try {
-      const response = await api.post(`/diet-plan/${planId}/broadcast`, filters);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
-    }
-  },
-
-  // Get diet plan statistics
-  getDietPlanStats: async (planId) => {
-    try {
-      const response = await api.get(`/diet-plan/${planId}/stats`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
-    }
-  },
-
-  // Preview diet plan message
-  previewDietPlanMessage: async (planId) => {
-    try {
-      const response = await api.get(`/diet-plan/${planId}/preview`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
-    }
-  },
+    throw new Error(err.response?.data?.message || "Failed to create diet plan");
+  }
 };
 
-export default dietPlanService;
+// Get all diet plans for owner
+export const getAllDietPlansService = async (page = 1, limit = 10) => {
+  try {
+    const res = await axiosInstance.get(
+      `${DIET_BASE_URL}/all?page=${page}&limit=${limit}`,
+      {
+        timeout: API_TIMEOUT,
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Fetch all diet plans error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please try again.");
+    }
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
+    }
+    throw new Error(err.response?.data?.message || "Failed to fetch diet plans");
+  }
+};
+
+// Get single diet plan by ID
+export const getDietPlanByIdService = async (planId) => {
+  try {
+    const res = await axiosInstance.get(
+      `${DIET_BASE_URL}/${planId}`,
+      {
+        timeout: API_TIMEOUT,
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Fetch diet plan by ID error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please try again.");
+    }
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
+    }
+    throw new Error(err.response?.data?.message || "Failed to fetch diet plan");
+  }
+};
+
+// Update diet plan
+export const updateDietPlanService = async (planId, planData) => {
+  try {
+    const res = await axiosInstance.put(
+      `${DIET_BASE_URL}/${planId}`,
+      planData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: API_TIMEOUT,
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Update diet plan error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please try again.");
+    }
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
+    }
+    throw new Error(err.response?.data?.message || "Failed to update diet plan");
+  }
+};
+
+// Delete diet plan
+export const deleteDietPlanService = async (planId) => {
+  try {
+    const res = await axiosInstance.delete(
+      `${DIET_BASE_URL}/${planId}`,
+      {
+        timeout: API_TIMEOUT,
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Delete diet plan error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please try again.");
+    }
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
+    }
+    throw new Error(err.response?.data?.message || "Failed to delete diet plan");
+  }
+};
+
+// Broadcast diet plan to members
+export const broadcastDietPlanService = async (planId, filterData) => {
+  try {
+    const res = await axiosInstance.post(
+      `${DIET_BASE_URL}/${planId}/broadcast`,
+      filterData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: API_TIMEOUT,
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Broadcast diet plan error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please try again.");
+    }
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
+    }
+    throw new Error(err.response?.data?.message || "Failed to broadcast diet plan");
+  }
+};
+
+// Get diet plan statistics
+export const getDietPlanStatsService = async (planId) => {
+  try {
+    const res = await axiosInstance.get(
+      `${DIET_BASE_URL}/${planId}/stats`,
+      {
+        timeout: API_TIMEOUT,
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Fetch diet plan stats error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please try again.");
+    }
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
+    }
+    throw new Error(err.response?.data?.message || "Failed to fetch diet plan stats");
+  }
+};
+
+// Preview diet plan message
+export const previewDietPlanMessageService = async (planId) => {
+  try {
+    const res = await axiosInstance.get(
+      `${DIET_BASE_URL}/${planId}/preview`,
+      {
+        timeout: API_TIMEOUT,
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("❌ Preview diet plan message error:", err.response?.data || err.message);
+    if (err.code === "ECONNABORTED") {
+      throw new Error("Request timeout. Please try again.");
+    }
+    if (!err.response) {
+      throw new Error("Network error. Please check your internet connection.");
+    }
+    throw new Error(err.response?.data?.message || "Failed to preview diet plan message");
+  }
+};
+
+// Default export mapping to match store usage
+export default {
+  createDietPlan: createDietPlanService,
+  getAllDietPlans: getAllDietPlansService,
+  getDietPlanById: getDietPlanByIdService,
+  updateDietPlan: updateDietPlanService,
+  deleteDietPlan: deleteDietPlanService,
+  broadcastDietPlan: broadcastDietPlanService,
+  getDietPlanStats: getDietPlanStatsService,
+  previewDietPlanMessage: previewDietPlanMessageService,
+};

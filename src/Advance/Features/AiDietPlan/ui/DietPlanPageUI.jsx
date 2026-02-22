@@ -1,26 +1,23 @@
-// src/Advance/Features/AiDietPlan/Ui/DietPlanPageUI.jsx
-import React from 'react';
-import { Plus, Search, Loader2 } from 'lucide-react';
-import DietPlanCard from './DietPlanCard';
-import CreateDietPlanModal from './CreateDietPlanModal';
-import BroadcastModal from './BroadcastModal';
+import React, { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Search, Loader2, ArrowLeft } from "lucide-react";
+import DietPlanCard from "./DietPlanCard";
+import CreateDietPlanModal from "./CreateDietPlanModal";
+import BroadcastModal from "./BroadcastModal";
+import EditDietPlanModal from "./EditDietPlanModal";
+import PreviewDietPlanModal from "./PreviewDietPlanModal";
 
 const DietPlanPageUI = ({
-  // Data
   dietPlans,
   loading,
   pagination,
   filters,
   searchTerm,
   selectedPlan,
-  
-  // Modal states
   showCreateModal,
   showBroadcastModal,
   showEditModal,
   showPreviewModal,
-  
-  // Handlers
   onFilterChange,
   onSearch,
   onBroadcast,
@@ -28,143 +25,162 @@ const DietPlanPageUI = ({
   onPreview,
   onDelete,
   onPageChange,
-  
-  // Modal handlers
   onCreateClick,
   onCloseCreateModal,
   onCloseBroadcastModal,
   onCloseEditModal,
   onClosePreviewModal,
-  
-  // Success handlers
   onCreateSuccess,
   onEditSuccess,
   onBroadcastSuccess,
 }) => {
-  const filterOptions = ['All', 'Draft', 'Active', 'Archived'];
+  const navigate = useNavigate();
+  const filterOptions = ["All", "Draft", "Active", "Archived"];
+  const handleBack = useCallback(() => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate("/dashboard");
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">
-          🥗 Diet Plans
-        </h1>
-        <p className="text-gray-600">
-          Create and manage personalized diet plans for your members
-        </p>
-      </div>
-
-      {/* Action Bar */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-          {/* Search */}
-          <div className="relative flex-1 w-full md:max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search diet plans..."
-              value={searchTerm}
-              onChange={(e) => onSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-
-          {/* Filters */}
-          <div className="flex gap-2 flex-wrap">
-            {filterOptions.map((status) => (
-              <button
-                key={status}
-                onClick={() => onFilterChange(status)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  filters.status === status
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-
-          {/* Create Button */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 sm:p-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-4">
           <button
-            onClick={onCreateClick}
-            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-md hover:shadow-lg"
+            onClick={handleBack}
+            className="inline-flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:text-blue-600"
           >
-            <Plus className="w-5 h-5" />
-            Create Plan
+            <ArrowLeft className="h-4 w-4" />
+            Back
           </button>
         </div>
-      </div>
 
-      {/* Content */}
-      {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-        </div>
-      ) : dietPlans.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <div className="text-6xl mb-4">🍽️</div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            No diet plans found
-          </h3>
-          <p className="text-gray-600 mb-6">
-            {searchTerm
-              ? 'Try adjusting your search'
-              : 'Create your first diet plan to get started'}
+        <div className="mb-6 text-center sm:mb-8">
+          <h1 className="mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
+            AI Diet Plans
+          </h1>
+          <p className="mx-auto max-w-2xl text-sm text-gray-600 sm:text-base">
+            Create and manage member diet plans with the same clean workflow.
           </p>
-          {!searchTerm && (
+        </div>
+
+        <div className="mb-6 rounded-2xl border border-blue-100 bg-gradient-to-r from-white via-blue-50 to-white p-4 shadow-md sm:mb-8 sm:p-6">
+          <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative w-full lg:max-w-md">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-500" />
+              <input
+                type="text"
+                placeholder="Search diet plans..."
+                value={searchTerm}
+                onChange={(e) => onSearch(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {filterOptions.map((status) => (
+                <button
+                  key={status}
+                  onClick={() => onFilterChange(status)}
+                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-all ${
+                    filters.status === status
+                      ? "border-blue-300 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-sm"
+                      : "border-blue-100 bg-white text-gray-700 hover:border-blue-200 hover:bg-blue-50"
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
+
             <button
               onClick={onCreateClick}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:from-blue-700 hover:to-purple-700 hover:shadow-lg"
             >
-              Create First Plan
+              <Plus className="h-4 w-4" />
+              Create Plan
             </button>
-          )}
-        </div>
-      ) : (
-        <>
-          {/* Diet Plans Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dietPlans.map((plan) => (
-              <DietPlanCard
-                key={plan._id}
-                plan={plan}
-                onBroadcast={() => onBroadcast(plan)}
-                onEdit={() => onEdit(plan)}
-                onPreview={() => onPreview(plan)}
-                onDelete={() => onDelete(plan._id)}
-              />
-            ))}
           </div>
+        </div>
 
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-8">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-blue-100 bg-white py-16 shadow-md">
+            <Loader2 className="mb-3 h-10 w-10 animate-spin text-blue-500" />
+            <p className="text-base font-medium text-gray-700">
+              Loading diet plans...
+            </p>
+          </div>
+        ) : dietPlans.length === 0 ? (
+          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50 p-10 text-center shadow-md">
+            <h3 className="mb-3 text-2xl font-semibold text-gray-900">
+              No diet plans found
+            </h3>
+            <p className="mb-6 text-sm text-gray-600 sm:text-base">
+              {searchTerm
+                ? "Try changing your search or filters."
+                : "Create your first diet plan to get started."}
+            </p>
+            {!searchTerm && (
               <button
-                onClick={() => onPageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-                className="px-4 py-2 bg-white rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
+                onClick={onCreateClick}
+                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2.5 text-sm font-medium text-white shadow-md transition-all hover:from-blue-700 hover:to-purple-700"
               >
-                Previous
+                <Plus className="h-4 w-4" />
+                Create First Plan
               </button>
-              <span className="px-4 py-2 bg-white rounded-lg border border-gray-200 font-medium">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <button
-                onClick={() => onPageChange(pagination.page + 1)}
-                disabled={pagination.page === pagination.totalPages}
-                className="px-4 py-2 bg-white rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
-              >
-                Next
-              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {dietPlans.map((plan) => (
+                <DietPlanCard
+                  key={plan._id}
+                  plan={plan}
+                  onBroadcast={() => onBroadcast(plan)}
+                  onEdit={() => onEdit(plan)}
+                  onPreview={() => onPreview(plan)}
+                  onDelete={() => onDelete(plan._id)}
+                />
+              ))}
             </div>
-          )}
-        </>
-      )}
 
-      {/* Modals */}
+            {pagination.totalPages > 1 && (
+              <div className="flex flex-col items-center justify-between gap-3 rounded-xl border border-blue-100 bg-gradient-to-r from-white via-blue-50 to-white p-4 shadow-sm sm:flex-row">
+                <span className="text-sm text-gray-600">
+                  Page{" "}
+                  <span className="font-semibold text-blue-600">
+                    {pagination.page}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-semibold text-blue-600">
+                    {pagination.totalPages}
+                  </span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => onPageChange(pagination.page - 1)}
+                    disabled={pagination.page === 1}
+                    className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => onPageChange(pagination.page + 1)}
+                    disabled={pagination.page === pagination.totalPages}
+                    className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
       {showCreateModal && (
         <CreateDietPlanModal
           isOpen={showCreateModal}
@@ -179,6 +195,23 @@ const DietPlanPageUI = ({
           onClose={onCloseBroadcastModal}
           plan={selectedPlan}
           onSuccess={onBroadcastSuccess}
+        />
+      )}
+
+      {showEditModal && selectedPlan && (
+        <EditDietPlanModal
+          isOpen={showEditModal}
+          onClose={onCloseEditModal}
+          plan={selectedPlan}
+          onSuccess={onEditSuccess}
+        />
+      )}
+
+      {showPreviewModal && selectedPlan && (
+        <PreviewDietPlanModal
+          isOpen={showPreviewModal}
+          onClose={onClosePreviewModal}
+          plan={selectedPlan}
         />
       )}
     </div>
