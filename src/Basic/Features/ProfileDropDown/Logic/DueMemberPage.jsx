@@ -194,7 +194,7 @@ const DueMembersPage = () => {
         case "sendReminder":
           const reminderResponse = await sendMemberReminder(memberId);
           if (reminderResponse.success) {
-            alert("Reminder sent successfully via WhatsApp!");
+            alert("Reminder sent successfully via WhatsApp and/or Email!");
           } else {
             alert(reminderResponse.message || "Failed to send reminder");
           }

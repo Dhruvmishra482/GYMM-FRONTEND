@@ -335,7 +335,7 @@ const AnnouncementForm = ({ initialData, onClose, onSuccess }) => {
             </div>
           ) : (
             <p className="text-sm italic text-gray-500">
-              Click "Generate Preview" to see how your message will look.
+              Click "Generate Preview" to see how your message will look. Broadcast sends on WhatsApp and Email (if member email exists).
             </p>
           )}
         </div>
